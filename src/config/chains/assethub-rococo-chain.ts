@@ -34,7 +34,16 @@ export const assethubRococoChain: ChainConfig = {
    * Custom
    */
   logo: "", // TODO
-  assets: [],
+  assets: [
+    {
+      icon: "", //TODO
+      id: 7777,
+      name: "Tether USD Test",
+      symbol: "USDT",
+      decimals: 6,
+      cross: [{ target: { network: "pangolin", symbol: "ahUSDT" } }],
+    },
+  ],
 
   /**
    * Substrate

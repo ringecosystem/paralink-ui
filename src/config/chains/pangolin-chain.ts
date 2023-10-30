@@ -34,7 +34,16 @@ export const pangolinChain: ChainConfig = {
    * Custom
    */
   logo: "", // TODO
-  assets: [],
+  assets: [
+    {
+      icon: "", //TODO
+      id: 1027,
+      name: "Tether USD",
+      symbol: "ahUSDT",
+      decimals: 6,
+      cross: [{ target: { network: "assethub-rococo", symbol: "USDT" } }],
+    },
+  ],
 
   /**
    * Substrate
