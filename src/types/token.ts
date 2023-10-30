@@ -10,3 +10,7 @@ export interface Token {
 export interface EVMToken extends Token {}
 
 export interface SubstrateToken extends Token {}
+
+export interface Asset extends Token {
+  id: number;
+}
