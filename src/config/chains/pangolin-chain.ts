@@ -1,4 +1,4 @@
-import { ChainConfig, ChainID } from "@/types";
+import { ChainConfig, ChainID, WalletID } from "@/types";
 
 export const pangolinChain: ChainConfig = {
   /**
@@ -41,7 +41,9 @@ export const pangolinChain: ChainConfig = {
       name: "Tether USD",
       symbol: "ahUSDT",
       decimals: 6,
-      cross: [{ target: { network: "assethub-rococo", symbol: "USDT" } }],
+      cross: [
+        { target: { network: "assethub-rococo", symbol: "USDT" }, wallets: [WalletID.RAINBOW, WalletID.TALISMAN] },
+      ],
     },
   ],
 
