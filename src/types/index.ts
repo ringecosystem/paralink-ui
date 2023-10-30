@@ -1,3 +1,3 @@
 export * from "./xcm";
 export * from "./chain";
-export * from "./token";
+export * from "./asset";

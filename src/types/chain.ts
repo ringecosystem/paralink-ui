@@ -1,26 +1,29 @@
 import { Chain } from "wagmi";
-import { EVMToken } from ".";
+import { Asset } from "./asset";
 
-export enum EVMChainID {
+export enum ChainID {
+  INVALID = -1,
   PANGOLIN = 43,
 }
 
-export type EVMNetwork = "pangolin";
+export type Network = "pangolin" | "assethub-rococo";
 
-export interface ChainConfig {
+export interface ChainConfig extends Chain {
+  /**
+   * Chain
+   */
+  id: ChainID;
+  network: Network;
+  nativeCurrency: Pick<Asset, "name" | "symbol" | "decimals">;
+
+  /**
+   * Custom
+   */
   logo: string; // File name
-}
+  assets: Asset[];
 
-export interface EVMChainConfig extends ChainConfig, Chain {
-  id: EVMChainID;
-  network: EVMNetwork;
-  nativeCurrency: Pick<EVMToken, "name" | "symbol" | "decimals">;
-}
-
-export interface SubstrateChainConfig extends ChainConfig {
+  /**
+   * Substrate
+   */
   endpoint: string;
-  explorer: {
-    name: string;
-    url: string;
-  };
 }

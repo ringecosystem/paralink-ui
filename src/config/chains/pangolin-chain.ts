@@ -1,10 +1,12 @@
-import { EVMChainConfig, EVMChainID } from "@/types";
+import { ChainConfig, ChainID } from "@/types";
 
-export const pangolinChain: EVMChainConfig = {
-  id: EVMChainID.PANGOLIN,
+export const pangolinChain: ChainConfig = {
+  /**
+   * Chain
+   */
+  id: ChainID.PANGOLIN,
   network: "pangolin",
   name: "Pangolin2",
-  logo: "", // TODO
   nativeCurrency: {
     name: "PRING",
     symbol: "PRING",
@@ -27,4 +29,15 @@ export const pangolinChain: EVMChainConfig = {
     },
   },
   testnet: true,
+
+  /**
+   * Custom
+   */
+  logo: "", // TODO
+  assets: [],
+
+  /**
+   * Substrate
+   */
+  endpoint: "wss://pangolin-rpc.darwinia.network",
 };
