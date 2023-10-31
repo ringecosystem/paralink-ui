@@ -5,7 +5,7 @@ import { BN, BN_ZERO, formatBalance as formatUnits } from "@polkadot/util";
 /**
  * Token decimals and symbol: api.rpc.system.properties
  */
-export async function getNativeTokenBalance(api: ApiPromise, address: string) {
+export async function getNativeBalance(api: ApiPromise, address: string) {
   const balancesAll = await api.derive.balances.all(address);
   const locked = balancesAll.lockedBalance;
   const transferrable = balancesAll.availableBalance;
