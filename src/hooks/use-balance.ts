@@ -1,19 +1,17 @@
 import { EvmBridge } from "@/libs";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BN } from "@polkadot/util";
 import { Asset } from "@/types";
-import { forkJoin, Subscription } from "rxjs";
+import { forkJoin, EMPTY } from "rxjs";
 
 export function useBalance(bridge: EvmBridge | undefined, address: string | undefined, position: "source" | "target") {
   const [balance, setBalance] = useState<{ asset: { value: BN; asset: Asset } }>();
 
-  useEffect(() => {
-    let sub$$: Subscription | undefined;
-
+  const updateBalance = useCallback(() => {
     if (bridge && address) {
       const assetCall = position === "source" ? bridge.getSourceAssetBalance : bridge.getTargetAssetBalance;
 
-      sub$$ = forkJoin([assetCall(address)]).subscribe({
+      return forkJoin([assetCall(address)]).subscribe({
         next: ([asset]) => {
           setBalance({ asset });
         },
@@ -26,8 +24,13 @@ export function useBalance(bridge: EvmBridge | undefined, address: string | unde
       setBalance(undefined);
     }
 
-    return () => sub$$?.unsubscribe();
+    return EMPTY.subscribe();
   }, [bridge, address, position]);
 
-  return { balance };
+  useEffect(() => {
+    const sub$$ = updateBalance();
+    return () => sub$$.unsubscribe();
+  }, [updateBalance]);
+
+  return { balance, refetch: updateBalance };
 }
