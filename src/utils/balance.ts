@@ -1,6 +1,6 @@
 import { Asset } from "@/types";
 import { ApiPromise } from "@polkadot/api";
-import { BN, BN_ZERO } from "@polkadot/util";
+import { BN, BN_ZERO, formatBalance as formatUnits } from "@polkadot/util";
 
 /**
  * Token decimals and symbol: api.rpc.system.properties
@@ -23,4 +23,18 @@ export async function getAssetBalance(api: ApiPromise, address: string, asset: A
     return assetBalance as BN;
   }
   return BN_ZERO;
+}
+
+export function formatBalance(value: BN, decimals = 18, options?: { precision?: number; keepZero?: boolean }) {
+  const precision = options?.precision ?? 3;
+  const keepZero = options?.keepZero ?? false;
+
+  const [i, d] = formatUnits(value, { decimals, forceUnit: "Unit", withAll: true, withUnit: false }).split(".");
+  const _integers = i;
+  let _decimals = Number(`0.${d || 0}`).toFixed(precision);
+
+  if (!keepZero) {
+    _decimals = Number(_decimals).toString();
+  }
+  return `${_integers}${_decimals.slice(1)}`;
 }
