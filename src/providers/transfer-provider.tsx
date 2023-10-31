@@ -1,30 +1,21 @@
 "use client";
 
-import {
-  Dispatch,
-  PropsWithChildren,
-  SetStateAction,
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { Dispatch, PropsWithChildren, SetStateAction, createContext, useCallback, useMemo, useState } from "react";
 import { BN, BN_ZERO } from "@polkadot/util";
 import { Asset, ChainConfig, WalletID } from "@/types";
 import { assethubRococoChain, pangolinChain } from "@/config/chains";
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import { usePublicClient, useWalletClient } from "wagmi";
 import { EvmBridge } from "@/libs";
-import { forkJoin, Subscription } from "rxjs";
+
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
 import { notifyTransaction, signAndSendExtrinsic } from "@/utils";
+import { useApi, useBalance } from "@/hooks";
 
 interface TransferCtx {
   bridgeInstance: EvmBridge | undefined;
   sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
-  sourceApi: ApiPromise | undefined;
+  targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
   activeWallet: WalletID | undefined;
   transferAmount: { input: string; amount: BN };
   transferSource: { asset: Asset; chain: ChainConfig };
@@ -32,7 +23,6 @@ interface TransferCtx {
   sender: string | undefined;
   recipient: string | undefined;
 
-  setSourceApi: Dispatch<SetStateAction<ApiPromise | undefined>>;
   setActiveWallet: Dispatch<SetStateAction<WalletID | undefined>>;
   setTransferAmount: Dispatch<SetStateAction<{ input: string; amount: BN }>>;
   setTransferSource: Dispatch<SetStateAction<{ asset: Asset; chain: ChainConfig }>>;
@@ -58,7 +48,7 @@ interface TransferCtx {
 const defaultValue: TransferCtx = {
   bridgeInstance: undefined,
   sourceBalance: undefined,
-  sourceApi: undefined,
+  targetBalance: undefined,
   activeWallet: undefined,
   transferAmount: { input: "", amount: BN_ZERO },
   transferSource: { asset: pangolinChain.assets[0], chain: pangolinChain },
@@ -66,7 +56,6 @@ const defaultValue: TransferCtx = {
   sender: undefined,
   recipient: undefined,
 
-  setSourceApi: () => undefined,
   setActiveWallet: () => undefined,
   setTransferAmount: () => undefined,
   setTransferSource: () => undefined,
@@ -85,8 +74,6 @@ const transferCb = {
 export const TransferContext = createContext(defaultValue);
 
 export default function TransferProvider({ children }: PropsWithChildren<unknown>) {
-  const [sourceBalance, setSourceBalance] = useState(defaultValue.sourceBalance);
-  const [sourceApi, setSourceApi] = useState(defaultValue.sourceApi);
   const [activeWallet, setActiveWallet] = useState(defaultValue.activeWallet);
   const [transferAmount, setTransferAmount] = useState(defaultValue.transferAmount);
   const [transferSource, setTransferSource] = useState(defaultValue.transferSource);
@@ -94,14 +81,22 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   const [sender, setSender] = useState(defaultValue.sender);
   const [recipient, setRecipient] = useState(defaultValue.recipient);
 
+  const { api: sourceApi } = useApi(transferSource.chain);
+  const { api: targetApi } = useApi(transferTarget.chain);
+
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
 
   const bridgeInstance = useMemo(
     () =>
-      sourceApi ? new EvmBridge({ sourceApi, publicClient, walletClient, transferSource, transferTarget }) : undefined,
-    [sourceApi, publicClient, walletClient, transferSource, transferTarget],
+      sourceApi && targetApi
+        ? new EvmBridge({ sourceApi, targetApi, publicClient, walletClient, transferSource, transferTarget })
+        : undefined,
+    [sourceApi, targetApi, publicClient, walletClient, transferSource, transferTarget],
   );
+
+  const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
+  const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, sender, "target");
 
   const evmTransfer = useCallback(
     async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
@@ -136,56 +131,12 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     [],
   );
 
-  useEffect(() => {
-    const { endpoint } = transferSource.chain;
-    const api = new ApiPromise({ provider: new WsProvider(endpoint) });
-
-    const successListener = () => {
-      setSourceApi(api);
-    };
-    const failedListener = () => {
-      setSourceApi(undefined);
-    };
-
-    api.on("connected", () => {});
-    api.on("ready", successListener);
-    api.on("disconnected", failedListener);
-    api.on("error", (err) => {
-      console.error(err);
-    });
-
-    return () => {
-      api.off("ready", successListener);
-      api.off("disconnected", failedListener);
-    };
-  }, [transferSource.chain]);
-
-  useEffect(() => {
-    let sub$$: Subscription | undefined;
-
-    if (sender && bridgeInstance) {
-      sub$$ = forkJoin([bridgeInstance.getSourceAssetBalance(sender)]).subscribe({
-        next: ([asset]) => {
-          setSourceBalance({ asset });
-        },
-        error: (err) => {
-          console.error(err);
-          setSourceBalance(undefined);
-        },
-      });
-    } else {
-      setSourceBalance(undefined);
-    }
-
-    return () => sub$$?.unsubscribe();
-  }, [sender, bridgeInstance]);
-
   return (
     <TransferContext.Provider
       value={{
         bridgeInstance,
         sourceBalance,
-        sourceApi,
+        targetBalance,
         activeWallet,
         transferAmount,
         transferSource,
@@ -193,7 +144,6 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         sender,
         recipient,
 
-        setSourceApi,
         setActiveWallet,
         setTransferAmount,
         setTransferSource,

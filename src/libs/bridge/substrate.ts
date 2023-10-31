@@ -12,6 +12,7 @@ import type { XcmV3WeightLimit, XcmVersionedMultiLocation, XcmVersionedMultiAsse
 export class SubstrateBridge extends BaseBridge {
   constructor(args: {
     sourceApi: ApiPromise;
+    targetApi: ApiPromise;
     transferSource: { asset: Asset; chain: ChainConfig };
     transferTarget: { asset: Asset; chain: ChainConfig };
   }) {

@@ -15,6 +15,7 @@ export class EvmBridge extends SubstrateBridge {
 
   constructor(args: {
     sourceApi: ApiPromise;
+    targetApi: ApiPromise;
     publicClient: PublicClient;
     walletClient: WalletClient | null | undefined;
     transferSource: { asset: Asset; chain: ChainConfig };
