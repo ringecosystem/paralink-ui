@@ -25,20 +25,21 @@ export abstract class BaseBridge {
     const locked = balancesAll.lockedBalance;
     const transferrable = balancesAll.availableBalance;
     const total = balancesAll.freeBalance.add(balancesAll.reservedBalance);
-    return { transferrable, locked, total };
+    return { transferrable, locked, total, currency: this.transferSource.chain.nativeCurrency };
   }
 
   /**
    * Token name, symbol and decimals: api.query.assets.metadata
    */
   async getSourceAssetBalance(address: string) {
+    let value = BN_ZERO;
     const { asset } = this.transferSource;
+
     const assetOption = await this.sourceApi.query.assets.account(asset.id, address);
     if (assetOption.isSome) {
-      const assetBalance = assetOption.unwrap().balance;
-      return assetBalance as BN;
+      value = assetOption.unwrap().balance;
     }
-    return BN_ZERO;
+    return { value, asset };
   }
 
   abstract transfer(): Promise<undefined>;

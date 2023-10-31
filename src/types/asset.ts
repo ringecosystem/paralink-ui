@@ -1,5 +1,3 @@
-import { Cross } from "./cross";
-
 export type AssetSymbol = "ROC" | "USDT" | "PRING" | "ahUSDT";
 
 export interface Asset {
@@ -8,5 +6,4 @@ export interface Asset {
   name: string;
   symbol: AssetSymbol;
   decimals: number;
-  cross: Cross[];
 }
