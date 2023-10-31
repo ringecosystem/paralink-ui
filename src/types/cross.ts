@@ -6,4 +6,5 @@ export interface Cross {
     symbol: AssetSymbol;
   };
   wallets: WalletID[];
+  isReserve: boolean;
 }

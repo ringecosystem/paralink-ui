@@ -41,7 +41,7 @@ export const assethubRococoChain: ChainConfig = {
       name: "Tether USD Test",
       symbol: "USDT",
       decimals: 6,
-      cross: [{ target: { network: "pangolin", symbol: "ahUSDT" }, wallets: [WalletID.TALISMAN] }],
+      cross: [{ target: { network: "pangolin", symbol: "ahUSDT" }, wallets: [WalletID.TALISMAN], isReserve: true }],
     },
   ],
 

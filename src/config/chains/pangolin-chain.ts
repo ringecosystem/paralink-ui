@@ -42,7 +42,11 @@ export const pangolinChain: ChainConfig = {
       symbol: "ahUSDT",
       decimals: 6,
       cross: [
-        { target: { network: "assethub-rococo", symbol: "USDT" }, wallets: [WalletID.RAINBOW, WalletID.TALISMAN] },
+        {
+          target: { network: "assethub-rococo", symbol: "USDT" },
+          wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
+          isReserve: false,
+        },
       ],
     },
   ],
