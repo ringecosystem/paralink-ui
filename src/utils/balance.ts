@@ -1,29 +1,4 @@
-import { Asset } from "@/types";
-import { ApiPromise } from "@polkadot/api";
-import { BN, BN_ZERO, formatBalance as formatUnits } from "@polkadot/util";
-
-/**
- * Token decimals and symbol: api.rpc.system.properties
- */
-export async function getNativeBalance(api: ApiPromise, address: string) {
-  const balancesAll = await api.derive.balances.all(address);
-  const locked = balancesAll.lockedBalance;
-  const transferrable = balancesAll.availableBalance;
-  const total = balancesAll.freeBalance.add(balancesAll.reservedBalance);
-  return { transferrable, locked, total };
-}
-
-/**
- * Token name, symbol and decimals: api.query.assets.metadata
- */
-export async function getAssetBalance(api: ApiPromise, address: string, asset: Asset) {
-  const assetOption = await api.query.assets.account(asset.id, address);
-  if (assetOption.isSome) {
-    const assetBalance = assetOption.unwrap().balance;
-    return assetBalance as BN;
-  }
-  return BN_ZERO;
-}
+import { BN, formatBalance as formatUnits } from "@polkadot/util";
 
 export function formatBalance(value: BN, decimals = 18, options?: { precision?: number; keepZero?: boolean }) {
   const precision = options?.precision ?? 3;
