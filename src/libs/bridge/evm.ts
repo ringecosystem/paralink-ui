@@ -29,11 +29,12 @@ export class EvmBridge extends SubstrateBridge {
     return;
   }
 
-  async _transferAssetWithPrecompile(sender: Address, recipient: string, amount: BN) {
-    const extrinsic = await this._transferAsset(recipient, amount);
+  async transferAssetWithPrecompile(sender: string, recipient: string, amount: BN) {
+    const extrinsic = await this.transferAsset(recipient, amount);
+    const account = sender as Address;
 
     // const estimateGas = await this.publicClient.estimateGas({
-    //   account: sender,
+    //   account,
     //   to: DISPATCH_PRECOMPILE_ADDRESS,
     //   data: u8aToHex(extrinsic.method.toU8a()),
     // });
@@ -42,7 +43,7 @@ export class EvmBridge extends SubstrateBridge {
 
     if (this.walletClient) {
       const hash = await this.walletClient.sendTransaction({
-        account: sender,
+        account,
         to: DISPATCH_PRECOMPILE_ADDRESS,
         data: u8aToHex(extrinsic.method.toU8a()),
       });

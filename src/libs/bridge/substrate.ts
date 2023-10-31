@@ -28,7 +28,7 @@ export class SubstrateBridge extends BaseBridge {
    * @param amount Transfer amount
    * @returns Promise<SubmittableExtrinsic<"promise", ISubmittableResult>>
    */
-  async _transferAsset(recipient: string, amount: BN) {
+  async transferAsset(recipient: string, amount: BN) {
     const section = "xTokens";
     const method = "transferMultiasset";
     const fn = this.sourceApi.tx[section][method];
@@ -71,7 +71,7 @@ export class SubstrateBridge extends BaseBridge {
    * @param amount Transfer amount
    * @returns Promise<SubmittableExtrinsic<"promise", ISubmittableResult>>
    */
-  async _limitedReserveTransferAsset(recipient: string, amount: BN) {
+  async limitedReserveTransferAsset(recipient: string, amount: BN) {
     const section = "polkadotXcm";
     const method = "limitedReserveTransferAssets";
     const fn = this.sourceApi.tx[section][method];

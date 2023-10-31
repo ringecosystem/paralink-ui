@@ -1,8 +1,9 @@
-import { Asset, ChainConfig } from "@/types";
+import { Asset, ChainConfig, Cross } from "@/types";
 import { ApiPromise } from "@polkadot/api";
-import { BN, BN_ZERO } from "@polkadot/util";
+import { BN_ZERO } from "@polkadot/util";
 
 export abstract class BaseBridge {
+  protected readonly cross: Cross | undefined;
   protected readonly sourceApi: ApiPromise;
   protected readonly transferSource: { asset: Asset; chain: ChainConfig };
   protected readonly transferTarget: { asset: Asset; chain: ChainConfig };
@@ -15,6 +16,15 @@ export abstract class BaseBridge {
     this.sourceApi = args.sourceApi;
     this.transferSource = args.transferSource;
     this.transferTarget = args.transferTarget;
+
+    const { asset, chain } = args.transferTarget;
+    this.cross = args.transferSource.asset.cross.find(
+      ({ target }) => target.network === chain.network && target.symbol === asset.symbol,
+    );
+  }
+
+  getCrossInfo() {
+    return this.cross;
   }
 
   /**
