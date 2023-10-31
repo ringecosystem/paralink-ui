@@ -305,7 +305,7 @@ export default function JayTest() {
   }, [talismanWallet]);
 
   return (
-    <div className="flex h-screen w-full flex-col items-center gap-5 pt-10">
+    <div className="flex w-full flex-col items-center gap-5 pt-10">
       <button onClick={handleConnectTalismanWallet} className="border border-black p-2 hover:text-blue-500">
         Connect Talisman Wallet
       </button>
