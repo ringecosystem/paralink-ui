@@ -1,4 +1,6 @@
 import type { Signer, SubmittableExtrinsic } from "@polkadot/api/types";
+import { notifyExtrinsic } from ".";
+import { ChainConfig } from "@/types";
 
 /**
  * Reference: https://github.com/darwinia-network/apps/blob/8748d9218a/src/utils/signer/signer.ts
@@ -7,11 +9,11 @@ export const signAndSendExtrinsic = async (
   extrinsic: SubmittableExtrinsic<"promise">,
   signer: Signer,
   sender: string,
+  chain: ChainConfig,
 ) => {
   try {
     const unsub = await extrinsic.signAndSend(sender, { signer }, (result) => {
       if (result.isCompleted) {
-        console.log("extrinsic complete");
         unsub();
       }
 
@@ -20,13 +22,13 @@ export const signAndSendExtrinsic = async (
           .filter(({ event: { section } }) => section === "system")
           .forEach(({ event: { method } }): void => {
             if (method === "ExtrinsicFailed") {
-              console.log("extrinsic failed");
+              notifyExtrinsic(result.txHash.toHex(), chain, false);
             } else if (method === "ExtrinsicSuccess") {
-              console.log("extrinsic success");
+              notifyExtrinsic(result.txHash.toHex(), chain, true);
             }
           });
       } else if (result.isError) {
-        console.log("extrinsic error");
+        notifyExtrinsic(result.txHash.toHex(), chain, false);
       }
     });
   } catch (err) {

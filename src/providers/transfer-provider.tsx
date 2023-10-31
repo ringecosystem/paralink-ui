@@ -19,7 +19,7 @@ import { EvmBridge } from "@/libs";
 import { forkJoin, Subscription } from "rxjs";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
-import { signAndSendExtrinsic } from "@/utils";
+import { notifyTransaction, signAndSendExtrinsic } from "@/utils";
 
 interface TransferCtx {
   bridgeInstance: EvmBridge | undefined;
@@ -107,6 +107,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
       try {
         const receipt = await _bridge.transferAssetWithPrecompile(_sender, _recipient, _amount);
+        notifyTransaction(receipt, _bridge.getTransferSource().chain);
         if (receipt?.status === "success") {
           console.log("Success");
         }
@@ -126,7 +127,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         const call = crossInfo.isReserve ? _bridge.limitedReserveTransferAsset : _bridge.transferAsset;
         try {
           const _extrinsic = await call(_recipient, _amount);
-          await signAndSendExtrinsic(_extrinsic, _signer, _sender);
+          await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getTransferSource().chain);
         } catch (err) {
           console.error(err);
         }

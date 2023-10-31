@@ -27,6 +27,14 @@ export abstract class BaseBridge {
     return this.cross;
   }
 
+  getTransferSource() {
+    return this.transferSource;
+  }
+
+  getTransferTarget() {
+    return this.transferTarget;
+  }
+
   /**
    * Token decimals and symbol: api.rpc.system.properties
    */
