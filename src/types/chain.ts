@@ -1,6 +1,5 @@
 import { Chain } from "wagmi";
 import { Asset } from "./asset";
-import { Cross } from "./cross";
 
 export enum ChainID {
   INVALID = -1,
@@ -21,7 +20,7 @@ export interface ChainConfig extends Chain {
    * Custom
    */
   logo: string; // File name
-  assets: (Asset & { cross: Cross[] })[];
+  assets: Asset[];
 
   /**
    * Substrate
