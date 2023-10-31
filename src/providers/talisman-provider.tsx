@@ -2,20 +2,33 @@
 
 import { APP_NAME } from "@/config";
 import { Wallet, WalletAccount, getWallets } from "@talismn/connect-wallets";
-import { PropsWithChildren, createContext, useCallback, useEffect, useRef, useState } from "react";
+import {
+  Dispatch,
+  PropsWithChildren,
+  SetStateAction,
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { Unsubcall } from "@polkadot/extension-inject/types";
 
 interface TalismanCtx {
   isTalismanInstalled: boolean;
+  activeAccount: WalletAccount | undefined;
   talismanWallet: Wallet | undefined;
   talismanAccounts: WalletAccount[];
+  setActiveAccount: Dispatch<SetStateAction<WalletAccount | undefined>>;
   connectTalisman: () => Promise<void>;
 }
 
 const defaultValue: TalismanCtx = {
   isTalismanInstalled: false,
+  activeAccount: undefined,
   talismanWallet: undefined,
   talismanAccounts: [],
+  setActiveAccount: () => undefined,
   connectTalisman: async () => undefined,
 };
 
@@ -26,6 +39,7 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
   const [isTalismanInstalled, setIsTalismanInstalled] = useState(false);
   const [talismanWallet, setTalismanWallet] = useState<Wallet>();
   const [talismanAccounts, setTalismanAccounts] = useState<WalletAccount[]>([]);
+  const [activeAccount, setActiveAccount] = useState<WalletAccount>();
 
   const connectTalisman = useCallback(async () => {
     if (walletRef.current) {
@@ -70,7 +84,16 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
   }, [talismanWallet]);
 
   return (
-    <TalismanContext.Provider value={{ isTalismanInstalled, talismanWallet, talismanAccounts, connectTalisman }}>
+    <TalismanContext.Provider
+      value={{
+        isTalismanInstalled,
+        activeAccount,
+        talismanWallet,
+        talismanAccounts,
+        setActiveAccount,
+        connectTalisman,
+      }}
+    >
       {children}
     </TalismanContext.Provider>
   );
