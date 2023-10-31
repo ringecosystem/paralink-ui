@@ -43,6 +43,8 @@ interface TransferCtx {
     _amount: BN,
     options?: { successCb: () => void; failedCb: () => void },
   ) => Promise<void>;
+  refetchSourceBalance: () => void;
+  refetchTargetBalance: () => void;
 }
 
 const defaultValue: TransferCtx = {
@@ -62,6 +64,8 @@ const defaultValue: TransferCtx = {
   setTransferTarget: () => undefined,
   setSender: () => undefined,
   setRecipient: () => undefined,
+  refetchSourceBalance: () => undefined,
+  refetchTargetBalance: () => undefined,
   evmTransfer: async () => undefined,
   substrateTransfer: async () => undefined,
 };
@@ -104,7 +108,9 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         const receipt = await _bridge.transferAssetWithPrecompile(_sender, _recipient, _amount);
         notifyTransaction(receipt, _bridge.getTransferSource().chain);
         if (receipt?.status === "success") {
-          console.log("Success");
+          options.successCb();
+        } else {
+          options.failedCb();
         }
       } catch (err) {
         console.error(err);
@@ -122,7 +128,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         const call = crossInfo.isReserve ? _bridge.limitedReserveTransferAsset : _bridge.transferAsset;
         try {
           const _extrinsic = await call(_recipient, _amount);
-          await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getTransferSource().chain);
+          await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getTransferSource().chain, options);
         } catch (err) {
           console.error(err);
         }
@@ -152,6 +158,8 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         setRecipient,
         evmTransfer,
         substrateTransfer,
+        refetchSourceBalance,
+        refetchTargetBalance,
       }}
     >
       {children}
