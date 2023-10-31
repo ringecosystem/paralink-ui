@@ -7,9 +7,10 @@ import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { PropsWithChildren } from "react";
 import { pangolinChain } from "@/config/chains";
+import { APP_NAME } from "@/config";
 
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID || "";
-const appName = "Darwinia CrossChain";
+const appName = APP_NAME;
 
 const { chains, publicClient } = configureChains([pangolinChain], [publicProvider()]);
 
