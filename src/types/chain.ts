@@ -26,4 +26,5 @@ export interface ChainConfig extends Chain {
    * Substrate
    */
   endpoint: string;
+  parachainId: number;
 }

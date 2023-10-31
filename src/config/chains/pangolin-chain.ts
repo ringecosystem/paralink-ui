@@ -51,4 +51,5 @@ export const pangolinChain: ChainConfig = {
    * Substrate
    */
   endpoint: "wss://pangolin-rpc.darwinia.network",
+  parachainId: 2105,
 };

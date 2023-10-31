@@ -49,4 +49,5 @@ export const assethubRococoChain: ChainConfig = {
    * Substrate
    */
   endpoint: "wss://rococo-asset-hub-rpc.polkadot.io",
+  parachainId: 1000,
 };
