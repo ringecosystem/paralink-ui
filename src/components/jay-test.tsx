@@ -131,7 +131,7 @@ export default function JayTest() {
       const destWeightLimit = api.registry.createType<XcmV3WeightLimit>("XcmV3WeightLimit", { Unlimited: null });
 
       const extrinsic = fn(asset, dest, destWeightLimit);
-      await signAndSendExtrinsic(extrinsic, signer, sender);
+      // await signAndSendExtrinsic(extrinsic, signer, sender);
     }
 
     console.log("End");
@@ -190,7 +190,7 @@ export default function JayTest() {
       });
 
       const extrinsic = fn(dest, beneficiary, assets, feeAssetItem, weightLimit);
-      await signAndSendExtrinsic(extrinsic, signer, sender);
+      // await signAndSendExtrinsic(extrinsic, signer, sender);
     }
 
     console.log("End");
