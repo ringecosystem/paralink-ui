@@ -18,15 +18,19 @@ interface TransferCtx {
   targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
   activeWallet: WalletID | undefined;
   transferAmount: { input: string; amount: BN };
-  transferSource: { asset: Asset; chain: ChainConfig };
-  transferTarget: { asset: Asset; chain: ChainConfig };
+  sourceChain: ChainConfig;
+  targetChain: ChainConfig;
+  sourceAsset: Asset;
+  targetAsset: Asset;
   sender: string | undefined;
   recipient: string | undefined;
 
   setActiveWallet: Dispatch<SetStateAction<WalletID | undefined>>;
   setTransferAmount: Dispatch<SetStateAction<{ input: string; amount: BN }>>;
-  setTransferSource: Dispatch<SetStateAction<{ asset: Asset; chain: ChainConfig }>>;
-  setTransferTarget: Dispatch<SetStateAction<{ asset: Asset; chain: ChainConfig }>>;
+  setSourceChain: Dispatch<SetStateAction<ChainConfig>>;
+  setTargetChain: Dispatch<SetStateAction<ChainConfig>>;
+  setSourceAsset: Dispatch<SetStateAction<Asset>>;
+  setTargetAsset: Dispatch<SetStateAction<Asset>>;
   setSender: Dispatch<SetStateAction<string | undefined>>;
   setRecipient: Dispatch<SetStateAction<string | undefined>>;
   evmTransfer: (
@@ -53,15 +57,19 @@ const defaultValue: TransferCtx = {
   targetBalance: undefined,
   activeWallet: undefined,
   transferAmount: { input: "", amount: BN_ZERO },
-  transferSource: { asset: pangolinChain.assets[0], chain: pangolinChain },
-  transferTarget: { asset: assethubRococoChain.assets[0], chain: assethubRococoChain },
+  sourceChain: pangolinChain,
+  targetChain: assethubRococoChain,
+  sourceAsset: pangolinChain.assets[0],
+  targetAsset: assethubRococoChain.assets[0],
   sender: undefined,
   recipient: undefined,
 
   setActiveWallet: () => undefined,
   setTransferAmount: () => undefined,
-  setTransferSource: () => undefined,
-  setTransferTarget: () => undefined,
+  setSourceChain: () => undefined,
+  setTargetChain: () => undefined,
+  setSourceAsset: () => undefined,
+  setTargetAsset: () => undefined,
   setSender: () => undefined,
   setRecipient: () => undefined,
   refetchSourceBalance: () => undefined,
@@ -80,13 +88,15 @@ export const TransferContext = createContext(defaultValue);
 export default function TransferProvider({ children }: PropsWithChildren<unknown>) {
   const [activeWallet, setActiveWallet] = useState(defaultValue.activeWallet);
   const [transferAmount, setTransferAmount] = useState(defaultValue.transferAmount);
-  const [transferSource, setTransferSource] = useState(defaultValue.transferSource);
-  const [transferTarget, setTransferTarget] = useState(defaultValue.transferTarget);
+  const [sourceChain, setSourceChain] = useState(defaultValue.sourceChain);
+  const [targetChain, setTargetChain] = useState(defaultValue.targetChain);
+  const [sourceAsset, setSourceAsset] = useState(defaultValue.sourceAsset);
+  const [targetAsset, setTargetAsset] = useState(defaultValue.targetAsset);
   const [sender, setSender] = useState(defaultValue.sender);
   const [recipient, setRecipient] = useState(defaultValue.recipient);
 
-  const { api: sourceApi } = useApi(transferSource.chain);
-  const { api: targetApi } = useApi(transferTarget.chain);
+  const { api: sourceApi } = useApi(sourceChain);
+  const { api: targetApi } = useApi(targetChain);
 
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
@@ -94,9 +104,18 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   const bridgeInstance = useMemo(
     () =>
       sourceApi && targetApi
-        ? new EvmBridge({ sourceApi, targetApi, publicClient, walletClient, transferSource, transferTarget })
+        ? new EvmBridge({
+            sourceApi,
+            targetApi,
+            publicClient,
+            walletClient,
+            sourceChain,
+            targetChain,
+            sourceAsset,
+            targetAsset,
+          })
         : undefined,
-    [sourceApi, targetApi, publicClient, walletClient, transferSource, transferTarget],
+    [sourceApi, targetApi, publicClient, walletClient, sourceChain, targetChain, sourceAsset, targetAsset],
   );
 
   const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
@@ -106,7 +125,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
       try {
         const receipt = await _bridge.transferAssetWithPrecompile(_sender, _recipient, _amount);
-        notifyTransaction(receipt, _bridge.getTransferSource().chain);
+        notifyTransaction(receipt, _bridge.getSourceChain());
         if (receipt?.status === "success") {
           options.successCb();
         } else {
@@ -128,7 +147,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         const call = crossInfo.isReserve ? _bridge.limitedReserveTransferAsset : _bridge.transferAsset;
         try {
           const _extrinsic = await call(_recipient, _amount);
-          await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getTransferSource().chain, options);
+          await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getSourceChain(), options);
         } catch (err) {
           console.error(err);
         }
@@ -145,15 +164,19 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         targetBalance,
         activeWallet,
         transferAmount,
-        transferSource,
-        transferTarget,
+        sourceChain,
+        targetChain,
+        sourceAsset,
+        targetAsset,
         sender,
         recipient,
 
         setActiveWallet,
         setTransferAmount,
-        setTransferSource,
-        setTransferTarget,
+        setSourceChain,
+        setTargetChain,
+        setSourceAsset,
+        setTargetAsset,
         setSender,
         setRecipient,
         evmTransfer,

@@ -18,8 +18,10 @@ export class EvmBridge extends SubstrateBridge {
     targetApi: ApiPromise;
     publicClient: PublicClient;
     walletClient: WalletClient | null | undefined;
-    transferSource: { asset: Asset; chain: ChainConfig };
-    transferTarget: { asset: Asset; chain: ChainConfig };
+    sourceChain: ChainConfig;
+    targetChain: ChainConfig;
+    sourceAsset: Asset;
+    targetAsset: Asset;
   }) {
     super(args);
     this.publicClient = args.publicClient;

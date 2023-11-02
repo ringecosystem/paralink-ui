@@ -13,8 +13,10 @@ export class SubstrateBridge extends BaseBridge {
   constructor(args: {
     sourceApi: ApiPromise;
     targetApi: ApiPromise;
-    transferSource: { asset: Asset; chain: ChainConfig };
-    transferTarget: { asset: Asset; chain: ChainConfig };
+    sourceChain: ChainConfig;
+    targetChain: ChainConfig;
+    sourceAsset: Asset;
+    targetAsset: Asset;
   }) {
     super(args);
   }
@@ -34,8 +36,7 @@ export class SubstrateBridge extends BaseBridge {
     const method = "transferMultiasset";
     const fn = this.sourceApi.tx[section][method];
 
-    const { asset, chain } = this.transferTarget;
-    const Parachain = bnToBn(chain.parachainId);
+    const Parachain = bnToBn(this.targetChain.parachainId);
 
     const _asset = this.sourceApi.registry.createType<XcmVersionedMultiAsset>("XcmVersionedMultiAsset", {
       V3: {
@@ -43,7 +44,7 @@ export class SubstrateBridge extends BaseBridge {
           Concrete: {
             parents: 1,
             interior: {
-              X3: [{ Parachain }, { PalletInstance: 50 }, { GeneralIndex: bnToBn(asset.id) }],
+              X3: [{ Parachain }, { PalletInstance: 50 }, { GeneralIndex: bnToBn(this.targetAsset.id) }],
             },
           },
         },
@@ -77,9 +78,7 @@ export class SubstrateBridge extends BaseBridge {
     const method = "limitedReserveTransferAssets";
     const fn = this.sourceApi.tx[section][method];
 
-    const { asset } = this.transferSource;
-    const { chain } = this.transferTarget;
-    const Parachain = bnToBn(chain.parachainId);
+    const Parachain = bnToBn(this.targetChain.parachainId);
 
     const _dest: XcmVersionedMultiLocation = this.sourceApi.registry.createType<XcmVersionedMultiLocation>(
       "XcmVersionedMultiLocation",
@@ -97,7 +96,7 @@ export class SubstrateBridge extends BaseBridge {
             id: {
               Concrete: {
                 parents: 0,
-                interior: { X2: [{ PalletInstance: 50 }, { GeneralIndex: bnToBn(asset.id) }] },
+                interior: { X2: [{ PalletInstance: 50 }, { GeneralIndex: bnToBn(this.sourceAsset.id) }] },
               },
             },
             fun: { Fungible: amount },

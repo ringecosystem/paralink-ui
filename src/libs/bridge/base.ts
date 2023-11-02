@@ -6,23 +6,28 @@ export abstract class BaseBridge {
   protected readonly cross: Cross | undefined;
   protected readonly sourceApi: ApiPromise;
   protected readonly targetApi: ApiPromise;
-  protected readonly transferSource: { asset: Asset; chain: ChainConfig };
-  protected readonly transferTarget: { asset: Asset; chain: ChainConfig };
+  protected readonly sourceChain: ChainConfig;
+  protected readonly targetChain: ChainConfig;
+  protected readonly sourceAsset: Asset;
+  protected readonly targetAsset: Asset;
 
   constructor(args: {
     sourceApi: ApiPromise;
     targetApi: ApiPromise;
-    transferSource: { asset: Asset; chain: ChainConfig };
-    transferTarget: { asset: Asset; chain: ChainConfig };
+    sourceChain: ChainConfig;
+    targetChain: ChainConfig;
+    sourceAsset: Asset;
+    targetAsset: Asset;
   }) {
     this.sourceApi = args.sourceApi;
     this.targetApi = args.targetApi;
-    this.transferSource = args.transferSource;
-    this.transferTarget = args.transferTarget;
+    this.sourceChain = args.sourceChain;
+    this.targetChain = args.targetChain;
+    this.sourceAsset = args.sourceAsset;
+    this.targetAsset = args.targetAsset;
 
-    const { asset, chain } = args.transferTarget;
-    this.cross = args.transferSource.asset.cross.find(
-      ({ target }) => target.network === chain.network && target.symbol === asset.symbol,
+    this.cross = args.sourceAsset.cross.find(
+      ({ target }) => target.network === args.targetChain.network && target.symbol === args.targetAsset.symbol,
     );
   }
 
@@ -30,12 +35,20 @@ export abstract class BaseBridge {
     return this.cross;
   }
 
-  getTransferSource() {
-    return this.transferSource;
+  getSourceChain() {
+    return this.sourceChain;
   }
 
-  getTransferTarget() {
-    return this.transferTarget;
+  getTargetChain() {
+    return this.targetChain;
+  }
+
+  getSourceAsset() {
+    return this.sourceAsset;
+  }
+
+  getTargetAsset() {
+    return this.targetAsset;
   }
 
   /**
@@ -51,12 +64,12 @@ export abstract class BaseBridge {
 
   async getSourceNativeBalance(address: string) {
     const balances = await this.getNativeBalance(this.sourceApi, address);
-    return { ...balances, currency: this.transferSource.chain.nativeCurrency };
+    return { ...balances, currency: this.sourceChain.nativeCurrency };
   }
 
   async getTargetNativeBalance(address: string) {
     const balances = await this.getNativeBalance(this.targetApi, address);
-    return { ...balances, currency: this.transferTarget.chain.nativeCurrency };
+    return { ...balances, currency: this.targetChain.nativeCurrency };
   }
 
   /**
@@ -71,13 +84,13 @@ export abstract class BaseBridge {
   }
 
   async getSourceAssetBalance(address: string) {
-    const { asset } = this.transferSource;
+    const asset = this.sourceAsset;
     const value = await this.getAssetBalance(this.sourceApi, asset, address);
     return { value, asset };
   }
 
   async getTargetAssetBalance(address: string) {
-    const { asset } = this.transferTarget;
+    const asset = this.targetAsset;
     const value = await this.getAssetBalance(this.targetApi, asset, address);
     return { value, asset };
   }
