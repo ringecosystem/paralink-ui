@@ -33,10 +33,10 @@ export const assethubRococoChain: ChainConfig = {
   /**
    * Custom
    */
-  logo: "", // TODO
+  logo: "asset-hub.svg",
   assets: [
     {
-      icon: "", //TODO
+      icon: "usdt.svg",
       id: 7777,
       name: "Tether USD Test",
       symbol: "USDT",

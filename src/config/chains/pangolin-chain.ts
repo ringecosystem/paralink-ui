@@ -33,10 +33,10 @@ export const pangolinChain: ChainConfig = {
   /**
    * Custom
    */
-  logo: "", // TODO
+  logo: "pangolin.png",
   assets: [
     {
-      icon: "", //TODO
+      icon: "usdt.svg",
       id: 1027,
       name: "Tether USD",
       symbol: "ahUSDT",
