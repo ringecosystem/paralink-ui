@@ -16,7 +16,7 @@ import { PropsWithChildren, ReactElement } from "react";
 
 interface Props {
   label?: ReactElement;
-  placeholder: ReactElement;
+  placeholder?: ReactElement;
   disabled?: boolean;
   hoverable?: boolean;
   clearable?: boolean;
