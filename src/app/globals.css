@@ -45,6 +45,10 @@ body {
   .page-container {
     @apply container mx-auto px-middle py-5;
   }
+
+  .tooltip-text {
+    @apply text-xs;
+  }
 }
 
 @layer utilities {
