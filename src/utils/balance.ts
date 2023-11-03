@@ -1,7 +1,7 @@
 import { BN, formatBalance as formatUnits } from "@polkadot/util";
 
 export function formatBalance(value: BN, decimals = 18, options?: { precision?: number; keepZero?: boolean }) {
-  const precision = options?.precision ?? 3;
+  const precision = options?.precision ?? 4;
   const keepZero = options?.keepZero ?? false;
 
   const [i, d] = formatUnits(value, { decimals, forceUnit: "Unit", withAll: true, withUnit: false }).split(".");
