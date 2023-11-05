@@ -18,6 +18,7 @@ interface Props {
   label?: ReactElement;
   placeholder?: ReactElement;
   suffix?: ReactElement | boolean;
+  innerSuffix?: ReactElement;
   disabled?: boolean;
   hoverable?: boolean;
   clearable?: boolean;
@@ -32,6 +33,7 @@ export default function Select({
   label,
   placeholder,
   suffix = true,
+  innerSuffix,
   disabled,
   children,
   hoverable,
@@ -96,6 +98,7 @@ export default function Select({
               width={16}
               height={16}
             />
+            {innerSuffix}
           </div>
         ) : (
           suffix ?? null
