@@ -8,7 +8,7 @@ let defaultTargetChain = assethubRococoChain;
 let defaultSourceAsset = defaultSourceChain.assets[0];
 let defaultTargetAsset = defaultTargetChain.assets[0];
 
-let defaultSourceChainOptions = [defaultSourceChain];
+let defaultSourceChainOptions = [defaultSourceChain, defaultTargetChain];
 let defaultTargetChainOptions = [defaultTargetChain];
 
 let defaultSourceAssetOptions = [defaultSourceAsset];
