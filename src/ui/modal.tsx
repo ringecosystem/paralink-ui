@@ -63,7 +63,7 @@ export default function Modal({
       >
         {/* modal */}
         <div
-          className={`relative flex flex-col gap-5 rounded-md bg-component p-middle lg:p-7 ${className}`}
+          className={`border-radius relative flex flex-col gap-5 bg-component p-middle lg:p-7 ${className}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* close icon */}
