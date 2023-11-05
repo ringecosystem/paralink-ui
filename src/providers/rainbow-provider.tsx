@@ -2,7 +2,7 @@
 
 import "@rainbow-me/rainbowkit/styles.css";
 
-import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { darkTheme, getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { PropsWithChildren } from "react";
@@ -25,7 +25,9 @@ const wagmiConfig = createConfig({
 export default function RainbowProvider({ children }: PropsWithChildren<unknown>) {
   return (
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>{children}</RainbowKitProvider>
+      <RainbowKitProvider chains={chains} theme={darkTheme({ borderRadius: "small", accentColor: "#FF0083" })}>
+        {children}
+      </RainbowKitProvider>
     </WagmiConfig>
   );
 }
