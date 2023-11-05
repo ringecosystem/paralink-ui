@@ -8,7 +8,11 @@ import { useAccount, useDisconnect } from "wagmi";
 
 const Modal = dynamic(() => import("@/ui/modal"), { ssr: false });
 
-export default function ConnectWallet() {
+interface Props {
+  kind?: "component" | "primary";
+}
+
+export default function ConnectWallet({ kind = "component" }: Props) {
   const { state: isOpen, setTrue: setIsOpenTrue, setFalse: setIsOpenFalse } = useToggle(false);
   const { activeAccount, connectTalisman, disconnectTalisman } = useTalisman();
   const { disconnect: disconnectRainbow } = useDisconnect();
@@ -54,10 +58,14 @@ export default function ConnectWallet() {
   }, [activeAccount, activeAddress, bridgeInstance, disconnectRainbow, disconnectTalisman, setSender]);
 
   return activeAccount || activeAddress ? (
-    <Button onClick={handleDisconnect}>Disconnect</Button>
+    <Button onClick={handleDisconnect} kind={kind}>
+      Disconnect
+    </Button>
   ) : (
     <>
-      <Button onClick={handleConnect}>Connect wallet</Button>
+      <Button onClick={handleConnect} kind={kind}>
+        Connect wallet
+      </Button>
       <Modal title="Wallets" isOpen={isOpen} onClose={setIsOpenFalse} className="w-full lg:w-[20rem]">
         <div className="flex flex-col">
           <Item
@@ -87,11 +95,17 @@ export default function ConnectWallet() {
 /**
  * Warning: validateDOMNesting(...): <button> cannot appear as a descendant of <button>. So we use `div` to mock a button here
  */
-function Button({ children, onClick }: PropsWithChildren<{ onClick?: MouseEventHandler<HTMLDivElement> }>) {
+function Button({
+  kind,
+  children,
+  onClick,
+}: PropsWithChildren<{ kind?: "component" | "primary"; onClick?: MouseEventHandler<HTMLDivElement> }>) {
   return (
     <div
       onClick={onClick}
-      className="border-radius border border-component bg-component px-middle py-small transition-[transform,color] hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100"
+      className={`border-radius border px-middle py-small transition-[transform,color] hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 ${
+        kind === "component" ? "border-component bg-component" : "border-primary bg-primary"
+      }`}
     >
       {children}
     </div>
