@@ -1,3 +1,5 @@
+"use client";
+
 import { useTalisman, useToggle, useTransfer } from "@/hooks";
 import { WalletID } from "@/types";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
