@@ -14,24 +14,29 @@ export default function AssetSelect({ value, options, disabled, onChange = () =>
   return (
     <Select
       label={
-        <div className="flex items-center gap-small">
+        <div className="flex items-center gap-small truncate">
           <Image width={16} height={16} alt="Asset icon" src={getAssetIconSrc(value.icon)} />
           <span>{value.symbol}</span>
         </div>
       }
       disabled={disabled}
       sameWidth
-      childClassName="flex flex-col py-small"
+      labelClassName="flex items-center gap-middle shrink-0 w-28 justify-between bg-component h-full border-radius px-1 hover:opacity-80 transition-[transform,color] active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 disabled:cursor-not-allowed"
+      childClassName="flex flex-col py-middle bg-component border-primary border border-radius"
     >
       {options?.length ? (
         options.map((asset) => (
-          <button key={asset.symbol} onClick={() => onChange(asset)} className="flex items-center gap-small">
+          <button
+            key={asset.symbol}
+            onClick={() => onChange(asset)}
+            className="flex items-center gap-small px-middle py-1 transition-colors hover:bg-white/10"
+          >
             <Image width={16} height={16} alt="Asset icon" src={getAssetIconSrc(asset.icon)} />
             <span>{asset.symbol}</span>
           </button>
         ))
       ) : (
-        <div>
+        <div className="px-middle py-small">
           <span>No data</span>
         </div>
       )}
