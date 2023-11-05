@@ -26,6 +26,7 @@ interface Props {
   placement?: Placement;
   labelClassName?: string;
   childClassName?: string;
+  arrowClassName?: string;
   onClear?: () => void;
 }
 
@@ -42,6 +43,7 @@ export default function Select({
   sameWidth,
   labelClassName,
   childClassName,
+  arrowClassName,
   onClear = () => undefined,
 }: PropsWithChildren<Props>) {
   const { state: isOpen, setState: setIsOpen, setFalse: setIsOpenFalse } = useToggle(false);
@@ -92,7 +94,7 @@ export default function Select({
             ) : null}
             <Image
               style={{ transform: isOpen ? "rotateX(180deg)" : "rotateX(0)" }}
-              className="shrink-0 transition-transform"
+              className={`shrink-0 transition-transform ${arrowClassName}`}
               src="/images/caret-down.svg"
               alt="Caret down"
               width={16}
