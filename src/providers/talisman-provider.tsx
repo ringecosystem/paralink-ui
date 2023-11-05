@@ -43,6 +43,8 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
   const [talismanAccounts, setTalismanAccounts] = useState<WalletAccount[]>([]);
   const [activeAccount, setActiveAccount] = useState<WalletAccount>();
 
+  const accountsRef = useRef(talismanAccounts);
+
   const connectTalisman = useCallback(async () => {
     if (walletRef.current) {
       await walletRef.current.enable(APP_NAME);
@@ -86,6 +88,17 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
       unsub && unsub();
     };
   }, [talismanWallet]);
+
+  /**
+   * Update `activeAccount`
+   */
+  useEffect(() => {
+    if (talismanAccounts.length === 0) {
+      setActiveAccount(undefined);
+    } else if (accountsRef.current.length === 0) {
+      setActiveAccount(talismanAccounts[0]);
+    }
+  }, [talismanAccounts]);
 
   return (
     <TalismanContext.Provider
