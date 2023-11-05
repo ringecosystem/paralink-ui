@@ -16,9 +16,9 @@ export default function AddressInput({ value, placeholder, onChange = () => unde
   );
   return (
     <Input
-      className="h-10 w-full bg-transparent px-small"
+      className="h-10 w-full bg-transparent px-middle"
       placeholder={placeholder ?? "Enter an address"}
-      value={value}
+      value={value ?? ""} // Keep it as a controlled component
       onChange={handleChange}
     />
   );
