@@ -3,13 +3,12 @@
 import { Dispatch, PropsWithChildren, SetStateAction, createContext, useCallback, useMemo, useState } from "react";
 import { BN, BN_ZERO } from "@polkadot/util";
 import { Asset, ChainConfig, WalletID } from "@/types";
-import { assethubRococoChain, pangolinChain } from "@/config/chains";
 import { usePublicClient, useWalletClient } from "wagmi";
 import { EvmBridge } from "@/libs";
 
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
-import { notifyTransaction, signAndSendExtrinsic } from "@/utils";
+import { notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
 import { useApi, useBalance } from "@/hooks";
 
 interface TransferCtx {
@@ -51,16 +50,18 @@ interface TransferCtx {
   refetchTargetBalance: () => void;
 }
 
+const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTargetAsset } = parseCross();
+
 const defaultValue: TransferCtx = {
   bridgeInstance: undefined,
   sourceBalance: undefined,
   targetBalance: undefined,
   activeWallet: undefined,
   transferAmount: { input: "", amount: BN_ZERO },
-  sourceChain: pangolinChain,
-  targetChain: assethubRococoChain,
-  sourceAsset: pangolinChain.assets[0],
-  targetAsset: assethubRococoChain.assets[0],
+  sourceChain: defaultSourceChain,
+  targetChain: defaultTargetChain,
+  sourceAsset: defaultSourceAsset,
+  targetAsset: defaultTargetAsset,
   sender: undefined,
   recipient: undefined,
 
