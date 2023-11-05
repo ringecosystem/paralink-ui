@@ -69,7 +69,7 @@ export default function Tooltip({
             <FloatingArrow ref={arrowRef} style={styles} context={context} fill="#343946" />
             <div
               style={styles}
-              className={`border-line flex items-center rounded border bg-component px-middle py-small ${contentClassName}`}
+              className={`flex items-center rounded border border-primary bg-component px-middle py-small ${contentClassName}`}
             >
               {typeof content === "string" ? <span className="tooltip-text">{content}</span> : content}
             </div>
