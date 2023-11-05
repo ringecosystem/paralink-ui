@@ -44,26 +44,37 @@ export default function BalanceInput({
     return placeholder ?? "Enter an amount";
   }, [balance, asset, placeholder]);
 
-  const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {}, []);
+  const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      if (e.target.value) {
+        if (!Number.isNaN(Number(e.target.value)) && asset) {
+          onChange(parseValue(e.target.value, asset.decimals));
+        }
+      } else {
+        onChange({ input: e.target.value, amount: BN_ZERO });
+      }
+    },
+    [asset, onChange],
+  );
 
   useEffect(() => {
     const inputWidth = inputRef.current?.clientWidth || 1;
     const spanWidth = spanRef.current?.clientWidth || 0;
     const percent = (spanWidth / inputWidth) * 100;
     if (percent < 10) {
-      setDynamicStyle("text-[3.75rem] font-extralight");
-    } else if (percent < 20) {
       setDynamicStyle("text-[3rem] font-extralight");
-    } else if (percent < 30) {
+    } else if (percent < 20) {
       setDynamicStyle("text-[2.25rem] font-light");
-    } else if (percent < 40) {
+    } else if (percent < 30) {
       setDynamicStyle("text-[1.875rem] font-light");
-    } else if (percent < 50) {
+    } else if (percent < 40) {
       setDynamicStyle("text-[1.5rem] font-normal");
-    } else if (percent < 60) {
+    } else if (percent < 50) {
       setDynamicStyle("text-[1.25rem] font-normal");
-    } else {
+    } else if (percent < 60) {
       setDynamicStyle("text-[1.125rem] font-medium");
+    } else {
+      setDynamicStyle("text-[1rem] font-medium");
     }
   }, [value]);
 
@@ -78,11 +89,13 @@ export default function BalanceInput({
   const insufficient = balance && value && balance.lt(value.amount) ? true : false;
 
   return (
-    <div className="relative">
+    <div className="relative flex h-12 items-center justify-between p-1">
       <Input
         disabled={disabled}
         placeholder={_placeholder}
-        className={`${value?.input ? `leading-none ${dynamicStyle}` : "text-sm font-normal"}`}
+        className={`h-full w-full bg-transparent px-1 transition-[font-weight,font-size,line-height] duration-300 ${
+          value?.input ? `leading-none ${dynamicStyle}` : "text- text-sm font-normal"
+        }`}
         ref={inputRef}
         value={value?.input}
         onChange={handleInputChange}
