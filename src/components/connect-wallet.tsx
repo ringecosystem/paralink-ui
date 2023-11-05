@@ -105,7 +105,7 @@ function Button({
   return (
     <div
       onClick={onClick}
-      className={`border-radius border px-middle py-small transition-[transform,color] hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 ${
+      className={`border-radius border px-middle py-small transition-[transform,color] hover:cursor-pointer hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 ${
         kind === "component" ? "border-component bg-component" : "border-primary bg-primary"
       }`}
     >
