@@ -17,7 +17,7 @@ export default forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElem
           ? "border-primary bg-primary"
           : kind === "component"
           ? "border-component bg-component"
-          : "border-transparent bg-transparent"
+          : "border-primary bg-transparent"
       } ${busy ? "" : "hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-60"}`}
       disabled={disabled || busy}
       ref={ref}
