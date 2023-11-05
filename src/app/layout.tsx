@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import TalismanProvider from "@/providers/talisman-provider";
+import TransferProvider from "@/providers/transfer-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${inter.className} bg-app-black text-base font-normal text-white`}>
         <RainbowProvider>
-          <Header />
-          {children}
-          <Footer />
+          <TalismanProvider>
+            <TransferProvider>
+              <Header />
+              {children}
+              <Footer />
+            </TransferProvider>
+          </TalismanProvider>
         </RainbowProvider>
       </body>
     </html>
