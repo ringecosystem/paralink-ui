@@ -120,7 +120,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   );
 
   const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
-  const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, sender, "target");
+  const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, recipient, "target");
 
   const evmTransfer = useCallback(
     async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
@@ -145,9 +145,10 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
       if (crossInfo) {
         const _sender = _account.address;
         const _signer = _account.signer as Signer;
-        const call = crossInfo.isReserve ? _bridge.limitedReserveTransferAsset : _bridge.transferAsset;
         try {
-          const _extrinsic = await call(_recipient, _amount);
+          const _extrinsic = await (crossInfo.isReserve
+            ? _bridge.limitedReserveTransferAsset(_recipient, _amount)
+            : _bridge.transferAsset(_recipient, _amount));
           await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getSourceChain(), options);
         } catch (err) {
           console.error(err);
