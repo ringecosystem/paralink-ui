@@ -9,7 +9,7 @@ import { useAccount, useDisconnect } from "wagmi";
 
 export default function ConnectWallet() {
   const { state: isOpen, setTrue: setIsOpenTrue, setFalse: setIsOpenFalse } = useToggle(false);
-  const { activeAccount, connectTalisman } = useTalisman();
+  const { activeAccount, connectTalisman, disconnectTalisman } = useTalisman();
   const { disconnect } = useDisconnect();
   const { address: activeAddress } = useAccount();
   const { bridgeInstance } = useTransfer();
@@ -27,8 +27,9 @@ export default function ConnectWallet() {
     (e) => {
       e.stopPropagation();
       disconnect();
+      disconnectTalisman();
     },
-    [disconnect],
+    [disconnect, disconnectTalisman],
   );
 
   const [supportedRainbow, supportedTalisman] = useMemo(() => {
