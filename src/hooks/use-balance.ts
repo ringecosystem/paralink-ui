@@ -9,9 +9,9 @@ export function useBalance(bridge: EvmBridge | undefined, address: string | unde
 
   const updateBalance = useCallback(() => {
     if (bridge && address) {
-      const assetCall = position === "source" ? bridge.getSourceAssetBalance : bridge.getTargetAssetBalance;
-
-      return forkJoin([assetCall(address)]).subscribe({
+      return forkJoin([
+        position === "source" ? bridge.getSourceAssetBalance(address) : bridge.getTargetAssetBalance(address),
+      ]).subscribe({
         next: ([asset]) => {
           setBalance({ asset });
         },
