@@ -21,6 +21,7 @@ interface TalismanCtx {
   talismanAccounts: WalletAccount[];
   setActiveAccount: Dispatch<SetStateAction<WalletAccount | undefined>>;
   connectTalisman: () => Promise<void>;
+  disconnectTalisman: () => void;
 }
 
 const defaultValue: TalismanCtx = {
@@ -29,6 +30,7 @@ const defaultValue: TalismanCtx = {
   talismanWallet: undefined,
   talismanAccounts: [],
   setActiveAccount: () => undefined,
+  disconnectTalisman: () => undefined,
   connectTalisman: async () => undefined,
 };
 
@@ -47,6 +49,8 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
       setTalismanWallet(walletRef.current);
     }
   }, []);
+
+  const disconnectTalisman = useCallback(() => setTalismanWallet(undefined), []);
 
   useEffect(() => {
     const installedWallets = getWallets().filter((w) => w.installed);
@@ -92,6 +96,7 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
         talismanAccounts,
         setActiveAccount,
         connectTalisman,
+        disconnectTalisman,
       }}
     >
       {children}
