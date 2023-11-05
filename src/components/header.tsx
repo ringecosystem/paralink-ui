@@ -1,5 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+// import ConnectWallet from "./connect-wallet";
+import dynamic from "next/dynamic";
+
+const ConnectWallet = dynamic(() => import("@/components/connect-wallet"), { ssr: false });
 
 export default function Header() {
   return (
@@ -8,7 +12,7 @@ export default function Header() {
         <Link href="/">
           <Image width={156} height={18} alt="Logo" src="/images/logo.png" />
         </Link>
-        <span>Connect Wallet</span>
+        <ConnectWallet kind="primary" />
       </div>
     </div>
   );
