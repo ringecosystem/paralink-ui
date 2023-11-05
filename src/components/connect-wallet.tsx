@@ -1,21 +1,22 @@
 import { useTalisman, useToggle, useTransfer } from "@/hooks";
 import { WalletID } from "@/types";
-import BaseButton from "@/ui/button";
-import Modal from "@/ui/modal";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import { MouseEventHandler, PropsWithChildren, useCallback, useMemo } from "react";
+import { MouseEventHandler, PropsWithChildren, useCallback, useEffect, useMemo } from "react";
 import { useAccount, useDisconnect } from "wagmi";
+
+const Modal = dynamic(() => import("@/ui/modal"), { ssr: false });
 
 export default function ConnectWallet() {
   const { state: isOpen, setTrue: setIsOpenTrue, setFalse: setIsOpenFalse } = useToggle(false);
   const { activeAccount, connectTalisman, disconnectTalisman } = useTalisman();
-  const { disconnect } = useDisconnect();
+  const { disconnect: disconnectRainbow } = useDisconnect();
   const { address: activeAddress } = useAccount();
-  const { bridgeInstance } = useTransfer();
+  const { bridgeInstance, setSender } = useTransfer();
   const { openConnectModal } = useConnectModal();
 
-  const handleConnect = useCallback<MouseEventHandler<HTMLButtonElement>>(
+  const handleConnect = useCallback<MouseEventHandler<HTMLDivElement>>(
     (e) => {
       e.stopPropagation();
       setIsOpenTrue();
@@ -23,13 +24,14 @@ export default function ConnectWallet() {
     [setIsOpenTrue],
   );
 
-  const handleDisconnect = useCallback<MouseEventHandler<HTMLButtonElement>>(
+  const handleDisconnect = useCallback<MouseEventHandler<HTMLDivElement>>(
     (e) => {
       e.stopPropagation();
-      disconnect();
+      disconnectRainbow();
       disconnectTalisman();
+      setSender(undefined);
     },
-    [disconnect, disconnectTalisman],
+    [disconnectRainbow, disconnectTalisman, setSender],
   );
 
   const [supportedRainbow, supportedTalisman] = useMemo(() => {
@@ -39,6 +41,17 @@ export default function ConnectWallet() {
       crossInfo?.wallets.some((id) => id === WalletID.TALISMAN),
     ];
   }, [bridgeInstance]);
+
+  useEffect(() => {
+    const crossInfo = bridgeInstance?.getCrossInfo();
+    if (activeAccount && !crossInfo?.wallets.some((id) => id === WalletID.TALISMAN)) {
+      disconnectTalisman();
+      setSender(undefined);
+    } else if (activeAddress && !crossInfo?.wallets.some((id) => id === WalletID.RAINBOW)) {
+      disconnectRainbow();
+      setSender(undefined);
+    }
+  }, [activeAccount, activeAddress, bridgeInstance, disconnectRainbow, disconnectTalisman, setSender]);
 
   return activeAccount || activeAddress ? (
     <Button onClick={handleDisconnect}>Disconnect</Button>
@@ -54,7 +67,7 @@ export default function ConnectWallet() {
               connectTalisman();
               setIsOpenFalse();
             }}
-            disabled={!supportedRainbow}
+            disabled={!supportedTalisman}
           />
           <Item
             icon="rainbow.svg"
@@ -63,7 +76,7 @@ export default function ConnectWallet() {
               openConnectModal?.();
               setIsOpenFalse();
             }}
-            disabled={!supportedTalisman}
+            disabled={!supportedRainbow}
           />
         </div>
       </Modal>
@@ -71,11 +84,17 @@ export default function ConnectWallet() {
   );
 }
 
-function Button({ children, onClick }: PropsWithChildren<{ onClick?: MouseEventHandler<HTMLButtonElement> }>) {
+/**
+ * Warning: validateDOMNesting(...): <button> cannot appear as a descendant of <button>. So we use `div` to mock a button here
+ */
+function Button({ children, onClick }: PropsWithChildren<{ onClick?: MouseEventHandler<HTMLDivElement> }>) {
   return (
-    <BaseButton onClick={onClick} kind="component" className="px-middle py-small">
+    <div
+      onClick={onClick}
+      className="border-radius border border-component bg-component px-middle py-small transition-[transform,color] hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100"
+    >
       {children}
-    </BaseButton>
+    </div>
   );
 }
 
