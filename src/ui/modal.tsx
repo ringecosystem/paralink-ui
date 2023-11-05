@@ -55,7 +55,10 @@ export default function Modal({
       {/* mask */}
       <div
         ref={nodeRef}
-        onClick={() => maskClosable && onClose()}
+        onClick={(e) => {
+          e.stopPropagation();
+          maskClosable && onClose();
+        }}
         className="fixed left-0 top-0 z-20 flex h-screen w-screen items-center justify-center bg-app-black/80 p-middle"
       >
         {/* modal */}
