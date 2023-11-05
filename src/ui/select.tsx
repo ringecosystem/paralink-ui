@@ -17,6 +17,7 @@ import { PropsWithChildren, ReactElement } from "react";
 interface Props {
   label?: ReactElement;
   placeholder?: ReactElement;
+  suffix?: ReactElement | boolean;
   disabled?: boolean;
   hoverable?: boolean;
   clearable?: boolean;
@@ -30,6 +31,7 @@ interface Props {
 export default function Select({
   label,
   placeholder,
+  suffix = true,
   disabled,
   children,
   hoverable,
@@ -73,27 +75,31 @@ export default function Select({
     <>
       <button className={`${labelClassName}`} ref={refs.setReference} {...getReferenceProps()} disabled={disabled}>
         {label || placeholder}
-        <div className="flex shrink-0 items-center gap-small">
-          {label && clearable ? (
-            <div
-              className="relative h-[16px] w-[16px] shrink-0 rounded-full bg-transparent p-[2px] opacity-80 transition hover:scale-105 hover:bg-white/20 hover:opacity-100 active:scale-95"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClear();
-              }}
-            >
-              <Image alt="Close" fill src="/images/close.svg" />
-            </div>
-          ) : null}
-          <Image
-            style={{ transform: isOpen ? "rotateX(180deg)" : "rotateX(0)" }}
-            className="shrink-0 transition-transform"
-            src="/images/caret-down.svg"
-            alt="Caret down"
-            width={16}
-            height={16}
-          />
-        </div>
+        {suffix === true ? (
+          <div className="flex shrink-0 items-center gap-small">
+            {label && clearable ? (
+              <div
+                className="relative h-[16px] w-[16px] shrink-0 rounded-full bg-transparent p-[2px] opacity-80 transition hover:scale-105 hover:bg-white/20 hover:opacity-100 active:scale-95"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClear();
+                }}
+              >
+                <Image alt="Close" fill src="/images/close.svg" />
+              </div>
+            ) : null}
+            <Image
+              style={{ transform: isOpen ? "rotateX(180deg)" : "rotateX(0)" }}
+              className="shrink-0 transition-transform"
+              src="/images/caret-down.svg"
+              alt="Caret down"
+              width={16}
+              height={16}
+            />
+          </div>
+        ) : (
+          suffix ?? null
+        )}
       </button>
 
       {isMounted && (
