@@ -1,15 +1,24 @@
 "use client";
 
-import { Dispatch, PropsWithChildren, SetStateAction, createContext, useCallback, useMemo, useState } from "react";
+import {
+  Dispatch,
+  PropsWithChildren,
+  SetStateAction,
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { BN, BN_ZERO } from "@polkadot/util";
 import { Asset, ChainConfig, WalletID } from "@/types";
-import { usePublicClient, useWalletClient } from "wagmi";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { EvmBridge } from "@/libs";
 
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
 import { notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
-import { useApi, useBalance } from "@/hooks";
+import { useApi, useBalance, useTalisman } from "@/hooks";
 
 interface TransferCtx {
   bridgeInstance: EvmBridge | undefined;
@@ -24,7 +33,6 @@ interface TransferCtx {
   sender: string | undefined;
   recipient: string | undefined;
 
-  setActiveWallet: Dispatch<SetStateAction<WalletID | undefined>>;
   setTransferAmount: Dispatch<SetStateAction<{ input: string; amount: BN }>>;
   setSourceChain: Dispatch<SetStateAction<ChainConfig>>;
   setTargetChain: Dispatch<SetStateAction<ChainConfig>>;
@@ -65,7 +73,6 @@ const defaultValue: TransferCtx = {
   sender: undefined,
   recipient: undefined,
 
-  setActiveWallet: () => undefined,
   setTransferAmount: () => undefined,
   setSourceChain: () => undefined,
   setTargetChain: () => undefined,
@@ -101,6 +108,8 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
 
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
+  const { address: activeAddress } = useAccount();
+  const { activeAccount } = useTalisman();
 
   const bridgeInstance = useMemo(
     () =>
@@ -158,6 +167,14 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     [],
   );
 
+  useEffect(() => {
+    if (activeAccount) {
+      setActiveWallet(WalletID.TALISMAN);
+    } else if (activeAddress) {
+      setActiveWallet(WalletID.RAINBOW);
+    }
+  }, [activeAccount, activeAddress]);
+
   return (
     <TransferContext.Provider
       value={{
@@ -173,7 +190,6 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         sender,
         recipient,
 
-        setActiveWallet,
         setTransferAmount,
         setSourceChain,
         setTargetChain,
