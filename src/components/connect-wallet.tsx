@@ -19,7 +19,7 @@ export default function ConnectWallet({ kind = "component" }: Props) {
   const { activeAccount, connectTalisman, disconnectTalisman } = useTalisman();
   const { disconnect: disconnectRainbow } = useDisconnect();
   const { address: activeAddress } = useAccount();
-  const { bridgeInstance, setSender } = useTransfer();
+  const { bridgeInstance, activeWallet, setSender } = useTransfer();
   const { openConnectModal } = useConnectModal();
 
   const handleConnect = useCallback<MouseEventHandler<HTMLDivElement>>(
@@ -59,9 +59,13 @@ export default function ConnectWallet({ kind = "component" }: Props) {
     }
   }, [activeAccount, activeAddress, bridgeInstance, disconnectRainbow, disconnectTalisman, setSender]);
 
+  const walletIcon =
+    activeWallet === WalletID.RAINBOW ? "rainbow.svg" : kind === "component" ? "talisman-red.svg" : "talisman-blue.svg";
+
   return activeAccount || activeAddress ? (
     <Button onClick={handleDisconnect} kind={kind}>
-      Disconnect
+      <Image width={16} height={16} alt="Wallet" src={`/images/wallet/${walletIcon}`} />
+      <span>Disconnect</span>
     </Button>
   ) : (
     <>
@@ -71,7 +75,7 @@ export default function ConnectWallet({ kind = "component" }: Props) {
       <Modal title="Wallets" isOpen={isOpen} onClose={setIsOpenFalse} className="w-full lg:w-[20rem]">
         <div className="flex flex-col">
           <Item
-            icon="talisman.svg"
+            icon="talisman-red.svg"
             name="Talisman"
             onClick={() => {
               connectTalisman();
@@ -105,7 +109,7 @@ function Button({
   return (
     <div
       onClick={onClick}
-      className={`border-radius border px-middle py-small transition-[transform,color] hover:cursor-pointer hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 ${
+      className={`border-radius flex items-center gap-small border px-middle py-small transition-[transform,color] hover:cursor-pointer hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 ${
         kind === "component" ? "border-component bg-component" : "border-primary bg-primary"
       }`}
     >
