@@ -1,4 +1,5 @@
 import { ChainConfig, ChainID, WalletID } from "@/types";
+import { bnToBn } from "@polkadot/util";
 
 export const pangolinChain: ChainConfig = {
   /**
@@ -50,6 +51,8 @@ export const pangolinChain: ChainConfig = {
       ],
     },
   ],
+  addressType: "evm",
+  minCross: bnToBn(3600000), // 3.6 USDT
 
   /**
    * Substrate

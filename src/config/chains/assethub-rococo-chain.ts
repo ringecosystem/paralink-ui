@@ -1,4 +1,5 @@
 import { ChainConfig, ChainID, WalletID } from "@/types";
+import { bnToBn } from "@polkadot/util";
 
 export const assethubRococoChain: ChainConfig = {
   /**
@@ -44,6 +45,8 @@ export const assethubRococoChain: ChainConfig = {
       cross: [{ target: { network: "pangolin", symbol: "ahUSDT" }, wallets: [WalletID.TALISMAN], isReserve: true }],
     },
   ],
+  addressType: "substrate",
+  minCross: bnToBn(3600000), // 3.6 USDT
 
   /**
    * Substrate
