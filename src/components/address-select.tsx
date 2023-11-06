@@ -1,6 +1,8 @@
 import Select from "@/ui/select";
-import ConnectWallet from "./connect-wallet";
 import { WalletAccount } from "@talismn/connect-wallets";
+import dynamic from "next/dynamic";
+
+const ConnectWallet = dynamic(() => import("@/components/connect-wallet"), { ssr: false });
 
 interface Value {
   name?: string;
