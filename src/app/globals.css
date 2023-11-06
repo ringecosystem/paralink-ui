@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
@@ -24,4 +24,61 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+} */
+
+@layer components {
+  .border-radius {
+    @apply rounded-lg;
+  }
+
+  .app-header {
+    @apply h-[64px];
+  }
+  .app-footer {
+    @apply h-[58px];
+  }
+  .app-main {
+    min-height: calc(100vh - 64px - 58px);
+    @apply mt-[64px];
+  }
+
+  .page-container {
+    @apply container mx-auto px-middle py-5;
+  }
+
+  .tooltip-text {
+    @apply text-xs;
+  }
+}
+
+@layer utilities {
+  /* modal */
+  .modal-fade-enter {
+    opacity: 0;
+  }
+  .modal-fade-enter > div {
+    transform: scale(0.5);
+  }
+  .modal-fade-enter-active {
+    opacity: 1;
+    transition: opacity 300ms;
+  }
+  .modal-fade-enter-active > div {
+    transform: scale(1);
+    transition: transform 300ms;
+  }
+  .modal-fade-exit {
+    opacity: 1;
+  }
+  .modal-fade-exit > div {
+    transform: scale(1);
+  }
+  .modal-fade-exit-active {
+    opacity: 0;
+    transition: opacity 300ms;
+  }
+  .modal-fade-exit-active > div {
+    transform: scale(0.5);
+    transition: transform 300ms;
+  }
 }
