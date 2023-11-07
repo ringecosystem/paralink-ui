@@ -1,4 +1,4 @@
 export enum WalletID {
-  RAINBOW,
+  RAINBOW = 1,
   TALISMAN,
 }
