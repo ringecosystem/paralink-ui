@@ -2,34 +2,21 @@
 
 import { APP_NAME } from "@/config";
 import { Wallet, WalletAccount, getWallets } from "@talismn/connect-wallets";
-import {
-  Dispatch,
-  PropsWithChildren,
-  SetStateAction,
-  createContext,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { PropsWithChildren, createContext, useCallback, useEffect, useRef, useState } from "react";
 import type { Unsubcall } from "@polkadot/extension-inject/types";
 
 interface TalismanCtx {
   isTalismanInstalled: boolean;
-  activeAccount: WalletAccount | undefined;
   talismanWallet: Wallet | undefined;
   talismanAccounts: WalletAccount[];
-  setActiveAccount: Dispatch<SetStateAction<WalletAccount | undefined>>;
   connectTalisman: () => Promise<void>;
   disconnectTalisman: () => void;
 }
 
 const defaultValue: TalismanCtx = {
   isTalismanInstalled: false,
-  activeAccount: undefined,
   talismanWallet: undefined,
   talismanAccounts: [],
-  setActiveAccount: () => undefined,
   disconnectTalisman: () => undefined,
   connectTalisman: async () => undefined,
 };
@@ -41,9 +28,6 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
   const [isTalismanInstalled, setIsTalismanInstalled] = useState(false);
   const [talismanWallet, setTalismanWallet] = useState<Wallet>();
   const [talismanAccounts, setTalismanAccounts] = useState<WalletAccount[]>([]);
-  const [activeAccount, setActiveAccount] = useState<WalletAccount>();
-
-  const accountsRef = useRef(talismanAccounts);
 
   const connectTalisman = useCallback(async () => {
     if (walletRef.current) {
@@ -89,25 +73,12 @@ export default function TalismanProvider({ children }: PropsWithChildren<unknown
     };
   }, [talismanWallet]);
 
-  /**
-   * Update `activeAccount`
-   */
-  useEffect(() => {
-    if (talismanAccounts.length === 0) {
-      setActiveAccount(undefined);
-    } else if (accountsRef.current.length === 0) {
-      setActiveAccount(talismanAccounts[0]);
-    }
-  }, [talismanAccounts]);
-
   return (
     <TalismanContext.Provider
       value={{
         isTalismanInstalled,
-        activeAccount,
         talismanWallet,
         talismanAccounts,
-        setActiveAccount,
         connectTalisman,
         disconnectTalisman,
       }}

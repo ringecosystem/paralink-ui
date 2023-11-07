@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/ui/button";
-import AddressSelect from "./address-select";
 import BalanceInput from "./balance-input";
 import ChainSelect from "./chain-select";
 import TransferSection from "./transfer-section";
@@ -11,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SwitchCross from "./switch-cross";
 import AddressInput from "./address-input";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
-import { Asset, ChainConfig } from "@/types";
+import { Asset, ChainConfig, WalletID } from "@/types";
 import { BN_ZERO } from "@polkadot/util";
 
 const {
@@ -35,8 +34,13 @@ export default function Transfer() {
     targetBalance,
     transferAmount,
     bridgeInstance,
+    activeSenderAccount,
+    activeSenderWallet,
+    activeRecipientWallet,
     setSender,
     setRecipient,
+    setActiveSenderAccount,
+    setActiveRecipientAccount,
     setSourceChain,
     setTargetChain,
     setSourceAsset,
@@ -54,8 +58,8 @@ export default function Transfer() {
 
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork();
-  const { talismanAccounts, activeAccount, setActiveAccount } = useTalisman();
-  const { address: activeAddress } = useAccount();
+  const { talismanAccounts } = useTalisman();
+  const { address } = useAccount();
 
   const canSwitch = useMemo(() => {
     const length =
@@ -63,7 +67,10 @@ export default function Transfer() {
     return !!length;
   }, [sourceChain, targetChain, targetAsset]);
 
-  const needSwitchNetwork = useMemo(() => chain && chain.id !== sourceChain.id, [chain, sourceChain]);
+  const needSwitchNetwork = useMemo(
+    () => activeSenderWallet === WalletID.RAINBOW && chain && chain.id !== sourceChain.id,
+    [chain, sourceChain, activeSenderWallet],
+  );
 
   const sourceChainRef = useRef(sourceChain);
   const targetChainRef = useRef(targetChain);
@@ -102,11 +109,6 @@ export default function Transfer() {
     [setTargetAsset],
   );
 
-  const handleSenderChange = useCallback(
-    ({ address }: { name?: string; address: string }) => setSender(address),
-    [setSender],
-  );
-
   const handleSwitch = useCallback(() => {
     setSourceChain(targetChainRef.current);
     setTargetChain(sourceChainRef.current);
@@ -129,7 +131,7 @@ export default function Transfer() {
       const callback = {
         successCb: () => {
           setBusy(false);
-          setTransferAmount({ input: "", amount: BN_ZERO });
+          setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
           refetchSourceBalance();
           refetchTargetBalance();
         },
@@ -139,15 +141,22 @@ export default function Transfer() {
       };
 
       setBusy(true);
-      if (activeAddress) {
-        await evmTransfer(bridgeInstance, activeAddress, recipient, transferAmount.amount, callback);
-      } else if (activeAccount) {
-        await substrateTransfer(bridgeInstance, activeAccount, recipient, transferAmount.amount, callback);
+      if (address && sender?.address === address) {
+        await evmTransfer(bridgeInstance, address, recipient.address, transferAmount.amount, callback);
+      } else if (activeSenderAccount) {
+        await substrateTransfer(
+          bridgeInstance,
+          activeSenderAccount,
+          recipient.address,
+          transferAmount.amount,
+          callback,
+        );
       }
     }
   }, [
-    activeAccount,
-    activeAddress,
+    sender,
+    address,
+    activeSenderAccount,
     needSwitchNetwork,
     bridgeInstance,
     recipient,
@@ -178,7 +187,27 @@ export default function Transfer() {
     _setTargetAsset(options.at(0));
   }, [sourceChain, targetChain, sourceAsset, _setTargetAsset]);
 
-  const disabledSend = !(sender && recipient && !transferAmount.amount.isZero()) && !needSwitchNetwork;
+  const disabledSend =
+    !(
+      sender?.address &&
+      sender.valid &&
+      recipient?.address &&
+      recipient.valid &&
+      transferAmount.input &&
+      transferAmount.valid
+    ) && !needSwitchNetwork;
+  const senderOptions =
+    activeSenderWallet === WalletID.RAINBOW && address
+      ? [{ address }]
+      : activeSenderWallet === WalletID.TALISMAN
+      ? talismanAccounts
+      : [];
+  const recipientOptions =
+    activeRecipientWallet === WalletID.RAINBOW && address
+      ? [{ address }]
+      : activeRecipientWallet === WalletID.TALISMAN
+      ? talismanAccounts
+      : [];
 
   return (
     <div className="border-radius mx-auto mt-10 flex w-[30rem] flex-col gap-5 bg-component p-5">
@@ -191,6 +220,7 @@ export default function Transfer() {
         <BalanceInput
           value={transferAmount}
           asset={sourceAsset}
+          min={sourceChain.minCross}
           balance={sourceBalance?.asset.value}
           assetOptions={sourceAssetOptions}
           onChange={setTransferAmount}
@@ -212,18 +242,31 @@ export default function Transfer() {
 
       {/* Sender */}
       <TransferSection label="Sender" className="mt-12">
-        <AddressSelect
-          value={sender ? { address: sender } : undefined}
-          options={activeAddress ? [{ address: activeAddress }] : talismanAccounts}
-          accounts={talismanAccounts}
-          onChange={handleSenderChange}
-          onAccountChange={setActiveAccount}
+        <AddressInput
+          who="sender"
+          placeholder="Select an address"
+          value={sender}
+          options={senderOptions}
+          accounts={activeSenderWallet === WalletID.TALISMAN ? talismanAccounts : []}
+          onClear={setSender}
+          onChange={setSender}
+          onAccountChange={setActiveSenderAccount}
         />
       </TransferSection>
 
       {/* Recipient */}
       <TransferSection label="Recipient" className="mt-12">
-        <AddressInput value={recipient} onChange={setRecipient} />
+        <AddressInput
+          canInput
+          who="recipient"
+          placeholder="Select or enter an address"
+          value={recipient}
+          options={recipientOptions}
+          accounts={activeRecipientWallet === WalletID.TALISMAN ? talismanAccounts : []}
+          onClear={setRecipient}
+          onChange={setRecipient}
+          onAccountChange={setActiveRecipientAccount}
+        />
       </TransferSection>
 
       {/* Send */}

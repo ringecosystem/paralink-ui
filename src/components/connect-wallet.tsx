@@ -6,23 +6,60 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { MouseEventHandler, PropsWithChildren, useCallback, useEffect, useMemo } from "react";
-import { useAccount, useDisconnect } from "wagmi";
+import { useAccount } from "wagmi";
+import AddressIdenticon from "./address-identicon";
+import { toShortAdrress } from "@/utils";
+import Tooltip from "@/ui/tooltip";
 
 const Modal = dynamic(() => import("@/ui/modal"), { ssr: false });
 
 interface Props {
+  who: "sender" | "recipient";
   kind?: "component" | "primary";
+  height?: "full" | "padding";
 }
 
-export default function ConnectWallet({ kind = "component" }: Props) {
+export default function ConnectWallet({ who, kind = "component", height = "padding" }: Props) {
   const { state: isOpen, setTrue: setIsOpenTrue, setFalse: setIsOpenFalse } = useToggle(false);
-  const { activeAccount, connectTalisman, disconnectTalisman } = useTalisman();
-  const { disconnect: disconnectRainbow } = useDisconnect();
-  const { address: activeAddress } = useAccount();
-  const { bridgeInstance, activeWallet, setSender } = useTransfer();
+  const {
+    sender,
+    sourceChain,
+    targetChain,
+    activeSenderWallet,
+    activeRecipientWallet,
+    setSender,
+    setActiveSenderAccount,
+    setActiveRecipientAccount,
+    setActiveSenderWallet,
+    setActiveRecipientWallet,
+  } = useTransfer();
+  const { talismanAccounts, connectTalisman } = useTalisman();
   const { openConnectModal } = useConnectModal();
+  const { address: activeAddress } = useAccount();
 
-  const handleConnect = useCallback<MouseEventHandler<HTMLDivElement>>(
+  const [supported, activeWallet, clearValue, setActiveAccount, setActiveWallet] = useMemo(
+    () => [
+      who === "sender" ? sourceChain.wallets : targetChain.wallets,
+      who === "sender" ? activeSenderWallet : activeRecipientWallet,
+      who === "sender" ? setSender : () => undefined,
+      who === "sender" ? setActiveSenderAccount : setActiveRecipientAccount,
+      who === "sender" ? setActiveSenderWallet : setActiveRecipientWallet,
+    ],
+    [
+      who,
+      sourceChain,
+      targetChain,
+      activeSenderWallet,
+      activeRecipientWallet,
+      setSender,
+      setActiveSenderAccount,
+      setActiveRecipientAccount,
+      setActiveSenderWallet,
+      setActiveRecipientWallet,
+    ],
+  );
+
+  const handleConnect = useCallback<MouseEventHandler<HTMLButtonElement>>(
     (e) => {
       e.stopPropagation();
       setIsOpenTrue();
@@ -30,63 +67,76 @@ export default function ConnectWallet({ kind = "component" }: Props) {
     [setIsOpenTrue],
   );
 
-  const handleDisconnect = useCallback<MouseEventHandler<HTMLDivElement>>(
+  const handleDisconnect = useCallback<MouseEventHandler<HTMLButtonElement>>(
     (e) => {
       e.stopPropagation();
-      disconnectRainbow();
-      disconnectTalisman();
-      setSender(undefined);
+      clearValue(undefined);
+      setActiveWallet(undefined);
+      setActiveAccount(undefined);
     },
-    [disconnectRainbow, disconnectTalisman, setSender],
+    [clearValue, setActiveWallet, setActiveAccount],
   );
 
   const [supportedRainbow, supportedTalisman] = useMemo(() => {
-    const crossInfo = bridgeInstance?.getCrossInfo();
-    return [
-      crossInfo?.wallets.some((id) => id === WalletID.RAINBOW),
-      crossInfo?.wallets.some((id) => id === WalletID.TALISMAN),
-    ];
-  }, [bridgeInstance]);
+    return [supported.some((id) => id === WalletID.RAINBOW), supported.some((id) => id === WalletID.TALISMAN)];
+  }, [supported]);
 
   useEffect(() => {
-    const crossInfo = bridgeInstance?.getCrossInfo();
-    if (activeAccount && !crossInfo?.wallets.some((id) => id === WalletID.TALISMAN)) {
-      disconnectTalisman();
-      setSender(undefined);
-    } else if (activeAddress && !crossInfo?.wallets.some((id) => id === WalletID.RAINBOW)) {
-      disconnectRainbow();
-      setSender(undefined);
+    if (!supported.some((id) => id === WalletID.TALISMAN) && activeWallet === WalletID.TALISMAN) {
+      setActiveWallet(undefined);
+      clearValue(undefined);
+    } else if (!supported.some((id) => id === WalletID.RAINBOW) && activeWallet === WalletID.RAINBOW) {
+      setActiveWallet(undefined);
+      clearValue(undefined);
     }
-  }, [activeAccount, activeAddress, bridgeInstance, disconnectRainbow, disconnectTalisman, setSender]);
+  }, [supported, activeWallet, clearValue, setActiveWallet]);
 
-  const walletIcon =
-    activeWallet === WalletID.RAINBOW ? "rainbow.svg" : kind === "component" ? "talisman-red.svg" : "talisman-blue.svg";
+  const walletIcon = kind === "primary" ? null : activeWallet === WalletID.RAINBOW ? "rainbow.svg" : "talisman-red.svg";
 
-  return activeAccount || activeAddress ? (
-    <Button onClick={handleDisconnect} kind={kind}>
-      <Image width={16} height={16} alt="Wallet" src={`/images/wallet/${walletIcon}`} />
+  // Major for page header
+  if (kind === "primary" && sender?.address) {
+    return (
+      <Button disabled>
+        <AddressIdenticon size={22} address={sender.address} />
+        <span className="truncate">{toShortAdrress(sender.address)}</span>
+      </Button>
+    );
+  }
+
+  return (talismanAccounts.length || activeAddress) && activeWallet ? (
+    <Button onClick={handleDisconnect} kind={kind} height={height}>
+      {walletIcon && <Image width={16} height={16} alt="Wallet" src={`/images/wallet/${walletIcon}`} />}
       <span>Disconnect</span>
     </Button>
   ) : (
     <>
-      <Button onClick={handleConnect} kind={kind}>
-        Connect wallet
+      <Button onClick={handleConnect} kind={kind} height={height}>
+        <span>Connect wallet</span>
       </Button>
-      <Modal title="Wallets" isOpen={isOpen} onClose={setIsOpenFalse} className="w-full lg:w-[20rem]">
+      <Modal
+        title={who === "sender" ? "Sender wallets" : "Recipient wallets"}
+        isOpen={isOpen}
+        onClose={setIsOpenFalse}
+        className="w-full lg:w-[24rem]"
+      >
         <div className="flex flex-col">
           <Item
+            who={who}
             icon="talisman-red.svg"
             name="Talisman"
             onClick={() => {
+              setActiveWallet(WalletID.TALISMAN);
               connectTalisman();
               setIsOpenFalse();
             }}
             disabled={!supportedTalisman}
           />
           <Item
+            who={who}
             icon="rainbow.svg"
             name="Rainbow"
             onClick={() => {
+              setActiveWallet(WalletID.RAINBOW);
               openConnectModal?.();
               setIsOpenFalse();
             }}
@@ -98,45 +148,56 @@ export default function ConnectWallet({ kind = "component" }: Props) {
   );
 }
 
-/**
- * Warning: validateDOMNesting(...): <button> cannot appear as a descendant of <button>. So we use `div` to mock a button here
- */
 function Button({
   kind,
+  height,
+  disabled,
   children,
   onClick,
-}: PropsWithChildren<{ kind?: "component" | "primary"; onClick?: MouseEventHandler<HTMLDivElement> }>) {
+}: PropsWithChildren<
+  Pick<Props, "kind" | "height"> & {
+    disabled?: boolean;
+    onClick?: MouseEventHandler<HTMLButtonElement>;
+  }
+>) {
   return (
-    <div
+    <button
       onClick={onClick}
-      className={`border-radius flex items-center gap-small border px-middle py-small transition-[transform,color] hover:cursor-pointer hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 ${
+      className={`border-radius flex shrink-0 items-center gap-small border px-middle transition-[transform,color] hover:opacity-80 active:translate-y-1 disabled:translate-y-0 disabled:opacity-100 ${
         kind === "component" ? "border-component bg-component" : "border-primary bg-primary"
-      }`}
+      } ${height === "full" ? "h-full" : "py-small"}`}
+      disabled={disabled}
     >
       {children}
-    </div>
+    </button>
   );
 }
 
 function Item({
+  who,
   icon,
   name,
-  onClick,
   disabled,
+  onClick,
 }: {
   icon: string;
   name: string;
-  onClick?: () => void;
+  who: "sender" | "recipient";
   disabled?: boolean;
+  onClick?: () => void;
 }) {
+  const { sourceChain, targetChain } = useTransfer();
+  const chain = who === "sender" ? sourceChain : targetChain;
   return (
-    <button
-      className="border-radius flex items-center gap-middle bg-transparent p-middle transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
-      onClick={onClick}
-      disabled={disabled}
-    >
-      <Image width={20} height={20} alt="Wallet icon" src={`/images/wallet/${icon}`} />
-      <span>{name}</span>
-    </button>
+    <Tooltip content={`Unavailable for ${chain.name}`} className="w-full" disabled={!disabled}>
+      <button
+        className="border-radius flex w-full items-center gap-middle bg-transparent p-middle transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={disabled}
+        onClick={onClick}
+      >
+        <Image width={20} height={20} alt="Wallet icon" src={`/images/wallet/${icon}`} />
+        <span>{name}</span>
+      </button>
+    </Tooltip>
   );
 }

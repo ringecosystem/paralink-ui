@@ -45,12 +45,12 @@ export const pangolinChain: ChainConfig = {
       cross: [
         {
           target: { network: "assethub-rococo", symbol: "USDT" },
-          wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
           isReserve: false,
         },
       ],
     },
   ],
+  wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
   addressType: "evm",
   minCross: bnToBn(3600000), // 3.6 USDT
 

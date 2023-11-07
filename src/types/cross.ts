@@ -1,11 +1,10 @@
-import { Asset, AssetSymbol, ChainConfig, Network, WalletID } from ".";
+import { Asset, AssetSymbol, ChainConfig, Network } from ".";
 
 export interface Cross {
   target: {
     network: Network;
     symbol: AssetSymbol;
   };
-  wallets: WalletID[];
   isReserve: boolean;
 }
 
