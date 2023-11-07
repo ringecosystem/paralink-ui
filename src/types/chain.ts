@@ -1,5 +1,8 @@
+import { BN } from "@polkadot/util";
 import { Chain } from "wagmi";
 import { Asset } from "./asset";
+import { AddressType } from "./misc";
+import { WalletID } from ".";
 
 export enum ChainID {
   INVALID = -1,
@@ -21,6 +24,9 @@ export interface ChainConfig extends Chain {
    */
   logo: string; // File name
   assets: Asset[];
+  wallets: WalletID[]; // Supported wallets
+  addressType: AddressType;
+  minCross: BN; // Minimum transfer amount
 
   /**
    * Substrate

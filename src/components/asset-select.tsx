@@ -29,15 +29,15 @@ export default function AssetSelect({ value, options, disabled, onChange = () =>
           <button
             key={asset.symbol}
             onClick={() => onChange(asset)}
-            className="flex items-center gap-small px-middle py-1 transition-colors hover:bg-white/10"
+            className="flex items-center gap-small px-middle py-small transition-colors hover:bg-white/10"
           >
             <Image width={16} height={16} alt="Asset icon" src={getAssetIconSrc(asset.icon)} />
-            <span>{asset.symbol}</span>
+            <span className="text-sm font-medium">{asset.symbol}</span>
           </button>
         ))
       ) : (
         <div className="px-middle py-small">
-          <span>No data</span>
+          <span className="text-sm font-medium">No data</span>
         </div>
       )}
     </Select>

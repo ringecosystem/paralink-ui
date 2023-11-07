@@ -30,15 +30,15 @@ export default function ChainSelect({ value, options, disabled, onChange = () =>
           <button
             key={chain.network}
             onClick={() => onChange(chain)}
-            className="flex items-center gap-small px-middle py-1 transition-colors hover:bg-white/10"
+            className="flex items-center gap-small px-middle py-small transition-colors hover:bg-white/10"
           >
             <Image width={16} height={16} alt="Chain logo" src={getChainLogoSrc(chain.logo)} />
-            <span>{chain.name}</span>
+            <span className="text-sm font-medium">{chain.name}</span>
           </button>
         ))
       ) : (
         <div className="px-middle py-small">
-          <span>No data</span>
+          <span className="text-sm font-medium">No data</span>
         </div>
       )}
     </Select>

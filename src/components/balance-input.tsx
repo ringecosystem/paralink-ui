@@ -5,8 +5,10 @@ import AssetSelect from "./asset-select";
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatBalance } from "@/utils";
 import { parseUnits } from "viem";
+import { InputAlert } from "./input-alert";
 
 interface Value {
+  valid: boolean;
   input: string;
   amount: BN;
 }
@@ -16,6 +18,7 @@ interface Props {
   disabled?: boolean;
   placeholder?: string;
   balance?: BN;
+  min?: BN;
   asset?: Asset;
   assetOptions?: Asset[];
   onChange?: (value: Value) => void;
@@ -27,6 +30,7 @@ export default function BalanceInput({
   disabled,
   placeholder,
   balance,
+  min,
   asset,
   assetOptions,
   onChange = () => undefined,
@@ -35,7 +39,7 @@ export default function BalanceInput({
   const assetRef = useRef(asset);
   const spanRef = useRef<HTMLSpanElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [dynamicStyle, setDynamicStyle] = useState("text-sm font-normal");
+  const [dynamicStyle, setDynamicStyle] = useState("");
 
   const _placeholder = useMemo(() => {
     if (balance && asset) {
@@ -48,13 +52,13 @@ export default function BalanceInput({
     (e) => {
       if (e.target.value) {
         if (!Number.isNaN(Number(e.target.value)) && asset) {
-          onChange(parseValue(e.target.value, asset.decimals));
+          onChange(parseValue(e.target.value, asset.decimals, min, balance));
         }
       } else {
-        onChange({ input: e.target.value, amount: BN_ZERO });
+        onChange({ valid: true, input: e.target.value, amount: BN_ZERO });
       }
     },
-    [asset, onChange],
+    [asset, min, balance, onChange],
   );
 
   useEffect(() => {
@@ -81,20 +85,25 @@ export default function BalanceInput({
   useEffect(() => {
     // Fire onChange to update `amount`
     if (assetRef.current?.decimals !== asset?.decimals) {
-      onChange(parseValue(value?.input || "", asset?.decimals || 0));
+      onChange(parseValue(value?.input || "", asset?.decimals || 0, min, balance));
     }
     assetRef.current = asset;
-  }, [value, asset, onChange]);
+  }, [value, asset, min, balance, onChange]);
 
-  const insufficient = balance && value && balance.lt(value.amount) ? true : false;
+  const insufficient = balance && value?.input && balance.lt(value.amount) ? true : false;
+  const requireMin = min && value?.input && value.amount.lt(min) ? true : false;
 
   return (
-    <div className="relative flex h-12 items-center justify-between p-1">
+    <div
+      className={`border-radius relative flex h-12 items-center justify-between border p-1 transition-colors ${
+        value?.valid === false ? "border-alert" : "border-transparent"
+      }`}
+    >
       <Input
         disabled={disabled}
         placeholder={_placeholder}
         className={`h-full w-full bg-transparent px-1 transition-[font-weight,font-size,line-height] duration-300 ${
-          value?.input ? `leading-none ${dynamicStyle}` : "text- text-sm font-normal"
+          value?.input ? `leading-none ${dynamicStyle}` : ""
         }`}
         ref={inputRef}
         value={value?.input}
@@ -102,7 +111,12 @@ export default function BalanceInput({
       />
       {asset ? <AssetSelect disabled={disabled} value={asset} options={assetOptions} onChange={onAssetChange} /> : null}
 
-      {insufficient ? <Alert text="* insufficient" /> : null}
+      {/* Alert */}
+      {insufficient ? (
+        <InputAlert text="* insufficient" />
+      ) : requireMin ? (
+        <InputAlert text={`* minimum: ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)}`} />
+      ) : null}
 
       {/*  Invisible */}
       <span className="invisible fixed left-0 top-0 -z-50" ref={spanRef}>
@@ -112,15 +126,7 @@ export default function BalanceInput({
   );
 }
 
-function Alert({ text }: { text: string }) {
-  return (
-    <div className="absolute -bottom-5 left-0 inline-flex w-full">
-      <span className="text-app-red text-xs font-light lowercase">{text}</span>
-    </div>
-  );
-}
-
-function parseValue(origin: string, decimals: number) {
+function parseValue(origin: string, decimals: number, min?: BN, max?: BN) {
   let input = "";
   let amount = BN_ZERO;
   const [i, d] = origin.split(".").concat("-1");
@@ -128,5 +134,6 @@ function parseValue(origin: string, decimals: number) {
     input = d === "-1" ? i : d ? `${i}.${d.slice(0, decimals)}` : `${i}.`;
     amount = bnToBn(parseUnits(input, decimals));
   }
-  return { input, amount };
+  const valid = min && amount.lt(min) ? false : max && amount.gt(max) ? false : true;
+  return { input, amount, valid };
 }

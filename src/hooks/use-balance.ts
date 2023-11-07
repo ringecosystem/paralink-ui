@@ -4,13 +4,19 @@ import { BN } from "@polkadot/util";
 import { Asset } from "@/types";
 import { forkJoin, EMPTY } from "rxjs";
 
-export function useBalance(bridge: EvmBridge | undefined, address: string | undefined, position: "source" | "target") {
+export function useBalance(
+  bridge: EvmBridge | undefined,
+  value: { address: string; valid: boolean } | undefined,
+  position: "source" | "target",
+) {
   const [balance, setBalance] = useState<{ asset: { value: BN; asset: Asset } }>();
 
   const updateBalance = useCallback(() => {
-    if (bridge && address) {
+    if (bridge && value?.address && value.valid) {
       return forkJoin([
-        position === "source" ? bridge.getSourceAssetBalance(address) : bridge.getTargetAssetBalance(address),
+        position === "source"
+          ? bridge.getSourceAssetBalance(value.address)
+          : bridge.getTargetAssetBalance(value.address),
       ]).subscribe({
         next: ([asset]) => {
           setBalance({ asset });
@@ -25,7 +31,7 @@ export function useBalance(bridge: EvmBridge | undefined, address: string | unde
     }
 
     return EMPTY.subscribe();
-  }, [bridge, address, position]);
+  }, [bridge, value, position]);
 
   useEffect(() => {
     const sub$$ = updateBalance();

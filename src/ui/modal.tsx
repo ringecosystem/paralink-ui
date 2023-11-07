@@ -41,7 +41,7 @@ export default function Modal({
   return createPortal(
     <CSSTransition
       in={isOpen}
-      timeout={300}
+      timeout={150}
       nodeRef={nodeRef}
       classNames="modal-fade"
       unmountOnExit

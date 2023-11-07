@@ -15,23 +15,29 @@ interface TransferCtx {
   bridgeInstance: EvmBridge | undefined;
   sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
   targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
-  activeWallet: WalletID | undefined;
-  transferAmount: { input: string; amount: BN };
+  transferAmount: { valid: boolean; input: string; amount: BN };
   sourceChain: ChainConfig;
   targetChain: ChainConfig;
   sourceAsset: Asset;
   targetAsset: Asset;
-  sender: string | undefined;
-  recipient: string | undefined;
+  sender: { valid: boolean; address: string } | undefined;
+  recipient: { valid: boolean; address: string } | undefined;
+  activeSenderAccount: WalletAccount | undefined;
+  activeRecipientAccount: WalletAccount | undefined;
+  activeSenderWallet: WalletID | undefined;
+  activeRecipientWallet: WalletID | undefined;
 
-  setActiveWallet: Dispatch<SetStateAction<WalletID | undefined>>;
-  setTransferAmount: Dispatch<SetStateAction<{ input: string; amount: BN }>>;
+  setTransferAmount: Dispatch<SetStateAction<{ valid: boolean; input: string; amount: BN }>>;
   setSourceChain: Dispatch<SetStateAction<ChainConfig>>;
   setTargetChain: Dispatch<SetStateAction<ChainConfig>>;
   setSourceAsset: Dispatch<SetStateAction<Asset>>;
   setTargetAsset: Dispatch<SetStateAction<Asset>>;
-  setSender: Dispatch<SetStateAction<string | undefined>>;
-  setRecipient: Dispatch<SetStateAction<string | undefined>>;
+  setSender: Dispatch<SetStateAction<{ valid: boolean; address: string } | undefined>>;
+  setRecipient: Dispatch<SetStateAction<{ valid: boolean; address: string } | undefined>>;
+  setActiveSenderAccount: Dispatch<SetStateAction<WalletAccount | undefined>>;
+  setActiveRecipientAccount: Dispatch<SetStateAction<WalletAccount | undefined>>;
+  setActiveSenderWallet: Dispatch<SetStateAction<WalletID | undefined>>;
+  setActiveRecipientWallet: Dispatch<SetStateAction<WalletID | undefined>>;
   evmTransfer: (
     _bridge: EvmBridge,
     _sender: string,
@@ -56,16 +62,18 @@ const defaultValue: TransferCtx = {
   bridgeInstance: undefined,
   sourceBalance: undefined,
   targetBalance: undefined,
-  activeWallet: undefined,
-  transferAmount: { input: "", amount: BN_ZERO },
+  transferAmount: { valid: true, input: "", amount: BN_ZERO },
   sourceChain: defaultSourceChain,
   targetChain: defaultTargetChain,
   sourceAsset: defaultSourceAsset,
   targetAsset: defaultTargetAsset,
   sender: undefined,
   recipient: undefined,
+  activeSenderAccount: undefined,
+  activeRecipientAccount: undefined,
+  activeSenderWallet: undefined,
+  activeRecipientWallet: undefined,
 
-  setActiveWallet: () => undefined,
   setTransferAmount: () => undefined,
   setSourceChain: () => undefined,
   setTargetChain: () => undefined,
@@ -73,6 +81,10 @@ const defaultValue: TransferCtx = {
   setTargetAsset: () => undefined,
   setSender: () => undefined,
   setRecipient: () => undefined,
+  setActiveSenderAccount: () => undefined,
+  setActiveRecipientAccount: () => undefined,
+  setActiveSenderWallet: () => undefined,
+  setActiveRecipientWallet: () => undefined,
   refetchSourceBalance: () => undefined,
   refetchTargetBalance: () => undefined,
   evmTransfer: async () => undefined,
@@ -87,7 +99,6 @@ const transferCb = {
 export const TransferContext = createContext(defaultValue);
 
 export default function TransferProvider({ children }: PropsWithChildren<unknown>) {
-  const [activeWallet, setActiveWallet] = useState(defaultValue.activeWallet);
   const [transferAmount, setTransferAmount] = useState(defaultValue.transferAmount);
   const [sourceChain, setSourceChain] = useState(defaultValue.sourceChain);
   const [targetChain, setTargetChain] = useState(defaultValue.targetChain);
@@ -95,6 +106,10 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   const [targetAsset, setTargetAsset] = useState(defaultValue.targetAsset);
   const [sender, setSender] = useState(defaultValue.sender);
   const [recipient, setRecipient] = useState(defaultValue.recipient);
+  const [activeSenderAccount, setActiveSenderAccount] = useState(defaultValue.activeSenderAccount);
+  const [activeRecipientAccount, setActiveRecipientAccount] = useState(defaultValue.activeRecipientAccount);
+  const [activeSenderWallet, setActiveSenderWallet] = useState(defaultValue.activeSenderWallet);
+  const [activeRecipientWallet, setActiveRecipientWallet] = useState(defaultValue.activeRecipientWallet);
 
   const { api: sourceApi } = useApi(sourceChain);
   const { api: targetApi } = useApi(targetChain);
@@ -164,7 +179,6 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         bridgeInstance,
         sourceBalance,
         targetBalance,
-        activeWallet,
         transferAmount,
         sourceChain,
         targetChain,
@@ -172,8 +186,11 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         targetAsset,
         sender,
         recipient,
+        activeSenderAccount,
+        activeRecipientAccount,
+        activeSenderWallet,
+        activeRecipientWallet,
 
-        setActiveWallet,
         setTransferAmount,
         setSourceChain,
         setTargetChain,
@@ -181,6 +198,10 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         setTargetAsset,
         setSender,
         setRecipient,
+        setActiveSenderAccount,
+        setActiveRecipientAccount,
+        setActiveSenderWallet,
+        setActiveRecipientWallet,
         evmTransfer,
         substrateTransfer,
         refetchSourceBalance,
