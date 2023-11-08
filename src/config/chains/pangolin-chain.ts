@@ -53,6 +53,7 @@ export const pangolinChain: ChainConfig = {
   wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
   addressType: "evm",
   minCross: bnToBn(3600000), // 3.6 USDT
+  hasAssetLimit: true,
 
   /**
    * Substrate

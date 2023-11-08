@@ -1,6 +1,7 @@
 import { Asset, ChainConfig, Cross } from "@/types";
 import { ApiPromise } from "@polkadot/api";
-import { BN_ZERO, BN } from "@polkadot/util";
+import { BN_ZERO, BN, bnToBn } from "@polkadot/util";
+import { Option, u128 } from "@polkadot/types";
 
 export abstract class BaseBridge {
   protected readonly cross: Cross | undefined;
@@ -93,6 +94,29 @@ export abstract class BaseBridge {
     const asset = this.targetAsset;
     const value = await this.getAssetBalance(this.targetApi, asset, address);
     return { value, asset };
+  }
+
+  async getAssetLimit() {
+    if (this.sourceChain.hasAssetLimit) {
+      const section = "assetLimit";
+      const method = "foreignAssetLimit";
+      const fn = this.sourceApi.query[section][method];
+
+      const limitOpt = await (fn({
+        Xcm: {
+          parents: 1,
+          interior: {
+            X3: [
+              { Parachain: bnToBn(this.targetChain.parachainId) },
+              { PalletInstance: 50 },
+              { GeneralIndex: bnToBn(this.targetAsset.id) },
+            ],
+          },
+        },
+      }) as Promise<Option<u128>>);
+
+      return limitOpt.isSome ? limitOpt.unwrap() : undefined;
+    }
   }
 
   abstract transfer(): Promise<undefined>;

@@ -9,9 +9,10 @@ import { EvmBridge } from "@/libs";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
 import { notifyError, notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
-import { useApi, useBalance } from "@/hooks";
+import { useApi, useAssetLimit, useBalance } from "@/hooks";
 
 interface TransferCtx {
+  assetLimit: BN | undefined;
   bridgeInstance: EvmBridge | undefined;
   sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
   targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
@@ -59,6 +60,7 @@ interface TransferCtx {
 const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTargetAsset } = parseCross();
 
 const defaultValue: TransferCtx = {
+  assetLimit: undefined,
   bridgeInstance: undefined,
   sourceBalance: undefined,
   targetBalance: undefined,
@@ -134,6 +136,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     [sourceApi, targetApi, publicClient, walletClient, sourceChain, targetChain, sourceAsset, targetAsset],
   );
 
+  const { assetLimit } = useAssetLimit(bridgeInstance);
   const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
   const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, recipient, "target");
 
@@ -180,6 +183,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   return (
     <TransferContext.Provider
       value={{
+        assetLimit,
         bridgeInstance,
         sourceBalance,
         targetBalance,
