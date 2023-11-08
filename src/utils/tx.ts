@@ -42,6 +42,7 @@ export const signAndSendExtrinsic = async (
     });
   } catch (err) {
     console.error(err);
+    options.failedCb();
   } finally {
     //
   }

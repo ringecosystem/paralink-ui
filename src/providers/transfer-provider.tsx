@@ -149,6 +149,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         }
       } catch (err) {
         console.error(err);
+        options.failedCb();
       }
     },
     [],
@@ -167,6 +168,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
           await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getSourceChain(), options);
         } catch (err) {
           console.error(err);
+          options.failedCb();
         }
       }
     },
