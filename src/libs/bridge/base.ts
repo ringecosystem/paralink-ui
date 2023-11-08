@@ -96,13 +96,29 @@ export abstract class BaseBridge {
     return { value, asset };
   }
 
+  /**
+   * Supply
+   */
+  private async getAssetDetails(api: ApiPromise, asset: Asset) {
+    const detailsOption = await api.query.assets.asset(asset.id);
+    return detailsOption.isSome ? detailsOption.unwrap() : undefined;
+  }
+
+  async getSourceAssetDetails() {
+    return this.getAssetDetails(this.sourceApi, this.sourceAsset);
+  }
+
+  async getTargetAssetDetails() {
+    return this.getAssetDetails(this.targetApi, this.targetAsset);
+  }
+
   async getAssetLimit() {
     if (this.sourceChain.hasAssetLimit) {
       const section = "assetLimit";
       const method = "foreignAssetLimit";
       const fn = this.sourceApi.query[section][method];
 
-      const limitOpt = await (fn({
+      const limitOption = await (fn({
         Xcm: {
           parents: 1,
           interior: {
@@ -115,7 +131,7 @@ export abstract class BaseBridge {
         },
       }) as Promise<Option<u128>>);
 
-      return limitOpt.isSome ? limitOpt.unwrap() : undefined;
+      return limitOption.isSome ? limitOption.unwrap() : undefined;
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { Dispatch, PropsWithChildren, SetStateAction, createContext, useCallback, useMemo, useState } from "react";
 import { BN, BN_ZERO } from "@polkadot/util";
+import type { PalletAssetsAssetDetails } from "@polkadot/types/lookup";
 import { Asset, ChainConfig, WalletID } from "@/types";
 import { usePublicClient, useWalletClient } from "wagmi";
 import { EvmBridge } from "@/libs";
@@ -9,11 +10,12 @@ import { EvmBridge } from "@/libs";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
 import { notifyError, notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
-import { useApi, useAssetLimit, useBalance } from "@/hooks";
+import { useApi, useAssetDetails, useAssetLimit, useBalance } from "@/hooks";
 
 interface TransferCtx {
   assetLimit: BN | undefined;
   bridgeInstance: EvmBridge | undefined;
+  sourceAssetDetails: PalletAssetsAssetDetails | undefined;
   sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
   targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
   transferAmount: { valid: boolean; input: string; amount: BN };
@@ -62,6 +64,7 @@ const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTarge
 const defaultValue: TransferCtx = {
   assetLimit: undefined,
   bridgeInstance: undefined,
+  sourceAssetDetails: undefined,
   sourceBalance: undefined,
   targetBalance: undefined,
   transferAmount: { valid: true, input: "", amount: BN_ZERO },
@@ -137,6 +140,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   );
 
   const { assetLimit } = useAssetLimit(bridgeInstance);
+  const { assetDetails: sourceAssetDetails } = useAssetDetails(bridgeInstance, "source");
   const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
   const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, recipient, "target");
 
@@ -185,6 +189,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
       value={{
         assetLimit,
         bridgeInstance,
+        sourceAssetDetails,
         sourceBalance,
         targetBalance,
         transferAmount,
