@@ -37,3 +37,7 @@ export function notifyExtrinsic(hash: string, chain: ChainConfig, isSuccess: boo
     notify(hash, explorer, "extrinsic", isSuccess);
   }
 }
+
+export function notifyError(err: unknown) {
+  return notification.error({ title: "An error occurred", description: (err as Error).message });
+}
