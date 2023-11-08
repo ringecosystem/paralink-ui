@@ -113,19 +113,19 @@ export abstract class BaseBridge {
   }
 
   async getAssetLimit() {
-    if (this.sourceChain.hasAssetLimit) {
-      const section = "assetLimit";
-      const method = "foreignAssetLimit";
-      const fn = this.sourceApi.query[section][method];
+    const section = "assetLimit";
+    const method = "foreignAssetLimit";
+    const fn = this.targetApi.query[section]?.[method];
 
+    if (this.targetChain.hasAssetLimit && fn) {
       const limitOption = await (fn({
         Xcm: {
           parents: 1,
           interior: {
             X3: [
-              { Parachain: bnToBn(this.targetChain.parachainId) },
+              { Parachain: bnToBn(this.sourceChain.parachainId) },
               { PalletInstance: 50 },
-              { GeneralIndex: bnToBn(this.targetAsset.id) },
+              { GeneralIndex: bnToBn(this.sourceAsset.id) },
             ],
           },
         },

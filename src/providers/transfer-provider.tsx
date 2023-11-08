@@ -14,8 +14,8 @@ import { useApi, useAssetDetails, useAssetLimit, useBalance } from "@/hooks";
 
 interface TransferCtx {
   assetLimit: BN | undefined;
+  targetAssetDetails: PalletAssetsAssetDetails | undefined;
   bridgeInstance: EvmBridge | undefined;
-  sourceAssetDetails: PalletAssetsAssetDetails | undefined;
   sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
   targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
   transferAmount: { valid: boolean; input: string; amount: BN };
@@ -57,14 +57,15 @@ interface TransferCtx {
   ) => Promise<void>;
   refetchSourceBalance: () => void;
   refetchTargetBalance: () => void;
+  refetchTargetAssetDetails: () => void;
 }
 
 const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTargetAsset } = parseCross();
 
 const defaultValue: TransferCtx = {
   assetLimit: undefined,
+  targetAssetDetails: undefined,
   bridgeInstance: undefined,
-  sourceAssetDetails: undefined,
   sourceBalance: undefined,
   targetBalance: undefined,
   transferAmount: { valid: true, input: "", amount: BN_ZERO },
@@ -92,6 +93,7 @@ const defaultValue: TransferCtx = {
   setActiveRecipientWallet: () => undefined,
   refetchSourceBalance: () => undefined,
   refetchTargetBalance: () => undefined,
+  refetchTargetAssetDetails: () => undefined,
   evmTransfer: async () => undefined,
   substrateTransfer: async () => undefined,
 };
@@ -140,9 +142,12 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   );
 
   const { assetLimit } = useAssetLimit(bridgeInstance);
-  const { assetDetails: sourceAssetDetails } = useAssetDetails(bridgeInstance, "source");
   const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
   const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, recipient, "target");
+  const { assetDetails: targetAssetDetails, refetch: refetchTargetAssetDetails } = useAssetDetails(
+    bridgeInstance,
+    "target",
+  );
 
   const evmTransfer = useCallback(
     async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
@@ -188,8 +193,8 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     <TransferContext.Provider
       value={{
         assetLimit,
+        targetAssetDetails,
         bridgeInstance,
-        sourceAssetDetails,
         sourceBalance,
         targetBalance,
         transferAmount,
@@ -219,6 +224,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         substrateTransfer,
         refetchSourceBalance,
         refetchTargetBalance,
+        refetchTargetAssetDetails,
       }}
     >
       {children}
