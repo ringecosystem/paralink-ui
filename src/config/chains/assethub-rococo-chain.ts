@@ -47,7 +47,7 @@ export const assethubRococoChain: ChainConfig = {
   ],
   wallets: [WalletID.TALISMAN],
   addressType: "substrate",
-  minCross: bnToBn(3600000), // 3.6 USDT
+  minCross: bnToBn(125000), // 0.125 USDT
 
   /**
    * Substrate
