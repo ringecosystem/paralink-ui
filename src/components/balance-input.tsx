@@ -113,9 +113,9 @@ export default function BalanceInput({
 
       {/* Alert */}
       {insufficient ? (
-        <InputAlert text="* insufficient" />
+        <InputAlert text="* Insufficient" />
       ) : requireMin ? (
-        <InputAlert text={`* minimum: ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)}`} />
+        <InputAlert text={`* Minimum: ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)}`} />
       ) : null}
 
       {/*  Invisible */}

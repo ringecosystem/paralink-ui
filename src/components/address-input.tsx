@@ -78,7 +78,7 @@ export default function AddressInput({
       childClassName="flex flex-col py-middle bg-component border-primary border border-radius max-h-60 overflow-y-auto"
       placeholder={placeholder ?? "Address"}
       value={value?.address ?? ""} // Keep it as a controlled component
-      alert={value?.valid === false ? "* unavailable address" : ""}
+      alert={value?.valid === false ? "* Unavailable address" : ""}
       onClear={handleClear}
       onChange={handleChange}
     >
