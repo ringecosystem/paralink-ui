@@ -4,7 +4,7 @@ import Button from "@/ui/button";
 import BalanceInput from "./balance-input";
 import ChainSelect from "./chain-select";
 import TransferSection from "./transfer-section";
-import { parseCross } from "@/utils";
+import { isAssetExcess, parseCross } from "@/utils";
 import { useTalisman, useTransfer } from "@/hooks";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SwitchCross from "./switch-cross";
@@ -12,6 +12,7 @@ import AddressInput from "./address-input";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { Asset, ChainConfig, WalletID } from "@/types";
 import { BN_ZERO } from "@polkadot/util";
+import notification from "@/ui/notification";
 
 const {
   defaultSourceChainOptions,
@@ -24,6 +25,8 @@ const {
 
 export default function Transfer() {
   const {
+    assetLimit,
+    targetAssetDetails,
     sender,
     recipient,
     sourceChain,
@@ -50,6 +53,7 @@ export default function Transfer() {
     substrateTransfer,
     refetchSourceBalance,
     refetchTargetBalance,
+    refetchTargetAssetDetails,
   } = useTransfer();
   const [sourceChainOptions, _setSourceChainOptions] = useState(defaultSourceChainOptions);
   const [targetChainOptions, setTargetChainOptions] = useState(defaultTargetChainOptions);
@@ -134,14 +138,18 @@ export default function Transfer() {
           setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
           refetchSourceBalance();
           refetchTargetBalance();
+          refetchTargetAssetDetails();
         },
         failedCb: () => {
           setBusy(false);
         },
       };
-
       setBusy(true);
-      if (address && sender?.address === address) {
+      if (await isAssetExcess(bridgeInstance, transferAmount.amount)) {
+        notification.error({ title: "Transaction failed", description: "Asset limit exceeded" });
+        refetchTargetAssetDetails();
+        setBusy(false);
+      } else if (address && sender?.address === address) {
         await evmTransfer(bridgeInstance, address, recipient.address, transferAmount.amount, callback);
       } else if (activeSenderAccount) {
         await substrateTransfer(
@@ -168,6 +176,7 @@ export default function Transfer() {
     substrateTransfer,
     refetchSourceBalance,
     refetchTargetBalance,
+    refetchTargetAssetDetails,
   ]);
 
   useEffect(() => {
@@ -220,6 +229,8 @@ export default function Transfer() {
         <BalanceInput
           value={transferAmount}
           asset={sourceAsset}
+          assetLimit={assetLimit}
+          assetSupply={targetAssetDetails?.supply}
           min={sourceChain.minCross}
           balance={sourceBalance?.asset.value}
           assetOptions={sourceAssetOptions}

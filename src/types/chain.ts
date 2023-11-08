@@ -27,6 +27,7 @@ export interface ChainConfig extends Chain {
   wallets: WalletID[]; // Supported wallets
   addressType: AddressType;
   minCross: BN; // Minimum transfer amount
+  hasAssetLimit?: boolean;
 
   /**
    * Substrate

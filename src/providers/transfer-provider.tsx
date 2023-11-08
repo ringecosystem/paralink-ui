@@ -2,6 +2,7 @@
 
 import { Dispatch, PropsWithChildren, SetStateAction, createContext, useCallback, useMemo, useState } from "react";
 import { BN, BN_ZERO } from "@polkadot/util";
+import type { PalletAssetsAssetDetails } from "@polkadot/types/lookup";
 import { Asset, ChainConfig, WalletID } from "@/types";
 import { usePublicClient, useWalletClient } from "wagmi";
 import { EvmBridge } from "@/libs";
@@ -9,9 +10,11 @@ import { EvmBridge } from "@/libs";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
 import { notifyError, notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
-import { useApi, useBalance } from "@/hooks";
+import { useApi, useAssetDetails, useAssetLimit, useBalance } from "@/hooks";
 
 interface TransferCtx {
+  assetLimit: BN | undefined;
+  targetAssetDetails: PalletAssetsAssetDetails | undefined;
   bridgeInstance: EvmBridge | undefined;
   sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
   targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
@@ -54,11 +57,14 @@ interface TransferCtx {
   ) => Promise<void>;
   refetchSourceBalance: () => void;
   refetchTargetBalance: () => void;
+  refetchTargetAssetDetails: () => void;
 }
 
 const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTargetAsset } = parseCross();
 
 const defaultValue: TransferCtx = {
+  assetLimit: undefined,
+  targetAssetDetails: undefined,
   bridgeInstance: undefined,
   sourceBalance: undefined,
   targetBalance: undefined,
@@ -87,6 +93,7 @@ const defaultValue: TransferCtx = {
   setActiveRecipientWallet: () => undefined,
   refetchSourceBalance: () => undefined,
   refetchTargetBalance: () => undefined,
+  refetchTargetAssetDetails: () => undefined,
   evmTransfer: async () => undefined,
   substrateTransfer: async () => undefined,
 };
@@ -134,8 +141,13 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     [sourceApi, targetApi, publicClient, walletClient, sourceChain, targetChain, sourceAsset, targetAsset],
   );
 
+  const { assetLimit } = useAssetLimit(bridgeInstance);
   const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
   const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, recipient, "target");
+  const { assetDetails: targetAssetDetails, refetch: refetchTargetAssetDetails } = useAssetDetails(
+    bridgeInstance,
+    "target",
+  );
 
   const evmTransfer = useCallback(
     async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
@@ -180,6 +192,8 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   return (
     <TransferContext.Provider
       value={{
+        assetLimit,
+        targetAssetDetails,
         bridgeInstance,
         sourceBalance,
         targetBalance,
@@ -210,6 +224,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         substrateTransfer,
         refetchSourceBalance,
         refetchTargetBalance,
+        refetchTargetAssetDetails,
       }}
     >
       {children}

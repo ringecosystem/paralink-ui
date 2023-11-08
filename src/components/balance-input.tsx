@@ -20,6 +20,8 @@ interface Props {
   balance?: BN;
   min?: BN;
   asset?: Asset;
+  assetSupply?: BN;
+  assetLimit?: BN;
   assetOptions?: Asset[];
   onChange?: (value: Value) => void;
   onAssetChange?: (value: Asset) => void;
@@ -32,6 +34,8 @@ export default function BalanceInput({
   balance,
   min,
   asset,
+  assetSupply,
+  assetLimit,
   assetOptions,
   onChange = () => undefined,
   onAssetChange,
@@ -52,14 +56,22 @@ export default function BalanceInput({
     (e) => {
       if (e.target.value) {
         if (!Number.isNaN(Number(e.target.value)) && asset) {
-          onChange(parseValue(e.target.value, asset.decimals, min, balance));
+          onChange(parseValue(e.target.value, asset.decimals, min, balance, assetLimit, assetSupply));
         }
       } else {
         onChange({ valid: true, input: e.target.value, amount: BN_ZERO });
       }
     },
-    [asset, min, balance, onChange],
+    [asset, min, balance, assetLimit, assetSupply, onChange],
   );
+
+  useEffect(() => {
+    // Fire onChange to update `amount`
+    if (assetRef.current?.decimals !== asset?.decimals) {
+      onChange(parseValue(value?.input || "", asset?.decimals || 0, min, balance, assetLimit, assetSupply));
+    }
+    assetRef.current = asset;
+  }, [value, asset, min, balance, assetLimit, assetSupply, onChange]);
 
   useEffect(() => {
     const inputWidth = inputRef.current?.clientWidth || 1;
@@ -82,16 +94,9 @@ export default function BalanceInput({
     }
   }, [value]);
 
-  useEffect(() => {
-    // Fire onChange to update `amount`
-    if (assetRef.current?.decimals !== asset?.decimals) {
-      onChange(parseValue(value?.input || "", asset?.decimals || 0, min, balance));
-    }
-    assetRef.current = asset;
-  }, [value, asset, min, balance, onChange]);
-
   const insufficient = balance && value?.input && balance.lt(value.amount) ? true : false;
   const requireMin = min && value?.input && value.amount.lt(min) ? true : false;
+  const requireLimit = isExcess(assetLimit, assetSupply, value?.amount);
 
   return (
     <div
@@ -112,10 +117,17 @@ export default function BalanceInput({
       {asset ? <AssetSelect disabled={disabled} value={asset} options={assetOptions} onChange={onAssetChange} /> : null}
 
       {/* Alert */}
-      {insufficient ? (
-        <InputAlert text="* Insufficient" />
+      {requireLimit ? (
+        <InputAlert
+          text={`* Limit: ${formatBalance(assetLimit ?? BN_ZERO, asset?.decimals ?? 0)}, supply: ${formatBalance(
+            (assetSupply ?? BN_ZERO).add(value?.amount ?? BN_ZERO),
+            asset?.decimals ?? 0,
+          )}`}
+        />
       ) : requireMin ? (
         <InputAlert text={`* Minimum: ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)}`} />
+      ) : insufficient ? (
+        <InputAlert text="* Insufficient" />
       ) : null}
 
       {/*  Invisible */}
@@ -126,7 +138,7 @@ export default function BalanceInput({
   );
 }
 
-function parseValue(origin: string, decimals: number, min?: BN, max?: BN) {
+function parseValue(origin: string, decimals: number, min?: BN, max?: BN, limit?: BN, supply?: BN) {
   let input = "";
   let amount = BN_ZERO;
   const [i, d] = origin.split(".").concat("-1");
@@ -134,6 +146,11 @@ function parseValue(origin: string, decimals: number, min?: BN, max?: BN) {
     input = d === "-1" ? i : d ? `${i}.${d.slice(0, decimals)}` : `${i}.`;
     amount = bnToBn(parseUnits(input, decimals));
   }
-  const valid = min && amount.lt(min) ? false : max && amount.gt(max) ? false : true;
+  const valid =
+    min && amount.lt(min) ? false : max && amount.gt(max) ? false : isExcess(limit, supply, amount) ? false : true;
   return { input, amount, valid };
+}
+
+function isExcess(limit?: BN, supply?: BN, amount = BN_ZERO) {
+  return limit && supply && supply.add(amount).gt(limit) ? true : false;
 }
