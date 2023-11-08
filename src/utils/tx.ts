@@ -1,5 +1,5 @@
 import type { Signer, SubmittableExtrinsic } from "@polkadot/api/types";
-import { notifyExtrinsic } from ".";
+import { notifyError, notifyExtrinsic } from ".";
 import { ChainConfig } from "@/types";
 
 const transferCb = {
@@ -42,6 +42,7 @@ export const signAndSendExtrinsic = async (
     });
   } catch (err) {
     console.error(err);
+    notifyError(err);
     options.failedCb();
   } finally {
     //

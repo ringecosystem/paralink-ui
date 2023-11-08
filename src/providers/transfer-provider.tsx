@@ -8,7 +8,7 @@ import { EvmBridge } from "@/libs";
 
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
-import { notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
+import { notifyError, notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
 import { useApi, useBalance } from "@/hooks";
 
 interface TransferCtx {
@@ -149,6 +149,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         }
       } catch (err) {
         console.error(err);
+        notifyError(err);
         options.failedCb();
       }
     },
@@ -168,6 +169,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
           await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getSourceChain(), options);
         } catch (err) {
           console.error(err);
+          notifyError(err);
           options.failedCb();
         }
       }
