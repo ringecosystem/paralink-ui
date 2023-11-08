@@ -92,7 +92,8 @@ export default function AddressInput({
                 onAccountChange(accounts[index]);
               }
             }}
-            className="flex items-center gap-middle px-middle py-1 transition-colors hover:bg-white/10"
+            disabled={!isValidAddress(account.address, addressType)}
+            className="flex items-center gap-middle px-middle py-1 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <AddressIdenticon size={20} address={account.address} />
             <span className="truncate text-sm font-medium">{account.name || account.address}</span>
