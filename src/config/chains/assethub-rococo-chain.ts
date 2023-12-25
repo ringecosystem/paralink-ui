@@ -7,7 +7,7 @@ export const assethubRococoChain: ChainConfig = {
    */
   id: ChainID.INVALID,
   network: "assethub-rococo",
-  name: "Asset Hub",
+  name: "Rococo AssetHub",
   nativeCurrency: {
     name: "ROC",
     symbol: "ROC",
