@@ -10,7 +10,7 @@ interface Props {
 export default function TransferSection({ label, extra, children, className }: PropsWithChildren<Props>) {
   return (
     <div className={`relative flex flex-col gap-middle ${className}`}>
-      <div className="absolute -top-8 left-0 flex w-full items-center justify-between">
+      <div className={`absolute left-0 flex w-full items-end justify-between ${extra ? "-top-9" : "-top-7"}`}>
         <Label text={label} />
         {extra}
       </div>

@@ -252,7 +252,7 @@ export default function Transfer() {
       </TransferSection>
 
       {/* Sender */}
-      <TransferSection label="Sender" className="mt-12">
+      <TransferSection label="Sender" className="mt-10">
         <AddressInput
           who="sender"
           placeholder="Select an address"
@@ -266,7 +266,7 @@ export default function Transfer() {
       </TransferSection>
 
       {/* Recipient */}
-      <TransferSection label="Recipient" className="mt-12">
+      <TransferSection label="Recipient" className="mt-10">
         <AddressInput
           canInput
           who="recipient"
@@ -281,7 +281,7 @@ export default function Transfer() {
       </TransferSection>
 
       {/* Send */}
-      <Button kind="primary" className="py-small" onClick={handleSend} disabled={disabledSend} busy={busy}>
+      <Button kind="primary" className="py-[7px]" onClick={handleSend} disabled={disabledSend} busy={busy}>
         {needSwitchNetwork ? "Switch network" : "Send"}
       </Button>
     </div>
