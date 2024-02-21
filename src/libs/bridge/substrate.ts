@@ -1,9 +1,8 @@
 import { BaseBridge } from "./base";
 import { BN, BN_ZERO, bnToBn, u8aToHex } from "@polkadot/util";
-import { Asset, ChainConfig, XcmVersionedMultiAsset } from "@/types";
+import { Asset, ChainConfig } from "@/types";
 import { ApiPromise } from "@polkadot/api";
 import { decodeAddress } from "@polkadot/util-crypto";
-import type { XcmV3WeightLimit, XcmVersionedMultiLocation, XcmVersionedMultiAssets } from "@polkadot/types/lookup";
 
 /**
  * Supported wallets: Talisman
@@ -38,7 +37,7 @@ export class SubstrateBridge extends BaseBridge {
 
     const Parachain = bnToBn(this.targetChain.parachainId);
 
-    const _asset = this.sourceApi.registry.createType<XcmVersionedMultiAsset>("XcmVersionedMultiAsset", {
+    const _asset = {
       V3: {
         id: {
           Concrete: {
@@ -50,18 +49,16 @@ export class SubstrateBridge extends BaseBridge {
         },
         fun: { Fungible: amount },
       },
-    });
-    const _dest = this.sourceApi.registry.createType<XcmVersionedMultiLocation>("XcmVersionedMultiLocation", {
+    };
+    const _dest = {
       V3: {
         parents: 1,
         interior: {
           X2: [{ Parachain }, { AccountId32: { network: null, id: u8aToHex(decodeAddress(recipient)) } }],
         },
       },
-    });
-    const _destWeightLimit = this.sourceApi.registry.createType<XcmV3WeightLimit>("XcmV3WeightLimit", {
-      Unlimited: null,
-    });
+    };
+    const _destWeightLimit = { Unlimited: null };
 
     const extrinsic = fn(_asset, _dest, _destWeightLimit);
     return extrinsic;
@@ -80,34 +77,23 @@ export class SubstrateBridge extends BaseBridge {
 
     const Parachain = bnToBn(this.targetChain.parachainId);
 
-    const _dest: XcmVersionedMultiLocation = this.sourceApi.registry.createType<XcmVersionedMultiLocation>(
-      "XcmVersionedMultiLocation",
-      { V3: { parents: 1, interior: { X1: { Parachain } } } },
-    );
-    const _beneficiary: XcmVersionedMultiLocation = this.sourceApi.registry.createType<XcmVersionedMultiLocation>(
-      "XcmVersionedMultiLocation",
-      { V3: { parents: 0, interior: { X1: { AccountKey20: { network: null, key: recipient } } } } },
-    );
-    const _assets: XcmVersionedMultiAssets = this.sourceApi.registry.createType<XcmVersionedMultiAssets>(
-      "XcmVersionedMultiAssets",
-      {
-        V3: [
-          {
-            id: {
-              Concrete: {
-                parents: 0,
-                interior: { X2: [{ PalletInstance: 50 }, { GeneralIndex: bnToBn(this.sourceAsset.id) }] },
-              },
+    const _dest = { V3: { parents: 1, interior: { X1: { Parachain } } } };
+    const _beneficiary = { V3: { parents: 0, interior: { X1: { AccountKey20: { network: null, key: recipient } } } } };
+    const _assets = {
+      V3: [
+        {
+          id: {
+            Concrete: {
+              parents: 0,
+              interior: { X2: [{ PalletInstance: 50 }, { GeneralIndex: bnToBn(this.sourceAsset.id) }] },
             },
-            fun: { Fungible: amount },
           },
-        ],
-      },
-    );
+          fun: { Fungible: amount },
+        },
+      ],
+    };
     const _feeAssetItem = BN_ZERO;
-    const _weightLimit: XcmV3WeightLimit = this.sourceApi.registry.createType<XcmV3WeightLimit>("XcmV3WeightLimit", {
-      Unlimited: null,
-    });
+    const _weightLimit = { Unlimited: null };
 
     const extrinsic = fn(_dest, _beneficiary, _assets, _feeAssetItem, _weightLimit);
     return extrinsic;
