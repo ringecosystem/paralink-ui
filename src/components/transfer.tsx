@@ -4,7 +4,7 @@ import Button from "@/ui/button";
 import BalanceInput from "./balance-input";
 import ChainSelect from "./chain-select";
 import TransferSection from "./transfer-section";
-import { isAssetExcess, parseCross } from "@/utils";
+import { formatBalance, isAssetExcess, parseCross } from "@/utils";
 import { useTalisman, useTransfer } from "@/hooks";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SwitchCross from "./switch-cross";
@@ -13,6 +13,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { Asset, ChainConfig, WalletID } from "@/types";
 import { BN_ZERO } from "@polkadot/util";
 import notification from "@/ui/notification";
+import Image from "next/image";
 
 const {
   defaultSourceChainOptions,
@@ -33,6 +34,7 @@ export default function Transfer() {
     targetChain,
     sourceAsset,
     targetAsset,
+    usdtBalance,
     sourceBalance,
     targetBalance,
     transferAmount,
@@ -75,6 +77,23 @@ export default function Transfer() {
     () => activeSenderWallet === WalletID.RAINBOW && chain && chain.id !== sourceChain.id,
     [chain, sourceChain, activeSenderWallet],
   );
+
+  const alert = useMemo(() => {
+    const fee = bridgeInstance?.getCrossInfo()?.fee;
+    const balance = usdtBalance?.asset.value;
+
+    if (fee && balance && fee.amount.gt(balance)) {
+      return (
+        <div className="flex items-start justify-center gap-small">
+          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
+          <span className="text-xs text-alert">{`You need at least ${formatBalance(fee.amount, fee.asset.decimals)} ${
+            fee.asset.srcSymbol
+          } in your account to cover cross-chain fees.`}</span>
+        </div>
+      );
+    }
+    return null;
+  }, [bridgeInstance, usdtBalance?.asset.value]);
 
   const sourceChainRef = useRef(sourceChain);
   const targetChainRef = useRef(targetChain);
@@ -219,7 +238,7 @@ export default function Transfer() {
       : [];
 
   return (
-    <div className="border-radius mx-auto mt-10 flex w-[30rem] flex-col gap-5 bg-component p-5">
+    <div className="border-radius mx-auto mt-10 flex w-[30rem] flex-col gap-5 bg-component p-5 pb-8">
       {/* From */}
       <TransferSection
         label="From"
@@ -229,9 +248,9 @@ export default function Transfer() {
         <BalanceInput
           value={transferAmount}
           asset={sourceAsset}
+          cross={bridgeInstance?.getCrossInfo()}
           assetLimit={assetLimit}
           assetSupply={targetAssetDetails?.supply}
-          min={sourceChain.minCross}
           balance={sourceBalance?.asset.value}
           assetOptions={sourceAssetOptions}
           onChange={setTransferAmount}
@@ -281,9 +300,17 @@ export default function Transfer() {
       </TransferSection>
 
       {/* Send */}
-      <Button kind="primary" className="py-[7px]" onClick={handleSend} disabled={disabledSend} busy={busy}>
+      <Button
+        kind="primary"
+        className="mt-4 py-middle"
+        onClick={handleSend}
+        disabled={disabledSend || !!alert}
+        busy={busy}
+      >
         {needSwitchNetwork ? "Switch network" : "Send"}
       </Button>
+
+      {alert}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { Cross } from "./cross";
 
-export type AssetSymbol = "ROC" | "USDT" | "PRING" | "ahUSDT";
+export type AssetSymbol = "DOT" | "ROC" | "USDT" | "PRING" | "ahUSDT" | "PINK" | "ahPINK" | "RING";
 
 export interface Asset {
   icon: string; // File name

@@ -15,7 +15,7 @@ export default function ChainSelect({ value, options, disabled, onChange = () =>
     <Select
       label={
         <div className="flex max-w-[140px] items-center gap-small">
-          <Image width={18} height={18} alt="Chain logo" src={getChainLogoSrc(value.logo)} />
+          <Image width={20} height={20} alt="Chain logo" src={getChainLogoSrc(value.logo)} />
           <span className="truncate text-white/50">{value.name}</span>
         </div>
       }
@@ -29,10 +29,11 @@ export default function ChainSelect({ value, options, disabled, onChange = () =>
         options.map((chain) => (
           <button
             key={chain.network}
+            disabled={chain.network === value.network}
             onClick={() => onChange(chain)}
-            className="flex items-center gap-small px-middle py-2 transition-colors hover:bg-white/10"
+            className="flex items-center gap-small px-middle py-2 transition-colors hover:bg-white/10 disabled:bg-white/10"
           >
-            <Image width={16} height={16} alt="Chain logo" src={getChainLogoSrc(chain.logo)} />
+            <Image width={18} height={18} alt="Chain logo" src={getChainLogoSrc(chain.logo)} />
             <span className="truncate text-sm font-medium">{chain.name}</span>
           </button>
         ))

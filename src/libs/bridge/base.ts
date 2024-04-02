@@ -96,6 +96,14 @@ export abstract class BaseBridge {
     return { value, asset };
   }
 
+  async getSourceUsdtBalance(address: string) {
+    const asset = this.sourceChain.assets.find(({ symbol }) => symbol.toLowerCase().includes("usdt"));
+    if (asset) {
+      const value = await this.getAssetBalance(this.sourceApi, asset, address);
+      return { value, asset };
+    }
+  }
+
   /**
    * Supply
    */

@@ -16,6 +16,7 @@ interface TransferCtx {
   assetLimit: BN | undefined;
   targetAssetDetails: PalletAssetsAssetDetails | undefined;
   bridgeInstance: EvmBridge | undefined;
+  usdtBalance: { asset: { value: BN; asset: Asset } } | undefined;
   sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
   targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
   transferAmount: { valid: boolean; input: string; amount: BN };
@@ -66,6 +67,7 @@ const defaultValue: TransferCtx = {
   assetLimit: undefined,
   targetAssetDetails: undefined,
   bridgeInstance: undefined,
+  usdtBalance: undefined,
   sourceBalance: undefined,
   targetBalance: undefined,
   transferAmount: { valid: true, input: "", amount: BN_ZERO },
@@ -142,6 +144,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   );
 
   const { assetLimit } = useAssetLimit(bridgeInstance);
+  const { balance: usdtBalance } = useBalance(bridgeInstance, sender, "usdt");
   const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
   const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, recipient, "target");
   const { assetDetails: targetAssetDetails, refetch: refetchTargetAssetDetails } = useAssetDetails(
@@ -152,7 +155,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   const evmTransfer = useCallback(
     async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
       try {
-        const receipt = await _bridge.transferAssetWithPrecompile(_sender, _recipient, _amount);
+        const receipt = await _bridge.transferAssetsWithPrecompile(_sender, _recipient, _amount);
         notifyTransaction(receipt, _bridge.getSourceChain());
         if (receipt?.status === "success") {
           options.successCb();
@@ -176,8 +179,8 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         const _signer = _account.signer as Signer;
         try {
           const _extrinsic = await (crossInfo.isReserve
-            ? _bridge.limitedReserveTransferAsset(_recipient, _amount)
-            : _bridge.transferAsset(_recipient, _amount));
+            ? _bridge.limitedReserveTransferAssets(_recipient, _amount)
+            : _bridge.transferAssets(_recipient, _amount));
           await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getSourceChain(), options);
         } catch (err) {
           console.error(err);
@@ -195,6 +198,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         assetLimit,
         targetAssetDetails,
         bridgeInstance,
+        usdtBalance,
         sourceBalance,
         targetBalance,
         transferAmount,

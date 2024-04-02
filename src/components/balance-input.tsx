@@ -1,4 +1,4 @@
-import { Asset } from "@/types";
+import { Asset, Cross } from "@/types";
 import Input from "@/ui/input";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import AssetSelect from "./asset-select";
@@ -18,7 +18,7 @@ interface Props {
   disabled?: boolean;
   placeholder?: string;
   balance?: BN;
-  min?: BN;
+  cross?: Cross;
   asset?: Asset;
   assetSupply?: BN;
   assetLimit?: BN;
@@ -32,7 +32,7 @@ export default function BalanceInput({
   disabled,
   placeholder,
   balance,
-  min,
+  cross,
   asset,
   assetSupply,
   assetLimit,
@@ -51,6 +51,13 @@ export default function BalanceInput({
     }
     return placeholder ?? "Enter an amount";
   }, [balance, asset, placeholder]);
+
+  const min = useMemo(() => {
+    if (cross && cross.fee.asset.symbol === cross.target.symbol) {
+      return cross.fee.amount;
+    }
+    return undefined;
+  }, [cross]);
 
   const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
@@ -77,9 +84,7 @@ export default function BalanceInput({
     const inputWidth = inputRef.current?.clientWidth || 1;
     const spanWidth = spanRef.current?.clientWidth || 0;
     const percent = (spanWidth / inputWidth) * 100;
-    if (percent < 10) {
-      setDynamicStyle("text-[3rem] font-extralight");
-    } else if (percent < 20) {
+    if (percent < 20) {
       setDynamicStyle("text-[2.25rem] font-light");
     } else if (percent < 30) {
       setDynamicStyle("text-[1.875rem] font-light");

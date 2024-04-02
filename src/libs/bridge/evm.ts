@@ -32,8 +32,8 @@ export class EvmBridge extends SubstrateBridge {
     return;
   }
 
-  async transferAssetWithPrecompile(sender: string, recipient: string, amount: BN) {
-    const extrinsic = await this.transferAsset(recipient, amount);
+  async transferAssetsWithPrecompile(sender: string, recipient: string, amount: BN) {
+    const extrinsic = await this.transferAssets(recipient, amount);
     const account = sender as Address;
 
     // const estimateGas = await this.publicClient.estimateGas({

@@ -1,4 +1,4 @@
-import { assethubRococoChain, pangolinChain } from "@/config/chains";
+import { assethubPolkadotChain, assethubRococoChain, darwiniaChain, pangolinChain } from "@/config/chains";
 import { ChainID, Network } from "@/types";
 
 export function getChainConfig(chainIdOrNetwork: ChainID | Network | undefined) {
@@ -8,9 +8,14 @@ export function getChainConfig(chainIdOrNetwork: ChainID | Network | undefined) 
       return pangolinChain;
     case "assethub-rococo":
       return assethubRococoChain;
+    case ChainID.DARWINIA:
+    case "darwinia":
+      return darwiniaChain;
+    case "assethub-polkadot":
+      return assethubPolkadotChain;
   }
 }
 
 export function getChainsConfig() {
-  return [assethubRococoChain, pangolinChain];
+  return [assethubPolkadotChain, darwiniaChain];
 }

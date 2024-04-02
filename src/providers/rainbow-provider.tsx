@@ -6,13 +6,13 @@ import { darkTheme, getDefaultWallets, RainbowKitProvider } from "@rainbow-me/ra
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { PropsWithChildren } from "react";
-import { pangolinChain } from "@/config/chains";
+import { darwiniaChain } from "@/config/chains";
 import { APP_NAME } from "@/config";
 
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID || "";
 const appName = APP_NAME;
 
-const { chains, publicClient } = configureChains([pangolinChain], [publicProvider()]);
+const { chains, publicClient } = configureChains([darwiniaChain], [publicProvider()]);
 
 const { connectors } = getDefaultWallets({ appName, projectId, chains });
 

@@ -71,7 +71,7 @@ export default function AddressInput({
       clickable={!!options?.length || !canInput}
       canInput={canInput}
       innerSuffix={<ConnectWallet who={who} height="full" />}
-      wrapClassName={`h-10 bg-transparent flex items-center justify-between p-1 border border-radius transition-colors duration-200 ${
+      wrapClassName={`h-12 bg-transparent flex items-center justify-between p-1 border border-radius transition-colors duration-200 ${
         value?.valid === false ? "border-alert" : "border-transparent"
       }`}
       inputClassName="w-full border-radius h-full bg-transparent px-1"
