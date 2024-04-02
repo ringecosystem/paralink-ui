@@ -38,8 +38,8 @@ export default function ChainSelect({ value, options, disabled, onChange = () =>
           </button>
         ))
       ) : (
-        <div className="px-middle py-2">
-          <span className="text-sm font-medium">No data</span>
+        <div className="inline-flex justify-center px-middle py-2">
+          <span className="text-sm font-medium text-slate-400">No data</span>
         </div>
       )}
     </Select>

@@ -100,8 +100,8 @@ export default function AddressInput({
           </button>
         ))
       ) : (
-        <div className="px-middle py-small">
-          <span className="text-sm font-medium">No data</span>
+        <div className="inline-flex justify-center px-middle py-small">
+          <span className="text-sm font-medium text-slate-400">No data</span>
         </div>
       )}
     </InputSelect>
