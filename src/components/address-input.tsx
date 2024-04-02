@@ -71,7 +71,7 @@ export default function AddressInput({
       clickable={!!options?.length || !canInput}
       canInput={canInput}
       innerSuffix={<ConnectWallet who={who} height="full" />}
-      wrapClassName={`h-10 bg-transparent flex items-center justify-between p-1 border border-radius transition-colors duration-200 ${
+      wrapClassName={`h-12 bg-transparent flex items-center justify-between p-1 border border-radius transition-colors duration-200 ${
         value?.valid === false ? "border-alert" : "border-transparent"
       }`}
       inputClassName="w-full border-radius h-full bg-transparent px-1"
@@ -100,8 +100,8 @@ export default function AddressInput({
           </button>
         ))
       ) : (
-        <div className="px-middle py-small">
-          <span className="text-sm font-medium">No data</span>
+        <div className="inline-flex justify-center px-middle py-small">
+          <span className="text-sm font-medium text-slate-400">No data</span>
         </div>
       )}
     </InputSelect>

@@ -1,4 +1,4 @@
-import { ChainConfig, ChainID, WalletID } from "@/types";
+import { ChainConfig, ChainID, ParachainID, WalletID } from "@/types";
 import { bnToBn } from "@polkadot/util";
 
 export const assethubRococoChain: ChainConfig = {
@@ -42,16 +42,21 @@ export const assethubRococoChain: ChainConfig = {
       name: "Tether USD Test",
       symbol: "USDT",
       decimals: 6,
-      cross: [{ target: { network: "pangolin", symbol: "ahUSDT" }, isReserve: true }],
+      cross: [
+        {
+          isReserve: true,
+          target: { network: "pangolin", symbol: "ahUSDT" },
+          fee: { amount: bnToBn(125000), asset: { id: 7777, decimals: 6, symbol: "USDT", native: true } }, // 0.125 USDT
+        },
+      ],
     },
   ],
   wallets: [WalletID.TALISMAN],
   addressType: "substrate",
-  minCross: bnToBn(125000), // 0.125 USDT
 
   /**
    * Substrate
    */
   endpoint: "wss://rococo-asset-hub-rpc.polkadot.io",
-  parachainId: 1000,
+  parachainId: ParachainID.ASSETHUB_ROCOCO,
 };

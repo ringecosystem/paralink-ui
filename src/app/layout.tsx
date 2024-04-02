@@ -10,8 +10,8 @@ import TransferProvider from "@/providers/transfer-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Darwinia Cross-Chain",
-  description: "Darwinia USDT Cross-Chain",
+  title: "Asset Hub Bridge - Darwinia",
+  description: "Assets cross-chain between Darwinia and Asset Hub.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

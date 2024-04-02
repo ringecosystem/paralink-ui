@@ -7,19 +7,21 @@ import { forkJoin, EMPTY } from "rxjs";
 export function useBalance(
   bridge: EvmBridge | undefined,
   value: { address: string; valid: boolean } | undefined,
-  position: "source" | "target",
+  type: "source" | "target" | "usdt",
 ) {
   const [balance, setBalance] = useState<{ asset: { value: BN; asset: Asset } }>();
 
   const updateBalance = useCallback(() => {
     if (bridge && value?.address && value.valid) {
       return forkJoin([
-        position === "source"
+        type === "usdt"
+          ? bridge.getSourceUsdtBalance(value.address)
+          : type === "source"
           ? bridge.getSourceAssetBalance(value.address)
           : bridge.getTargetAssetBalance(value.address),
       ]).subscribe({
         next: ([asset]) => {
-          setBalance({ asset });
+          setBalance(asset ? { asset } : undefined);
         },
         error: (err) => {
           console.error(err);
@@ -31,7 +33,7 @@ export function useBalance(
     }
 
     return EMPTY.subscribe();
-  }, [bridge, value, position]);
+  }, [bridge, value, type]);
 
   useEffect(() => {
     const sub$$ = updateBalance();

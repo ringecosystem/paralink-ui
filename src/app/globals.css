@@ -28,7 +28,7 @@ body {
 
 @layer components {
   .border-radius {
-    @apply rounded-lg;
+    @apply rounded-2xl;
   }
 
   .app-header {

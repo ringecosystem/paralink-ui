@@ -1,9 +1,9 @@
-import { assethubRococoChain, pangolinChain } from "@/config/chains";
+import { assethubPolkadotChain, darwiniaChain } from "@/config/chains";
 import { AvailableSourceAssetOptions, AvailableTargetAssetOptions, AvailableTargetChainOptions } from "@/types";
 import { getChainConfig, getChainsConfig } from ".";
 
-let defaultSourceChain = pangolinChain;
-let defaultTargetChain = assethubRococoChain;
+let defaultSourceChain = assethubPolkadotChain;
+let defaultTargetChain = darwiniaChain;
 
 let defaultSourceAsset = defaultSourceChain.assets[0];
 let defaultTargetAsset = defaultTargetChain.assets[0];

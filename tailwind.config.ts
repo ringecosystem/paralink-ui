@@ -17,7 +17,7 @@ const config: Config = {
       colors: {
         primary: "#FF0083",
         component: "#242A2E",
-        alert: "rgb(239 68 68)",
+        alert: "#F97316",
         "app-black": "#1A1D1F",
       },
       spacing: {

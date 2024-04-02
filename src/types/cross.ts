@@ -1,4 +1,5 @@
 import { Asset, AssetSymbol, ChainConfig, Network } from ".";
+import { BN } from "@polkadot/util";
 
 export interface Cross {
   target: {
@@ -6,6 +7,7 @@ export interface Cross {
     symbol: AssetSymbol;
   };
   isReserve: boolean;
+  fee: { amount: BN; asset: { id: number; decimals: number; symbol: AssetSymbol; native: boolean } };
 }
 
 export type AvailableSourceAssetOptions = {

@@ -1,4 +1,4 @@
-import { ChainConfig, ChainID, WalletID } from "@/types";
+import { ChainConfig, ChainID, ParachainID, WalletID } from "@/types";
 import { bnToBn } from "@polkadot/util";
 
 export const pangolinChain: ChainConfig = {
@@ -44,20 +44,20 @@ export const pangolinChain: ChainConfig = {
       decimals: 6,
       cross: [
         {
-          target: { network: "assethub-rococo", symbol: "USDT" },
           isReserve: false,
+          target: { network: "assethub-rococo", symbol: "USDT" },
+          fee: { amount: bnToBn(3600000), asset: { id: 7777, decimals: 6, symbol: "ahUSDT", native: true } }, // 3.6 USDT
         },
       ],
     },
   ],
   wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
   addressType: "evm",
-  minCross: bnToBn(3600000), // 3.6 USDT
   hasAssetLimit: true,
 
   /**
    * Substrate
    */
   endpoint: "wss://pangolin-rpc.darwinia.network",
-  parachainId: 2105,
+  parachainId: ParachainID.PANGOLIN,
 };
