@@ -49,7 +49,7 @@ export class SubstrateBridge extends BaseBridge {
         fun: { Fungible: amount },
       },
     ];
-    if (this.cross && this.cross.fee.asset.symbol !== this.cross.target.symbol) {
+    if (this.cross && !this.cross.fee.asset.native) {
       assetItems.push({
         id: {
           Concrete: {
@@ -102,7 +102,7 @@ export class SubstrateBridge extends BaseBridge {
         fun: { Fungible: amount },
       },
     ];
-    if (this.cross && this.cross.fee.asset.symbol !== this.cross.target.symbol) {
+    if (this.cross && !this.cross.fee.asset.native) {
       assetItems.push({
         id: {
           Concrete: {

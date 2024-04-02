@@ -87,7 +87,7 @@ export default function Transfer() {
         <div className="flex items-start justify-center gap-small">
           <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
           <span className="text-xs text-alert">{`You need at least ${formatBalance(fee.amount, fee.asset.decimals)} ${
-            fee.asset.srcSymbol
+            fee.asset.symbol
           } in your account to cover cross-chain fees.`}</span>
         </div>
       );

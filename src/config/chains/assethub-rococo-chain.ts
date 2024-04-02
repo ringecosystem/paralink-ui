@@ -46,7 +46,7 @@ export const assethubRococoChain: ChainConfig = {
         {
           isReserve: true,
           target: { network: "pangolin", symbol: "ahUSDT" },
-          fee: { amount: bnToBn(125000), asset: { id: 1027, decimals: 6, symbol: "ahUSDT", srcSymbol: "USDT" } }, // 0.125 USDT
+          fee: { amount: bnToBn(125000), asset: { id: 7777, decimals: 6, symbol: "USDT", native: true } }, // 0.125 USDT
         },
       ],
     },

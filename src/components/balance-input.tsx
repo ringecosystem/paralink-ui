@@ -53,7 +53,7 @@ export default function BalanceInput({
   }, [balance, asset, placeholder]);
 
   const min = useMemo(() => {
-    if (cross && cross.fee.asset.symbol === cross.target.symbol) {
+    if (cross && cross.fee.asset.native) {
       return cross.fee.amount;
     }
     return undefined;

@@ -7,7 +7,7 @@ export interface Cross {
     symbol: AssetSymbol;
   };
   isReserve: boolean;
-  fee: { amount: BN; asset: { id: number; decimals: number; symbol: AssetSymbol; srcSymbol: AssetSymbol } };
+  fee: { amount: BN; asset: { id: number; decimals: number; symbol: AssetSymbol; native: boolean } };
 }
 
 export type AvailableSourceAssetOptions = {

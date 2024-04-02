@@ -45,7 +45,7 @@ export const assethubPolkadotChain: ChainConfig = {
         {
           isReserve: true,
           target: { network: "darwinia", symbol: "ahUSDT" },
-          fee: { amount: bnToBn(20000), asset: { id: 1027, decimals: 6, symbol: "ahUSDT", srcSymbol: "USDT" } }, // 0.02 USDT
+          fee: { amount: bnToBn(20000), asset: { id: 1984, decimals: 6, symbol: "USDT", native: true } }, // 0.02 USDT
         },
       ],
     },
@@ -59,7 +59,7 @@ export const assethubPolkadotChain: ChainConfig = {
         {
           isReserve: true,
           target: { network: "darwinia", symbol: "ahPINK" },
-          fee: { amount: bnToBn(20000), asset: { id: 1027, decimals: 6, symbol: "ahUSDT", srcSymbol: "USDT" } }, // 0.02 USDT
+          fee: { amount: bnToBn(20000), asset: { id: 1984, decimals: 6, symbol: "USDT", native: false } }, // 0.02 USDT
         },
       ],
     },
