@@ -22,7 +22,7 @@ export default function ChainSelect({ value, options, disabled, onChange = () =>
       disabled={disabled}
       sameWidth
       labelClassName="flex items-center gap-middle py-[4px] px-[6px] bg-transparent hover:bg-white/10 border-radius"
-      childClassName="flex flex-col py-small bg-component border-primary border border-radius"
+      childClassName="flex flex-col py-small bg-component border-primary border border-radius gap-[1px]"
       arrowClassName="opacity-50"
     >
       {options?.length ? (
