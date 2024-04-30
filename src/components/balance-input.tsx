@@ -107,7 +107,7 @@ export default function BalanceInput({
     <div
       className={`border-radius relative flex h-12 items-center justify-between border p-1 transition-colors ${
         value?.valid === false ? "border-alert" : "border-transparent"
-      }`}
+      } ${disabled ? "opacity-50" : ""}`}
     >
       <Input
         disabled={disabled}
