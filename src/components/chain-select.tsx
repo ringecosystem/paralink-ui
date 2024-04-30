@@ -14,7 +14,7 @@ export default function ChainSelect({ value, options, disabled, onChange = () =>
   return (
     <Select
       label={
-        <div className="flex max-w-[140px] items-center gap-small">
+        <div className="flex max-w-[12rem] items-center gap-small">
           <Image width={20} height={20} alt="Chain logo" src={getChainLogoSrc(value.logo)} />
           <span className="truncate text-white/50">{value.name}</span>
         </div>

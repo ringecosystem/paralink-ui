@@ -238,12 +238,41 @@ export default function Transfer() {
       : [];
 
   return (
-    <div className="border-radius mx-auto mt-10 flex w-[30rem] flex-col gap-5 bg-component p-5 pb-8">
+    <div className="border-radius mx-auto mt-10 flex w-[34rem] flex-col gap-5 bg-component p-5 pb-8 shadow-2xl">
+      {/* Sender */}
+      <TransferSection label="Sender" className="border-radius mt-10 border-[2px] border-white/20">
+        <AddressInput
+          who="sender"
+          placeholder="Select an address"
+          value={sender}
+          options={senderOptions}
+          accounts={activeSenderWallet === WalletID.TALISMAN ? talismanAccounts : []}
+          onClear={setSender}
+          onChange={setSender}
+          onAccountChange={setActiveSenderAccount}
+        />
+      </TransferSection>
+
+      {/* Recipient */}
+      <TransferSection label="Recipient" className="border-radius mt-10 border-[2px] border-white/20">
+        <AddressInput
+          canInput
+          who="recipient"
+          placeholder="Select or enter an address"
+          value={recipient}
+          options={recipientOptions}
+          accounts={activeRecipientWallet === WalletID.TALISMAN ? talismanAccounts : []}
+          onClear={setRecipient}
+          onChange={setRecipient}
+          onAccountChange={setActiveRecipientAccount}
+        />
+      </TransferSection>
+
       {/* From */}
       <TransferSection
         label="From"
         extra={<ChainSelect value={sourceChain} options={sourceChainOptions} onChange={_setSourceChain} />}
-        className="mb-3 mt-12"
+        className="border-radius mb-3 mt-12 border-[2px] border-white/20"
       >
         <BalanceInput
           value={transferAmount}
@@ -265,38 +294,9 @@ export default function Transfer() {
       <TransferSection
         label="To"
         extra={<ChainSelect value={targetChain} options={targetChainOptions} onChange={_setTargetChain} />}
-        className="mt-3"
+        className="border-radius mt-3 border border-transparent"
       >
         <BalanceInput disabled asset={targetAsset} balance={targetBalance?.asset.value} placeholder="Balance 0" />
-      </TransferSection>
-
-      {/* Sender */}
-      <TransferSection label="Sender" className="mt-10">
-        <AddressInput
-          who="sender"
-          placeholder="Select an address"
-          value={sender}
-          options={senderOptions}
-          accounts={activeSenderWallet === WalletID.TALISMAN ? talismanAccounts : []}
-          onClear={setSender}
-          onChange={setSender}
-          onAccountChange={setActiveSenderAccount}
-        />
-      </TransferSection>
-
-      {/* Recipient */}
-      <TransferSection label="Recipient" className="mt-10">
-        <AddressInput
-          canInput
-          who="recipient"
-          placeholder="Select or enter an address"
-          value={recipient}
-          options={recipientOptions}
-          accounts={activeRecipientWallet === WalletID.TALISMAN ? talismanAccounts : []}
-          onClear={setRecipient}
-          onChange={setRecipient}
-          onAccountChange={setActiveRecipientAccount}
-        />
       </TransferSection>
 
       {/* Send */}
