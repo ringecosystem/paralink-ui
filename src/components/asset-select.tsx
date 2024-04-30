@@ -21,7 +21,7 @@ export default function AssetSelect({ value, options, disabled, onChange = () =>
       }
       disabled={disabled}
       sameWidth
-      labelClassName="flex items-center gap-middle shrink-0 w-28 justify-between bg-component h-full border-radius px-1 hover:opacity-80 transition-[transform,color] disabled:translate-y-0 disabled:opacity-100 disabled:cursor-not-allowed"
+      labelClassName="flex items-center gap-middle shrink-0 w-32 justify-between bg-component h-full border-radius px-1 hover:opacity-80 transition-[transform,color] disabled:translate-y-0 disabled:opacity-100 disabled:cursor-not-allowed"
       childClassName="flex flex-col py-small bg-component border-primary border border-radius gap-[1px]"
     >
       {options?.length ? (
