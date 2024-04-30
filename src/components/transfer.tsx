@@ -239,6 +239,35 @@ export default function Transfer() {
 
   return (
     <div className="border-radius mx-auto mt-10 flex w-[30rem] flex-col gap-5 bg-component p-5 pb-8">
+      {/* Sender */}
+      <TransferSection label="Sender" className="mt-10">
+        <AddressInput
+          who="sender"
+          placeholder="Select an address"
+          value={sender}
+          options={senderOptions}
+          accounts={activeSenderWallet === WalletID.TALISMAN ? talismanAccounts : []}
+          onClear={setSender}
+          onChange={setSender}
+          onAccountChange={setActiveSenderAccount}
+        />
+      </TransferSection>
+
+      {/* Recipient */}
+      <TransferSection label="Recipient" className="mt-10">
+        <AddressInput
+          canInput
+          who="recipient"
+          placeholder="Select or enter an address"
+          value={recipient}
+          options={recipientOptions}
+          accounts={activeRecipientWallet === WalletID.TALISMAN ? talismanAccounts : []}
+          onClear={setRecipient}
+          onChange={setRecipient}
+          onAccountChange={setActiveRecipientAccount}
+        />
+      </TransferSection>
+
       {/* From */}
       <TransferSection
         label="From"
@@ -268,35 +297,6 @@ export default function Transfer() {
         className="mt-3"
       >
         <BalanceInput disabled asset={targetAsset} balance={targetBalance?.asset.value} placeholder="Balance 0" />
-      </TransferSection>
-
-      {/* Sender */}
-      <TransferSection label="Sender" className="mt-10">
-        <AddressInput
-          who="sender"
-          placeholder="Select an address"
-          value={sender}
-          options={senderOptions}
-          accounts={activeSenderWallet === WalletID.TALISMAN ? talismanAccounts : []}
-          onClear={setSender}
-          onChange={setSender}
-          onAccountChange={setActiveSenderAccount}
-        />
-      </TransferSection>
-
-      {/* Recipient */}
-      <TransferSection label="Recipient" className="mt-10">
-        <AddressInput
-          canInput
-          who="recipient"
-          placeholder="Select or enter an address"
-          value={recipient}
-          options={recipientOptions}
-          accounts={activeRecipientWallet === WalletID.TALISMAN ? talismanAccounts : []}
-          onClear={setRecipient}
-          onChange={setRecipient}
-          onAccountChange={setActiveRecipientAccount}
-        />
       </TransferSection>
 
       {/* Send */}
