@@ -27,6 +27,7 @@ jobs:
           project_name: "crosschain-ui"
           script_run: false
           dist_path: .
+          enable_notify_comment: true
           enable_notify_slack: true
           slack_channel: public-darwinia-websites-apps
           slack_webhook: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
