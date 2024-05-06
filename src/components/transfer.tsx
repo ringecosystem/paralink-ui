@@ -26,6 +26,8 @@ const {
 
 export default function Transfer() {
   const {
+    sourceApi,
+    targetApi,
     assetLimit,
     targetAssetDetails,
     sender,
@@ -243,6 +245,7 @@ export default function Transfer() {
       <TransferSection label="Sender" className="border-radius mt-10 border-[2px] border-white/20">
         <AddressInput
           who="sender"
+          api={sourceApi}
           placeholder="Select an address"
           value={sender}
           options={senderOptions}
@@ -257,6 +260,7 @@ export default function Transfer() {
       <TransferSection label="Recipient" className="border-radius mt-10 border-[2px] border-white/20">
         <AddressInput
           canInput
+          api={targetApi}
           who="recipient"
           placeholder="Select or enter an address"
           value={recipient}

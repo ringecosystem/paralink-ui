@@ -5,3 +5,4 @@ export * from "./use-balance";
 export * from "./use-toggle";
 export * from "./use-asset-limit";
 export * from "./use-asset-details";
+export * from "./use-account-name";

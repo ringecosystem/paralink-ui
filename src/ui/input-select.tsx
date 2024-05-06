@@ -33,6 +33,7 @@ interface Props {
   inputClassName?: string;
   childClassName?: string;
   arrowClassName?: string;
+  inputChildren?: JSX.Element;
   onClear?: () => void;
   onChange?: ChangeEventHandler<HTMLInputElement>;
 }
@@ -51,6 +52,7 @@ export default function InputSelect({
   placement,
   canInput,
   sameWidth,
+  inputChildren,
   wrapClassName,
   inputClassName,
   childClassName,
@@ -113,6 +115,7 @@ export default function InputSelect({
           disabled={disabled}
           onChange={onChange}
           readOnly={!canInput}
+          inputChildren={inputChildren}
         />
         {suffix === true ? (
           <div className="flex h-full shrink-0 items-center gap-small">

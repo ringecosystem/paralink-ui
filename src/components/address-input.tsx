@@ -2,9 +2,11 @@ import InputSelect from "@/ui/input-select";
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef } from "react";
 import ConnectWallet from "./connect-wallet";
 import { WalletAccount } from "@talismn/connect-wallets";
-import { isValidAddress } from "@/utils";
-import { useTransfer } from "@/hooks";
+import { isValidAddress, toShortAdrress } from "@/utils";
+import { useAccountName, useTransfer } from "@/hooks";
 import AddressIdenticon from "./address-identicon";
+import { ApiPromise } from "@polkadot/api";
+import { AddressType } from "@/types";
 
 interface Value {
   name?: string;
@@ -14,6 +16,7 @@ interface Value {
 
 interface Props {
   canInput?: boolean;
+  api: ApiPromise | undefined;
   who: "sender" | "recipient";
   value?: Value;
   options?: Pick<Value, "address" | "name">[];
@@ -25,6 +28,7 @@ interface Props {
 }
 
 export default function AddressInput({
+  api,
   who,
   value,
   options,
@@ -78,26 +82,33 @@ export default function AddressInput({
       childClassName="flex flex-col py-middle bg-component border-primary border border-radius max-h-60 overflow-y-auto"
       placeholder={placeholder ?? "Address"}
       value={value?.address ?? ""} // Keep it as a controlled component
+      inputChildren={
+        value?.name ? (
+          <div className="inline-block px-1">
+            {value.name}
+            <span className="text-white/50">&nbsp;({toShortAdrress(value.address)})</span>
+          </div>
+        ) : undefined
+      }
       alert={value?.valid === false ? "* Unavailable address" : ""}
       onClear={handleClear}
       onChange={handleChange}
     >
       {options?.length ? (
         options.map((account, index) => (
-          <button
+          <Option
+            api={api}
+            account={account}
             key={account.address}
+            addressType={addressType}
             onClick={() => {
-              onChange({ ...account, valid: isValidAddress(account.address, addressType) });
               if (accounts?.at(index)) {
                 onAccountChange(accounts[index]);
               }
             }}
+            onChange={onChange}
             disabled={!isValidAddress(account.address, addressType)}
-            className="flex items-center gap-middle px-middle py-1 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <AddressIdenticon size={20} address={account.address} />
-            <span className="truncate text-sm font-medium">{account.name || account.address}</span>
-          </button>
+          />
         ))
       ) : (
         <div className="inline-flex justify-center px-middle py-small">
@@ -105,5 +116,44 @@ export default function AddressInput({
         </div>
       )}
     </InputSelect>
+  );
+}
+
+function Option({
+  api,
+  account,
+  disabled,
+  addressType,
+  onClick,
+  onChange,
+}: {
+  account: Pick<Value, "address" | "name">;
+  api: ApiPromise | undefined;
+  disabled?: boolean;
+  addressType: AddressType;
+  onClick: () => void;
+  onChange: (value: Value | undefined) => void;
+}) {
+  const name = useAccountName(account.address, api);
+
+  return (
+    <button
+      onClick={() => {
+        onChange({ ...account, name: account.name ?? name, valid: isValidAddress(account.address, addressType) });
+        onClick();
+      }}
+      disabled={disabled}
+      className="flex items-center gap-middle px-middle py-1 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <AddressIdenticon size={20} address={account.address} />
+      {account.name || name !== account.address ? (
+        <div className="inline-block truncate text-sm font-medium">
+          {account.name ?? name}
+          <span className="text-white/50">&nbsp;({toShortAdrress(account.address)})</span>
+        </div>
+      ) : (
+        <span className="truncate text-sm font-medium">{account.address}</span>
+      )}
+    </button>
   );
 }
