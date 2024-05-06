@@ -11,6 +11,7 @@ import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
 import { notifyError, notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
 import { useApi, useAssetDetails, useAssetLimit, useBalance } from "@/hooks";
+import { ApiPromise } from "@polkadot/api";
 
 interface TransferCtx {
   assetLimit: BN | undefined;
@@ -30,6 +31,8 @@ interface TransferCtx {
   activeRecipientAccount: WalletAccount | undefined;
   activeSenderWallet: WalletID | undefined;
   activeRecipientWallet: WalletID | undefined;
+  sourceApi: ApiPromise | undefined;
+  targetApi: ApiPromise | undefined;
 
   setTransferAmount: Dispatch<SetStateAction<{ valid: boolean; input: string; amount: BN }>>;
   setSourceChain: Dispatch<SetStateAction<ChainConfig>>;
@@ -81,6 +84,8 @@ const defaultValue: TransferCtx = {
   activeRecipientAccount: undefined,
   activeSenderWallet: undefined,
   activeRecipientWallet: undefined,
+  sourceApi: undefined,
+  targetApi: undefined,
 
   setTransferAmount: () => undefined,
   setSourceChain: () => undefined,
@@ -195,6 +200,8 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   return (
     <TransferContext.Provider
       value={{
+        sourceApi,
+        targetApi,
         assetLimit,
         targetAssetDetails,
         bridgeInstance,
