@@ -66,6 +66,7 @@ export const darwiniaChain: ChainConfig = {
   ],
   wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
   addressType: "evm",
+  hasAssetLimit: true,
 
   /**
    * Substrate
