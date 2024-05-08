@@ -4,7 +4,7 @@ import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import AssetSelect from "./asset-select";
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatBalance } from "@/utils";
-import { parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { InputAlert } from "./input-alert";
 
 interface Value {
@@ -19,7 +19,7 @@ interface Props {
   placeholder?: string;
   balance?: BN;
   cross?: Cross;
-  asset?: Asset;
+  asset: Asset;
   assetSupply?: BN;
   assetLimit?: BN;
   assetOptions?: Asset[];
@@ -119,7 +119,35 @@ export default function BalanceInput({
         value={value?.input}
         onChange={handleInputChange}
       />
-      {asset ? <AssetSelect disabled={disabled} value={asset} options={assetOptions} onChange={onAssetChange} /> : null}
+      <div className="flex h-full items-center gap-[2px]">
+        <button
+          className="h-full rounded-l-2xl bg-component px-2 transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-100"
+          onClick={() => {
+            if (balance && assetSupply) {
+              if (assetLimit && assetSupply.gte(assetLimit)) {
+                onChange({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
+              } else if (assetLimit) {
+                const remaining = assetLimit.sub(assetSupply);
+                const amount = remaining.lte(balance) ? remaining : balance;
+                const input = formatUnits(BigInt(amount.toString()), asset.decimals);
+                onChange({ valid: !(min && min.gt(amount)), input, amount });
+              } else {
+                onChange({
+                  amount: balance,
+                  valid: !(min && min.gt(balance)),
+                  input: formatUnits(BigInt(balance.toString()), asset.decimals),
+                });
+              }
+            } else {
+              onChange({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
+            }
+          }}
+          disabled={disabled}
+        >
+          Max
+        </button>
+        <AssetSelect disabled={disabled} value={asset} options={assetOptions} onChange={onAssetChange} />
+      </div>
 
       {/* Alert */}
       {requireLimit ? (
