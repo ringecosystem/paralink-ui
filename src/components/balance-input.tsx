@@ -46,7 +46,7 @@ export default function BalanceInput({
 
   const _placeholder = useMemo(() => {
     if (balance && asset) {
-      return `Balance ${formatBalance(balance, asset.decimals)}`;
+      return `Available balance ${formatBalance(balance, asset.decimals)}`;
     }
     return placeholder ?? "Enter an amount";
   }, [balance, asset, placeholder]);

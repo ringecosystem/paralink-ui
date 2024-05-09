@@ -300,7 +300,12 @@ export default function Transfer() {
         extra={<ChainSelect value={targetChain} options={targetChainOptions} onChange={_setTargetChain} />}
         className="border-radius mt-3 border border-transparent"
       >
-        <BalanceInput disabled asset={targetAsset} balance={targetBalance?.asset.value} placeholder="Balance 0" />
+        <BalanceInput
+          disabled
+          asset={targetAsset}
+          balance={targetBalance?.asset.value}
+          placeholder="Available balance 0"
+        />
       </TransferSection>
 
       {/* Send */}
