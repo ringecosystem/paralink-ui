@@ -2,7 +2,7 @@ import { Asset, Cross } from "@/types";
 import Input from "@/ui/input";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import AssetSelect from "./asset-select";
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef } from "react";
 import { formatBalance } from "@/utils";
 import { formatUnits, parseUnits } from "viem";
 import { InputAlert } from "./input-alert";
@@ -43,11 +43,10 @@ export default function BalanceInput({
   const assetRef = useRef(asset);
   const spanRef = useRef<HTMLSpanElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [dynamicStyle, setDynamicStyle] = useState("");
 
   const _placeholder = useMemo(() => {
     if (balance && asset) {
-      return `Balance ${formatBalance(balance, asset.decimals)}`;
+      return `Available balance ${formatBalance(balance, asset.decimals)}`;
     }
     return placeholder ?? "Enter an amount";
   }, [balance, asset, placeholder]);
@@ -80,25 +79,6 @@ export default function BalanceInput({
     assetRef.current = asset;
   }, [value, asset, min, balance, assetLimit, assetSupply, onChange]);
 
-  useEffect(() => {
-    const inputWidth = inputRef.current?.clientWidth || 1;
-    const spanWidth = spanRef.current?.clientWidth || 0;
-    const percent = (spanWidth / inputWidth) * 100;
-    if (percent < 20) {
-      setDynamicStyle("text-[2.25rem] font-light");
-    } else if (percent < 30) {
-      setDynamicStyle("text-[1.875rem] font-light");
-    } else if (percent < 40) {
-      setDynamicStyle("text-[1.5rem] font-normal");
-    } else if (percent < 50) {
-      setDynamicStyle("text-[1.25rem] font-normal");
-    } else if (percent < 60) {
-      setDynamicStyle("text-[1.125rem] font-medium");
-    } else {
-      setDynamicStyle("text-[1rem] font-medium");
-    }
-  }, [value]);
-
   const insufficient = balance && value?.input && balance.lt(value.amount) ? true : false;
   const requireMin = min && value?.input && value.amount.lt(min) ? true : false;
   const requireLimit = isExcess(assetLimit, assetSupply, value?.amount);
@@ -112,9 +92,7 @@ export default function BalanceInput({
       <Input
         disabled={disabled}
         placeholder={_placeholder}
-        className={`h-full w-full bg-transparent px-1 transition-[font-weight,font-size,line-height] duration-300 ${
-          value?.input ? `leading-none ${dynamicStyle}` : ""
-        }`}
+        className="h-full w-full bg-transparent px-1"
         ref={inputRef}
         value={value?.input}
         onChange={handleInputChange}
@@ -158,7 +136,7 @@ export default function BalanceInput({
           )}`}
         />
       ) : requireMin ? (
-        <InputAlert text={`* Minimum: ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)}`} />
+        <InputAlert text={`* At least ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)} for tx fee`} />
       ) : insufficient ? (
         <InputAlert text="* Insufficient" />
       ) : null}
