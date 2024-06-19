@@ -1,15 +1,15 @@
-import { BaseBridge, UniversalBridge } from "@/libs";
-import { useCallback, useEffect, useState } from "react";
-import { from } from "rxjs";
-import { BN } from "@polkadot/util";
+import { BaseBridge } from "@/libs";
 import { Currency } from "@/types";
+import type { BN } from "@polkadot/util";
+import { useCallback, useEffect, useState } from "react";
+import { from, EMPTY } from "rxjs";
 
-export function useAssetLimit(bridge: BaseBridge | undefined, position: "source" | "target") {
+export function useAssetSupply(bridge: BaseBridge | undefined, position: "source" | "target") {
   const [value, setValue] = useState<{ currency: Currency; amount: BN }>();
 
   const update = useCallback(() => {
-    if (bridge && position === "target") {
-      return from(bridge.getAssetLimitOnTargetChain()).subscribe({
+    if (bridge) {
+      return from(position === "source" ? bridge.getSourceAssetSupply() : bridge.getTargetAssetSupply()).subscribe({
         next: setValue,
         error: (err) => {
           console.error(err);
@@ -18,6 +18,8 @@ export function useAssetLimit(bridge: BaseBridge | undefined, position: "source"
     } else {
       setValue(undefined);
     }
+
+    return EMPTY.subscribe();
   }, [bridge, position]);
 
   useEffect(() => {

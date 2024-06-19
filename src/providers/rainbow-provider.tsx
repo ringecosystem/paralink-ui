@@ -12,7 +12,10 @@ import { APP_NAME } from "@/config";
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID || "";
 const appName = APP_NAME;
 
-const { chains, publicClient } = configureChains([darwiniaChain], [publicProvider()]);
+const { chains, publicClient } = configureChains(
+  [darwiniaChain].map(({ assets, existential, ...chain }) => chain),
+  [publicProvider()],
+);
 
 const { connectors } = getDefaultWallets({ appName, projectId, chains });
 

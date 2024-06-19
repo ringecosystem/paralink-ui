@@ -1,14 +1,14 @@
-import { assethubPolkadotChain, darwiniaChain } from "@/config/chains";
+import { darwiniaChain, hydradxChain } from "@/config/chains";
 import { AvailableSourceAssetOptions, AvailableTargetAssetOptions, AvailableTargetChainOptions } from "@/types";
 import { getChainConfig, getChainsConfig } from ".";
 
-let defaultSourceChain = assethubPolkadotChain;
-let defaultTargetChain = darwiniaChain;
+let defaultSourceChain = darwiniaChain;
+let defaultTargetChain = hydradxChain;
 
 let defaultSourceAsset = defaultSourceChain.assets[0];
 let defaultTargetAsset = defaultTargetChain.assets[0];
 
-let defaultSourceChainOptions = [defaultSourceChain, defaultTargetChain];
+let defaultSourceChainOptions = getChainsConfig();
 let defaultTargetChainOptions = [defaultTargetChain];
 
 let defaultSourceAssetOptions = [defaultSourceAsset];

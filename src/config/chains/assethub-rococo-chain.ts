@@ -42,11 +42,27 @@ export const assethubRococoChain: ChainConfig = {
       name: "Tether USD Test",
       symbol: "USDT",
       decimals: 6,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_ROCOCO,
+        palletInstance: 50,
+        id: 7777,
+      },
       cross: [
         {
-          isReserve: true,
           target: { network: "pangolin", symbol: "ahUSDT" },
-          fee: { amount: bnToBn(125000), asset: { id: 7777, decimals: 6, symbol: "USDT", native: true } }, // 0.125 USDT
+          fee: {
+            amount: bnToBn(125000),
+            asset: {
+              local: { id: 7777 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_ROCOCO,
+                palletInstance: 50,
+                id: 7777,
+              },
+            },
+          },
+          section: "polkadotXcm",
+          method: "limitedReserveTransferAssets",
         },
       ],
     },
