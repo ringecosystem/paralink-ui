@@ -7,7 +7,7 @@ export const hydradxChain: ChainConfig = {
    */
   id: ChainID.HYDRADX,
   network: "hydradx",
-  name: "HydraDX",
+  name: "Hydration",
   nativeCurrency: {
     name: "HDX",
     symbol: "HDX",
