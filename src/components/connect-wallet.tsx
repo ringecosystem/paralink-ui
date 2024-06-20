@@ -77,21 +77,21 @@ export default function ConnectWallet({ who, kind = "component", height = "paddi
     [clearValue, setActiveWallet, setActiveAccount],
   );
 
-  const [supportedRainbow, supportedTalisman] = useMemo(() => {
-    return [supported.some((id) => id === WalletID.RAINBOW), supported.some((id) => id === WalletID.TALISMAN)];
+  const [supportedWalletEvm, supportedWalletTalisman] = useMemo(() => {
+    return [supported.some((id) => id === WalletID.EVM), supported.some((id) => id === WalletID.TALISMAN)];
   }, [supported]);
 
   useEffect(() => {
     if (!supported.some((id) => id === WalletID.TALISMAN) && activeWallet === WalletID.TALISMAN) {
       setActiveWallet(undefined);
       clearValue(undefined);
-    } else if (!supported.some((id) => id === WalletID.RAINBOW) && activeWallet === WalletID.RAINBOW) {
+    } else if (!supported.some((id) => id === WalletID.EVM) && activeWallet === WalletID.EVM) {
       setActiveWallet(undefined);
       clearValue(undefined);
     }
   }, [supported, activeWallet, clearValue, setActiveWallet]);
 
-  const walletIcon = kind === "primary" ? null : activeWallet === WalletID.RAINBOW ? "rainbow.svg" : "talisman-red.svg";
+  const walletIcon = kind === "primary" ? null : activeWallet === WalletID.EVM ? "evm.png" : "talisman-red.svg";
 
   // Major for page header
   if (kind === "primary" && sender?.address) {
@@ -105,7 +105,9 @@ export default function ConnectWallet({ who, kind = "component", height = "paddi
 
   return (talismanAccounts.length || activeAddress) && activeWallet ? (
     <Button onClick={handleDisconnect} kind={kind} height={height}>
-      {walletIcon && <Image width={16} height={16} alt="Wallet" src={`/images/wallet/${walletIcon}`} />}
+      {walletIcon && (
+        <Image width={16} height={16} alt="Wallet" src={`/images/wallet/${walletIcon}`} className="rounded-full" />
+      )}
       <span>Disconnect</span>
     </Button>
   ) : (
@@ -129,18 +131,18 @@ export default function ConnectWallet({ who, kind = "component", height = "paddi
               connectTalisman();
               setIsOpenFalse();
             }}
-            disabled={!supportedTalisman}
+            disabled={!supportedWalletTalisman}
           />
           <Item
             who={who}
-            icon="rainbow.svg"
-            name="Rainbow"
+            icon="evm.png"
+            name="EVM wallets"
             onClick={() => {
-              setActiveWallet(WalletID.RAINBOW);
+              setActiveWallet(WalletID.EVM);
               openConnectModal?.();
               setIsOpenFalse();
             }}
-            disabled={!supportedRainbow}
+            disabled={!supportedWalletEvm}
           />
         </div>
       </Modal>
@@ -195,7 +197,7 @@ function Item({
         disabled={disabled}
         onClick={onClick}
       >
-        <Image width={20} height={20} alt="Wallet icon" src={`/images/wallet/${icon}`} />
+        <Image width={20} height={20} alt="Wallet icon" src={`/images/wallet/${icon}`} className="rounded-full" />
         <span>{name}</span>
       </button>
     </Tooltip>

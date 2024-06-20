@@ -41,11 +41,27 @@ export const assethubPolkadotChain: ChainConfig = {
       name: "Tether USD",
       symbol: "USDT",
       decimals: 6,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_POLKADOT,
+        palletInstance: 50,
+        id: 1984,
+      },
       cross: [
         {
-          isReserve: true,
           target: { network: "darwinia", symbol: "ahUSDT" },
-          fee: { amount: bnToBn(20000), asset: { id: 1984, decimals: 6, symbol: "USDT", native: true } }, // 0.02 USDT
+          fee: {
+            amount: bnToBn(20000),
+            asset: {
+              local: { id: 1984 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_POLKADOT,
+                palletInstance: 50,
+                id: 1984,
+              },
+            },
+          },
+          section: "polkadotXcm",
+          method: "limitedReserveTransferAssets",
         },
       ],
     },
@@ -55,11 +71,27 @@ export const assethubPolkadotChain: ChainConfig = {
       name: "PINK",
       symbol: "PINK",
       decimals: 10,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_POLKADOT,
+        palletInstance: 50,
+        id: 23,
+      },
       cross: [
         {
-          isReserve: true,
           target: { network: "darwinia", symbol: "ahPINK" },
-          fee: { amount: bnToBn(20000), asset: { id: 1984, decimals: 6, symbol: "USDT", native: false } }, // 0.02 USDT
+          fee: {
+            amount: bnToBn(20000),
+            asset: {
+              local: { id: 1984 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_POLKADOT,
+                palletInstance: 50,
+                id: 1984,
+              },
+            },
+          },
+          section: "polkadotXcm",
+          method: "limitedReserveTransferAssets",
         },
       ],
     },
@@ -72,4 +104,5 @@ export const assethubPolkadotChain: ChainConfig = {
    */
   endpoint: "wss://polkadot-asset-hub-rpc.polkadot.io",
   parachainId: ParachainID.ASSETHUB_POLKADOT,
+  existential: { minBalance: bnToBn("500000000") }, // 0.05 DOT
 };

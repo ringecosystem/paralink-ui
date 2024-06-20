@@ -1,4 +1,4 @@
-import { ChainConfig, ChainID, ParachainID, WalletID } from "@/types";
+import { AssetID, ChainConfig, ChainID, ParachainID, WalletID } from "@/types";
 import { bnToBn } from "@polkadot/util";
 
 export const darwiniaChain: ChainConfig = {
@@ -36,16 +36,62 @@ export const darwiniaChain: ChainConfig = {
   logo: "darwinia.png",
   assets: [
     {
+      icon: "ring.png",
+      id: AssetID.SYSTEM,
+      name: "RING",
+      symbol: "RING",
+      decimals: 18,
+      origin: {
+        parachainId: ParachainID.DARWINIA,
+        palletInstance: 5,
+        id: AssetID.SYSTEM,
+      },
+      cross: [
+        {
+          target: { network: "hydradx", symbol: "RING" },
+          fee: {
+            amount: bnToBn("1000000000000000000"), // 1 RING
+            asset: {
+              local: { id: AssetID.SYSTEM },
+              origin: {
+                parachainId: ParachainID.DARWINIA,
+                palletInstance: 5,
+                id: AssetID.SYSTEM,
+              },
+            },
+          },
+          section: "polkadotXcm",
+          method: "reserveTransferAssets",
+        },
+      ],
+    },
+    {
       icon: "usdt.svg",
       id: 1027,
       name: "Tether USD",
       symbol: "ahUSDT",
       decimals: 6,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_POLKADOT,
+        palletInstance: 50,
+        id: 1984,
+      },
       cross: [
         {
-          isReserve: false,
           target: { network: "assethub-polkadot", symbol: "USDT" },
-          fee: { amount: bnToBn(700000), asset: { id: 1984, decimals: 6, symbol: "ahUSDT", native: true } }, // 0.7 USDT
+          fee: {
+            amount: bnToBn(700000),
+            asset: {
+              local: { id: 1027 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_POLKADOT,
+                palletInstance: 50,
+                id: 1984,
+              },
+            },
+          },
+          section: "xTokens",
+          method: "transferMultiassets",
         },
       ],
     },
@@ -55,18 +101,33 @@ export const darwiniaChain: ChainConfig = {
       name: "PINK",
       symbol: "ahPINK",
       decimals: 10,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_POLKADOT,
+        palletInstance: 50,
+        id: 23,
+      },
       cross: [
         {
-          isReserve: false,
           target: { network: "assethub-polkadot", symbol: "PINK" },
-          fee: { amount: bnToBn(700000), asset: { id: 1984, decimals: 6, symbol: "ahUSDT", native: false } }, // 0.7 USDT
+          fee: {
+            amount: bnToBn(700000),
+            asset: {
+              local: { id: 1027 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_POLKADOT,
+                palletInstance: 50,
+                id: 1984,
+              },
+            },
+          },
+          section: "xTokens",
+          method: "transferMultiassets",
         },
       ],
     },
   ],
-  wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
+  wallets: [WalletID.EVM, WalletID.TALISMAN],
   addressType: "evm",
-  hasAssetLimit: true,
 
   /**
    * Substrate

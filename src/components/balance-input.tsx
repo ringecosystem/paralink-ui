@@ -52,11 +52,11 @@ export default function BalanceInput({
   }, [balance, asset, placeholder]);
 
   const min = useMemo(() => {
-    if (cross && cross.fee.asset.native) {
+    if (cross && cross.fee.asset.local.id === asset.id) {
       return cross.fee.amount;
     }
     return undefined;
-  }, [cross]);
+  }, [cross, asset.id]);
 
   const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
@@ -133,12 +133,14 @@ export default function BalanceInput({
           text={`* Limit: ${formatBalance(assetLimit ?? BN_ZERO, asset?.decimals ?? 0)}, supply: ${formatBalance(
             (assetSupply ?? BN_ZERO).add(value?.amount ?? BN_ZERO),
             asset?.decimals ?? 0,
-          )}`}
+          )}.`}
         />
       ) : requireMin ? (
-        <InputAlert text={`* At least ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)} for tx fee`} />
+        <InputAlert
+          text={`* At least ${formatBalance(min ?? BN_ZERO, asset?.decimals ?? 0)} ${asset.symbol} for tx fee.`}
+        />
       ) : insufficient ? (
-        <InputAlert text="* Insufficient" />
+        <InputAlert text="* Insufficient." />
       ) : null}
 
       {/*  Invisible */}

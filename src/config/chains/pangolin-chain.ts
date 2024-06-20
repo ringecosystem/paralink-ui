@@ -42,18 +42,33 @@ export const pangolinChain: ChainConfig = {
       name: "Tether USD",
       symbol: "ahUSDT",
       decimals: 6,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_ROCOCO,
+        palletInstance: 50,
+        id: 7777,
+      },
       cross: [
         {
-          isReserve: false,
           target: { network: "assethub-rococo", symbol: "USDT" },
-          fee: { amount: bnToBn(3600000), asset: { id: 7777, decimals: 6, symbol: "ahUSDT", native: true } }, // 3.6 USDT
+          fee: {
+            amount: bnToBn(3600000),
+            asset: {
+              local: { id: 1027 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_ROCOCO,
+                palletInstance: 50,
+                id: 7777,
+              },
+            },
+          },
+          section: "xTokens",
+          method: "transferMultiassets",
         },
       ],
     },
   ],
-  wallets: [WalletID.RAINBOW, WalletID.TALISMAN],
+  wallets: [WalletID.EVM, WalletID.TALISMAN],
   addressType: "evm",
-  hasAssetLimit: true,
 
   /**
    * Substrate

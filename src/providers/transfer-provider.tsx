@@ -2,24 +2,34 @@
 
 import { Dispatch, PropsWithChildren, SetStateAction, createContext, useCallback, useMemo, useState } from "react";
 import { BN, BN_ZERO } from "@polkadot/util";
-import type { PalletAssetsAssetDetails } from "@polkadot/types/lookup";
-import { Asset, ChainConfig, WalletID } from "@/types";
+import { Asset, ChainConfig, Currency, WalletID } from "@/types";
 import { usePublicClient, useWalletClient } from "wagmi";
-import { EvmBridge } from "@/libs";
+import { UniversalBridge } from "@/libs";
 
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
 import { notifyError, notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
-import { useApi, useAssetDetails, useAssetLimit, useBalance } from "@/hooks";
+import {
+  useApi,
+  useAssetSupply,
+  useAssetLimit,
+  useAssetBalance,
+  useFeeBalance,
+  useExistentialDeposit,
+  useNativeBalance,
+} from "@/hooks";
 import { ApiPromise } from "@polkadot/api";
 
 interface TransferCtx {
-  assetLimit: BN | undefined;
-  targetAssetDetails: PalletAssetsAssetDetails | undefined;
-  bridgeInstance: EvmBridge | undefined;
-  usdtBalance: { asset: { value: BN; asset: Asset } } | undefined;
-  sourceBalance: { asset: { value: BN; asset: Asset } } | undefined;
-  targetBalance: { asset: { value: BN; asset: Asset } } | undefined;
+  assetLimitOnTargetChain: { currency: Currency; amount: BN } | undefined;
+  existentialDepositOnTargetChain: { currency: Currency; amount: BN } | undefined;
+  targetAssetSupply: { currency: Currency; amount: BN } | undefined;
+  bridgeInstance: UniversalBridge | undefined;
+  sourceAssetBalance: { currency: Currency; amount: BN } | undefined;
+  targetAssetBalance: { currency: Currency; amount: BN } | undefined;
+  sourceNativeBalance: { currency: Currency; amount: BN } | undefined;
+  targetNativeBalance: { currency: Currency; amount: BN } | undefined;
+  feeBalanceOnSourceChain: { currency: Currency; amount: BN } | undefined;
   transferAmount: { valid: boolean; input: string; amount: BN };
   sourceChain: ChainConfig;
   targetChain: ChainConfig;
@@ -45,85 +55,42 @@ interface TransferCtx {
   setActiveRecipientAccount: Dispatch<SetStateAction<WalletAccount | undefined>>;
   setActiveSenderWallet: Dispatch<SetStateAction<WalletID | undefined>>;
   setActiveRecipientWallet: Dispatch<SetStateAction<WalletID | undefined>>;
-  evmTransfer: (
-    _bridge: EvmBridge,
-    _sender: string,
+  transfer: (
+    _bridge: UniversalBridge,
+    _sender: string | WalletAccount,
     _recipient: string,
     _amount: BN,
     options?: { successCb: () => void; failedCb: () => void },
   ) => Promise<void>;
-  substrateTransfer: (
-    _bridge: EvmBridge,
-    _account: WalletAccount,
-    _recipient: string,
-    _amount: BN,
-    options?: { successCb: () => void; failedCb: () => void },
-  ) => Promise<void>;
-  refetchSourceBalance: () => void;
-  refetchTargetBalance: () => void;
-  refetchTargetAssetDetails: () => void;
+  updateSourceAssetBalance: () => void;
+  updateTargetAssetBalance: () => void;
+  updateSourceNativeBalance: () => void;
+  updateTargetNativeBalance: () => void;
+  updateTargetAssetSupply: () => void;
+  updateFeeBalanceOnSourceChain: () => void;
 }
 
 const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTargetAsset } = parseCross();
-
-const defaultValue: TransferCtx = {
-  assetLimit: undefined,
-  targetAssetDetails: undefined,
-  bridgeInstance: undefined,
-  usdtBalance: undefined,
-  sourceBalance: undefined,
-  targetBalance: undefined,
-  transferAmount: { valid: true, input: "", amount: BN_ZERO },
-  sourceChain: defaultSourceChain,
-  targetChain: defaultTargetChain,
-  sourceAsset: defaultSourceAsset,
-  targetAsset: defaultTargetAsset,
-  sender: undefined,
-  recipient: undefined,
-  activeSenderAccount: undefined,
-  activeRecipientAccount: undefined,
-  activeSenderWallet: undefined,
-  activeRecipientWallet: undefined,
-  sourceApi: undefined,
-  targetApi: undefined,
-
-  setTransferAmount: () => undefined,
-  setSourceChain: () => undefined,
-  setTargetChain: () => undefined,
-  setSourceAsset: () => undefined,
-  setTargetAsset: () => undefined,
-  setSender: () => undefined,
-  setRecipient: () => undefined,
-  setActiveSenderAccount: () => undefined,
-  setActiveRecipientAccount: () => undefined,
-  setActiveSenderWallet: () => undefined,
-  setActiveRecipientWallet: () => undefined,
-  refetchSourceBalance: () => undefined,
-  refetchTargetBalance: () => undefined,
-  refetchTargetAssetDetails: () => undefined,
-  evmTransfer: async () => undefined,
-  substrateTransfer: async () => undefined,
-};
 
 const transferCb = {
   successCb: () => {},
   failedCb: () => {},
 };
 
-export const TransferContext = createContext(defaultValue);
+export const TransferContext = createContext({} as TransferCtx);
 
 export default function TransferProvider({ children }: PropsWithChildren<unknown>) {
-  const [transferAmount, setTransferAmount] = useState(defaultValue.transferAmount);
-  const [sourceChain, setSourceChain] = useState(defaultValue.sourceChain);
-  const [targetChain, setTargetChain] = useState(defaultValue.targetChain);
-  const [sourceAsset, setSourceAsset] = useState(defaultValue.sourceAsset);
-  const [targetAsset, setTargetAsset] = useState(defaultValue.targetAsset);
-  const [sender, setSender] = useState(defaultValue.sender);
-  const [recipient, setRecipient] = useState(defaultValue.recipient);
-  const [activeSenderAccount, setActiveSenderAccount] = useState(defaultValue.activeSenderAccount);
-  const [activeRecipientAccount, setActiveRecipientAccount] = useState(defaultValue.activeRecipientAccount);
-  const [activeSenderWallet, setActiveSenderWallet] = useState(defaultValue.activeSenderWallet);
-  const [activeRecipientWallet, setActiveRecipientWallet] = useState(defaultValue.activeRecipientWallet);
+  const [transferAmount, setTransferAmount] = useState({ valid: true, input: "", amount: BN_ZERO });
+  const [sourceChain, setSourceChain] = useState(defaultSourceChain);
+  const [targetChain, setTargetChain] = useState(defaultTargetChain);
+  const [sourceAsset, setSourceAsset] = useState(defaultSourceAsset);
+  const [targetAsset, setTargetAsset] = useState(defaultTargetAsset);
+  const [sender, setSender] = useState<TransferCtx["sender"]>();
+  const [recipient, setRecipient] = useState<TransferCtx["recipient"]>();
+  const [activeSenderAccount, setActiveSenderAccount] = useState<TransferCtx["activeSenderAccount"]>();
+  const [activeRecipientAccount, setActiveRecipientAccount] = useState<TransferCtx["activeRecipientAccount"]>();
+  const [activeSenderWallet, setActiveSenderWallet] = useState<TransferCtx["activeSenderWallet"]>();
+  const [activeRecipientWallet, setActiveRecipientWallet] = useState<TransferCtx["activeRecipientWallet"]>();
 
   const { api: sourceApi } = useApi(sourceChain);
   const { api: targetApi } = useApi(targetChain);
@@ -134,7 +101,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
   const bridgeInstance = useMemo(
     () =>
       sourceApi && targetApi
-        ? new EvmBridge({
+        ? new UniversalBridge({
             sourceApi,
             targetApi,
             publicClient,
@@ -148,19 +115,42 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     [sourceApi, targetApi, publicClient, walletClient, sourceChain, targetChain, sourceAsset, targetAsset],
   );
 
-  const { assetLimit } = useAssetLimit(bridgeInstance);
-  const { balance: usdtBalance } = useBalance(bridgeInstance, sender, "usdt");
-  const { balance: sourceBalance, refetch: refetchSourceBalance } = useBalance(bridgeInstance, sender, "source");
-  const { balance: targetBalance, refetch: refetchTargetBalance } = useBalance(bridgeInstance, recipient, "target");
-  const { assetDetails: targetAssetDetails, refetch: refetchTargetAssetDetails } = useAssetDetails(
+  const { value: assetLimitOnTargetChain } = useAssetLimit(bridgeInstance, "target");
+  const { value: existentialDepositOnTargetChain } = useExistentialDeposit(bridgeInstance, "target");
+  const { value: targetAssetSupply, update: updateTargetAssetSupply } = useAssetSupply(bridgeInstance, "target");
+  const { value: feeBalanceOnSourceChain, update: updateFeeBalanceOnSourceChain } = useFeeBalance(
     bridgeInstance,
+    sender,
+    "source",
+  );
+  const { value: sourceNativeBalance, update: updateSourceNativeBalance } = useNativeBalance(
+    bridgeInstance,
+    sender,
+    "source",
+  );
+  const { value: targetNativeBalance, update: updateTargetNativeBalance } = useNativeBalance(
+    bridgeInstance,
+    recipient,
+    "target",
+  );
+  const { value: sourceAssetBalance, update: updateSourceAssetBalance } = useAssetBalance(
+    bridgeInstance,
+    sender,
+    "source",
+  );
+  const { value: targetAssetBalance, update: updateTargetAssetBalance } = useAssetBalance(
+    bridgeInstance,
+    recipient,
     "target",
   );
 
+  /**
+   * Transfer
+   */
   const evmTransfer = useCallback(
-    async (_bridge: EvmBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
+    async (_bridge: UniversalBridge, _sender: string, _recipient: string, _amount: BN, options = transferCb) => {
       try {
-        const receipt = await _bridge.transferAssetsWithPrecompile(_sender, _recipient, _amount);
+        const receipt = await _bridge.transferWithPrecompile(_recipient, _amount);
         notifyTransaction(receipt, _bridge.getSourceChain());
         if (receipt?.status === "success") {
           options.successCb();
@@ -175,18 +165,23 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     },
     [],
   );
-
   const substrateTransfer = useCallback(
-    async (_bridge: EvmBridge, _account: WalletAccount, _recipient: string, _amount: BN, options = transferCb) => {
+    async (
+      _bridge: UniversalBridge,
+      _account: WalletAccount,
+      _recipient: string,
+      _amount: BN,
+      options = transferCb,
+    ) => {
       const crossInfo = _bridge.getCrossInfo();
       if (crossInfo) {
         const _sender = _account.address;
         const _signer = _account.signer as Signer;
         try {
-          const _extrinsic = await (crossInfo.isReserve
-            ? _bridge.limitedReserveTransferAssets(_recipient, _amount)
-            : _bridge.transferAssets(_recipient, _amount));
-          await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getSourceChain(), options);
+          const _extrinsic = await _bridge.transfer(_recipient, _amount);
+          if (_extrinsic) {
+            await signAndSendExtrinsic(_extrinsic, _signer, _sender, _bridge.getSourceChain(), options);
+          }
         } catch (err) {
           console.error(err);
           notifyError(err);
@@ -196,18 +191,37 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
     },
     [],
   );
+  const transfer = useCallback(
+    (
+      _bridge: UniversalBridge,
+      _sender: string | WalletAccount,
+      _recipient: string,
+      _amount: BN,
+      options?: { successCb: () => void; failedCb: () => void },
+    ) => {
+      if (typeof _sender === "string") {
+        return evmTransfer(_bridge, _sender, _recipient, _amount, options);
+      } else {
+        return substrateTransfer(_bridge, _sender, _recipient, _amount, options);
+      }
+    },
+    [evmTransfer, substrateTransfer],
+  );
 
   return (
     <TransferContext.Provider
       value={{
         sourceApi,
         targetApi,
-        assetLimit,
-        targetAssetDetails,
+        assetLimitOnTargetChain,
+        existentialDepositOnTargetChain,
+        feeBalanceOnSourceChain,
+        targetAssetSupply,
         bridgeInstance,
-        usdtBalance,
-        sourceBalance,
-        targetBalance,
+        sourceAssetBalance,
+        targetAssetBalance,
+        sourceNativeBalance,
+        targetNativeBalance,
         transferAmount,
         sourceChain,
         targetChain,
@@ -231,11 +245,13 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         setActiveRecipientAccount,
         setActiveSenderWallet,
         setActiveRecipientWallet,
-        evmTransfer,
-        substrateTransfer,
-        refetchSourceBalance,
-        refetchTargetBalance,
-        refetchTargetAssetDetails,
+        transfer,
+        updateSourceAssetBalance,
+        updateTargetAssetBalance,
+        updateSourceNativeBalance,
+        updateTargetNativeBalance,
+        updateTargetAssetSupply,
+        updateFeeBalanceOnSourceChain,
       }}
     >
       {children}

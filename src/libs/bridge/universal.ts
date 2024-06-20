@@ -2,14 +2,10 @@ import { ApiPromise } from "@polkadot/api";
 import { BN, u8aToHex } from "@polkadot/util";
 import { SubstrateBridge } from "./substrate";
 import { Asset, ChainConfig } from "@/types";
-import { Address, PublicClient, WalletClient } from "wagmi";
+import { PublicClient, WalletClient } from "wagmi";
 import { DISPATCH_PRECOMPILE_ADDRESS } from "@/config";
 
-/**
- * Supported wallets: MetaMask, etc.
- */
-
-export class EvmBridge extends SubstrateBridge {
+export class UniversalBridge extends SubstrateBridge {
   private readonly publicClient: PublicClient;
   private readonly walletClient: WalletClient | null | undefined;
 
@@ -28,25 +24,21 @@ export class EvmBridge extends SubstrateBridge {
     this.walletClient = args.walletClient;
   }
 
-  async transfer(): Promise<undefined> {
-    return;
-  }
+  async transferWithPrecompile(recipient: string, amount: BN) {
+    const extrinsic = await this.transfer(recipient, amount);
+    if (extrinsic && this.walletClient) {
+      const sender = (await this.walletClient.getAddresses())[0];
 
-  async transferAssetsWithPrecompile(sender: string, recipient: string, amount: BN) {
-    const extrinsic = await this.transferAssets(recipient, amount);
-    const account = sender as Address;
+      // const estimateGas = await this.publicClient.estimateGas({
+      //   account: sender,
+      //   to: DISPATCH_PRECOMPILE_ADDRESS,
+      //   data: u8aToHex(extrinsic.method.toU8a()),
+      // });
+      // const { maxFeePerGas } = await this.publicClient.estimateFeesPerGas();
+      // const estimateGasFee = estimateGas * (maxFeePerGas || 0n);
 
-    // const estimateGas = await this.publicClient.estimateGas({
-    //   account,
-    //   to: DISPATCH_PRECOMPILE_ADDRESS,
-    //   data: u8aToHex(extrinsic.method.toU8a()),
-    // });
-    // const { maxFeePerGas } = await this.publicClient.estimateFeesPerGas();
-    // const estimateGasFee = estimateGas * (maxFeePerGas || 0n);
-
-    if (this.walletClient) {
       const hash = await this.walletClient.sendTransaction({
-        account,
+        account: sender,
         to: DISPATCH_PRECOMPILE_ADDRESS,
         data: u8aToHex(extrinsic.method.toU8a()),
       });

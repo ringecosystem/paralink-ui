@@ -1,4 +1,10 @@
-import { assethubPolkadotChain, assethubRococoChain, darwiniaChain, pangolinChain } from "@/config/chains";
+import {
+  assethubPolkadotChain,
+  assethubRococoChain,
+  darwiniaChain,
+  hydradxChain,
+  pangolinChain,
+} from "@/config/chains";
 import { ChainID, Network } from "@/types";
 
 export function getChainConfig(chainIdOrNetwork: ChainID | Network | undefined) {
@@ -13,9 +19,12 @@ export function getChainConfig(chainIdOrNetwork: ChainID | Network | undefined) 
       return darwiniaChain;
     case "assethub-polkadot":
       return assethubPolkadotChain;
+    case ChainID.HYDRADX:
+    case "hydradx":
+      return hydradxChain;
   }
 }
 
 export function getChainsConfig() {
-  return [assethubPolkadotChain, darwiniaChain];
+  return [hydradxChain, darwiniaChain, assethubPolkadotChain];
 }

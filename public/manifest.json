@@ -1,0 +1,5 @@
+{
+  "name": "AssetHub Bridge - Darwinia",
+  "description": "Assets cross-chain between Darwinia and AssetHub.",
+  "icons": [{ "src": "icon.svg", "sizes": "any" }]
+}

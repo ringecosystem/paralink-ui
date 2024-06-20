@@ -1,7 +1,8 @@
-import { Asset, ChainConfig, Cross } from "@/types";
+import { Asset, AssetID, ChainConfig, Cross } from "@/types";
 import { ApiPromise } from "@polkadot/api";
-import { BN_ZERO, BN, bnToBn } from "@polkadot/util";
+import { BN_ZERO, bnToBn, isFunction } from "@polkadot/util";
 import { Option, u128 } from "@polkadot/types";
+import { parseUnits } from "viem";
 
 export abstract class BaseBridge {
   protected readonly cross: Cross | undefined;
@@ -53,95 +54,122 @@ export abstract class BaseBridge {
   }
 
   /**
+   * Native Balance
    * Token decimals and symbol: api.rpc.system.properties
    */
-  private async getNativeBalance(api: ApiPromise, address: string) {
-    const balancesAll = await api.derive.balances.all(address);
+  private async getNativeBalance(api: ApiPromise, account: string) {
+    const balancesAll = await api.derive.balances.all(account);
     const locked = balancesAll.lockedBalance;
     const transferrable = balancesAll.availableBalance;
     const total = balancesAll.freeBalance.add(balancesAll.reservedBalance);
     return { transferrable, locked, total };
   }
-
-  async getSourceNativeBalance(address: string) {
-    const balances = await this.getNativeBalance(this.sourceApi, address);
-    return { ...balances, currency: this.sourceChain.nativeCurrency };
+  async getSourceNativeBalance(account: string) {
+    const { transferrable } = await this.getNativeBalance(this.sourceApi, account);
+    return { amount: transferrable.toBn(), currency: this.sourceChain.nativeCurrency };
   }
-
-  async getTargetNativeBalance(address: string) {
-    const balances = await this.getNativeBalance(this.targetApi, address);
-    return { ...balances, currency: this.targetChain.nativeCurrency };
+  async getTargetNativeBalance(account: string) {
+    const { transferrable } = await this.getNativeBalance(this.targetApi, account);
+    return { amount: transferrable.toBn(), currency: this.targetChain.nativeCurrency };
   }
 
   /**
+   * Asset Balance
    * Token name, symbol and decimals: api.query.assets.metadata
    */
-  private async getAssetBalance(api: ApiPromise, asset: Asset, address: string) {
-    const assetOption = await api.query.assets.account(asset.id, address);
-    if (assetOption.isSome) {
-      return assetOption.unwrap().balance as BN;
+  private async getAssetBalance(api: ApiPromise, asset: Asset, account: string) {
+    let amount = BN_ZERO;
+
+    if (asset.id === AssetID.SYSTEM) {
+      amount = (await this.getNativeBalance(api, account)).transferrable;
+    } else if (isFunction(api.query.assets?.account)) {
+      const assetOption = await api.query.assets.account(asset.id, account);
+      amount = assetOption.isSome ? assetOption.unwrap().balance.toBn() : BN_ZERO;
+    } else if (isFunction(api.query.tokens?.accounts)) {
+      const { free } = (await api.query.tokens.accounts(account, asset.id)).toJSON() as { free?: string };
+      amount = bnToBn(free ?? 0);
     }
-    return BN_ZERO;
+
+    const { symbol, name, decimals } = asset;
+    return { currency: { symbol, name, decimals }, amount };
+  }
+  async getSourceAssetBalance(account: string) {
+    return this.getAssetBalance(this.sourceApi, this.sourceAsset, account);
+  }
+  async getTargetAssetBalance(account: string) {
+    return this.getAssetBalance(this.targetApi, this.targetAsset, account);
   }
 
-  async getSourceAssetBalance(address: string) {
-    const asset = this.sourceAsset;
-    const value = await this.getAssetBalance(this.sourceApi, asset, address);
-    return { value, asset };
-  }
-
-  async getTargetAssetBalance(address: string) {
-    const asset = this.targetAsset;
-    const value = await this.getAssetBalance(this.targetApi, asset, address);
-    return { value, asset };
-  }
-
-  async getSourceUsdtBalance(address: string) {
-    const asset = this.sourceChain.assets.find(({ symbol }) => symbol.toLowerCase().includes("usdt"));
+  async getFeeBalanceOnSourceChain(account: string) {
+    const asset = this.sourceChain.assets.find(({ id }) => id === this.cross?.fee.asset.local.id);
     if (asset) {
-      const value = await this.getAssetBalance(this.sourceApi, asset, address);
-      return { value, asset };
+      return this.getAssetBalance(this.sourceApi, asset, account);
     }
   }
 
   /**
    * Supply
    */
-  private async getAssetDetails(api: ApiPromise, asset: Asset) {
-    const detailsOption = await api.query.assets.asset(asset.id);
-    return detailsOption.isSome ? detailsOption.unwrap() : undefined;
+  private async getAssetSupply(api: ApiPromise, asset: Asset) {
+    let amount = BN_ZERO;
+    if (asset.id === AssetID.SYSTEM) {
+    } else if (isFunction(api.query.assets?.asset)) {
+      const detailsOption = await api.query.assets.asset(asset.id);
+      amount = detailsOption.isSome ? detailsOption.unwrap().supply.toBn() : BN_ZERO;
+    } else if (isFunction(api.query.tokens?.totalIssuance)) {
+      amount = bnToBn((await api.query.tokens.totalIssuance(asset.id)).toString());
+    }
+    const { symbol, name, decimals } = asset;
+    return { currency: { symbol, name, decimals }, amount };
+  }
+  async getSourceAssetSupply() {
+    return this.getAssetSupply(this.sourceApi, this.sourceAsset);
+  }
+  async getTargetAssetSupply() {
+    return this.getAssetSupply(this.targetApi, this.targetAsset);
   }
 
-  async getSourceAssetDetails() {
-    return this.getAssetDetails(this.sourceApi, this.sourceAsset);
-  }
-
-  async getTargetAssetDetails() {
-    return this.getAssetDetails(this.targetApi, this.targetAsset);
-  }
-
-  async getAssetLimit() {
+  async getAssetLimitOnTargetChain() {
     const section = "assetLimit";
     const method = "foreignAssetLimit";
     const fn = this.targetApi.query[section]?.[method];
 
-    if (this.targetChain.hasAssetLimit && fn) {
+    const { symbol, name, decimals, origin } = this.targetAsset;
+    let amount = bnToBn(parseUnits(Number.MAX_SAFE_INTEGER.toString(), decimals));
+
+    if (isFunction(fn) && origin.id !== AssetID.SYSTEM) {
       const limitOption = await (fn({
         Xcm: {
-          parents: 1,
+          parents: origin.parachainId === this.targetChain.parachainId ? 0 : 1,
           interior: {
             X3: [
-              { Parachain: bnToBn(this.sourceChain.parachainId) },
-              { PalletInstance: 50 },
-              { GeneralIndex: bnToBn(this.sourceAsset.id) },
+              { Parachain: origin.parachainId },
+              { PalletInstance: origin.palletInstance },
+              { GeneralIndex: origin.id },
             ],
           },
         },
       }) as Promise<Option<u128>>);
-
-      return limitOption.isSome ? limitOption.unwrap() : undefined;
+      amount = limitOption.isSome ? limitOption.unwrap().toBn() : amount;
     }
+    return { currency: { symbol, name, decimals }, amount };
   }
 
-  abstract transfer(): Promise<undefined>;
+  /**
+   * Existential Deposit
+   */
+  private getExistentialDeposit(api: ApiPromise) {
+    const section = "balances";
+    const method = "existentialDeposit";
+    const c = api.consts[section]?.[method];
+    return c ? c.toBn() : BN_ZERO;
+  }
+  async getSourceExistentialDeposit() {
+    const amount = await this.getExistentialDeposit(this.sourceApi);
+    return { currency: this.sourceChain.nativeCurrency, amount };
+  }
+  async getTargetExistentialDeposit() {
+    const amount = await this.getExistentialDeposit(this.targetApi);
+    return { currency: this.targetChain.nativeCurrency, amount };
+  }
 }

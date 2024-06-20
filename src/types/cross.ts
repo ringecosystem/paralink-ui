@@ -6,8 +6,16 @@ export interface Cross {
     network: Network;
     symbol: AssetSymbol;
   };
-  isReserve: boolean;
-  fee: { amount: BN; asset: { id: number; decimals: number; symbol: AssetSymbol; native: boolean } };
+
+  // If the fee is paid in RING and the fee is 0.5RING, then if the cross-chain transaction
+  // is 10RING, the target chain will receive 9.5RING.
+  fee: {
+    amount: BN;
+    asset: { local: { id: number }; origin: { id: number; parachainId: number; palletInstance: number } };
+  };
+
+  section: string;
+  method: string;
 }
 
 export type AvailableSourceAssetOptions = {

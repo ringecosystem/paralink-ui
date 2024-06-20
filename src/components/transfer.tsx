@@ -4,7 +4,7 @@ import Button from "@/ui/button";
 import BalanceInput from "./balance-input";
 import ChainSelect from "./chain-select";
 import TransferSection from "./transfer-section";
-import { formatBalance, isAssetExcess, parseCross } from "@/utils";
+import { formatBalance, isExceedingCrossChainLimit, parseCross } from "@/utils";
 import { useTalisman, useTransfer } from "@/hooks";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SwitchCross from "./switch-cross";
@@ -28,17 +28,20 @@ export default function Transfer() {
   const {
     sourceApi,
     targetApi,
-    assetLimit,
-    targetAssetDetails,
+    assetLimitOnTargetChain,
+    targetAssetSupply,
     sender,
     recipient,
     sourceChain,
     targetChain,
     sourceAsset,
     targetAsset,
-    usdtBalance,
-    sourceBalance,
-    targetBalance,
+    feeBalanceOnSourceChain,
+    existentialDepositOnTargetChain,
+    sourceAssetBalance,
+    targetAssetBalance,
+    sourceNativeBalance,
+    targetNativeBalance,
     transferAmount,
     bridgeInstance,
     activeSenderAccount,
@@ -53,11 +56,13 @@ export default function Transfer() {
     setSourceAsset,
     setTargetAsset,
     setTransferAmount,
-    evmTransfer,
-    substrateTransfer,
-    refetchSourceBalance,
-    refetchTargetBalance,
-    refetchTargetAssetDetails,
+    transfer,
+    updateSourceAssetBalance,
+    updateTargetAssetBalance,
+    updateTargetAssetSupply,
+    updateSourceNativeBalance,
+    updateTargetNativeBalance,
+    updateFeeBalanceOnSourceChain,
   } = useTransfer();
   const [sourceChainOptions, _setSourceChainOptions] = useState(defaultSourceChainOptions);
   const [targetChainOptions, setTargetChainOptions] = useState(defaultTargetChainOptions);
@@ -76,31 +81,78 @@ export default function Transfer() {
   }, [sourceChain, targetChain, targetAsset]);
 
   const needSwitchNetwork = useMemo(
-    () => activeSenderWallet === WalletID.RAINBOW && chain && chain.id !== sourceChain.id,
+    () => activeSenderWallet === WalletID.EVM && chain && chain.id !== sourceChain.id,
     [chain, sourceChain, activeSenderWallet],
   );
-
-  const alert = useMemo(() => {
-    const fee = bridgeInstance?.getCrossInfo()?.fee;
-    const balance = usdtBalance?.asset.value;
-
-    if (fee && balance && fee.amount.gt(balance)) {
-      return (
-        <div className="flex items-start justify-center gap-small">
-          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
-          <span className="text-xs text-alert">{`You need at least ${formatBalance(fee.amount, fee.asset.decimals)} ${
-            fee.asset.symbol
-          } in your account to cover cross-chain fees.`}</span>
-        </div>
-      );
-    }
-    return null;
-  }, [bridgeInstance, usdtBalance?.asset.value]);
 
   const sourceChainRef = useRef(sourceChain);
   const targetChainRef = useRef(targetChain);
   const sourceAssetRef = useRef(sourceAsset);
   const targetAssetRef = useRef(targetAsset);
+
+  const feeAlert = useMemo(() => {
+    const fee = bridgeInstance?.getCrossInfo()?.fee;
+    if (fee && feeBalanceOnSourceChain && fee.amount.gt(feeBalanceOnSourceChain.amount)) {
+      return (
+        <div className="flex items-start justify-center gap-small">
+          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
+          <span className="text-xs text-alert">{`You need at least ${formatBalance(
+            fee.amount,
+            feeBalanceOnSourceChain.currency.decimals,
+          )} ${feeBalanceOnSourceChain.currency.symbol} in your Sender on ${
+            sourceChainRef.current.name
+          } to cover cross-chain fees.`}</span>
+        </div>
+      );
+    }
+    return null;
+  }, [bridgeInstance, feeBalanceOnSourceChain]);
+  const existentialAlertOnSourceChain = useMemo(() => {
+    if (
+      sourceChain.existential &&
+      sourceNativeBalance &&
+      sourceNativeBalance.amount.lt(sourceChain.existential.minBalance)
+    ) {
+      return (
+        <div className="flex items-start justify-center gap-small">
+          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
+          <span className="text-xs text-alert">{`You need at least ${formatBalance(
+            sourceChain.existential.minBalance,
+            sourceChain.nativeCurrency.decimals,
+          )} ${sourceChain.nativeCurrency.symbol} in your Sender on ${
+            sourceChain.name
+          } to keep an account alive.`}</span>
+        </div>
+      );
+    }
+    return null;
+  }, [
+    sourceChain.existential,
+    sourceChain.name,
+    sourceChain.nativeCurrency.decimals,
+    sourceChain.nativeCurrency.symbol,
+    sourceNativeBalance,
+  ]);
+  const existentialAlertOnTargetChain = useMemo(() => {
+    if (
+      targetNativeBalance &&
+      existentialDepositOnTargetChain &&
+      targetNativeBalance.amount.lt(existentialDepositOnTargetChain.amount)
+    ) {
+      return (
+        <div className="flex items-start justify-center gap-small">
+          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
+          <span className="text-xs text-alert">{`You need at least ${formatBalance(
+            existentialDepositOnTargetChain.amount,
+            existentialDepositOnTargetChain.currency.decimals,
+          )} ${existentialDepositOnTargetChain.currency.symbol} in your Recipient on ${
+            targetChainRef.current.name
+          } to keep an account alive.`}</span>
+        </div>
+      );
+    }
+    return null;
+  }, [targetNativeBalance, existentialDepositOnTargetChain]);
 
   const _setSourceChain = useCallback(
     (chain: ChainConfig | undefined) => {
@@ -157,47 +209,46 @@ export default function Transfer() {
         successCb: () => {
           setBusy(false);
           setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
-          refetchSourceBalance();
-          refetchTargetBalance();
-          refetchTargetAssetDetails();
+          updateSourceAssetBalance();
+          updateTargetAssetBalance();
+          updateTargetAssetSupply();
+          updateSourceNativeBalance();
+          updateTargetNativeBalance();
+          updateFeeBalanceOnSourceChain();
         },
         failedCb: () => {
           setBusy(false);
         },
       };
+      const sender_ = activeSenderAccount ?? (address && sender?.address === address ? address : undefined);
       setBusy(true);
-      if (await isAssetExcess(bridgeInstance, transferAmount.amount)) {
-        notification.error({ title: "Transaction failed", description: "Asset limit exceeded" });
-        refetchTargetAssetDetails();
+      if (await isExceedingCrossChainLimit(bridgeInstance, transferAmount.input)) {
+        notification.error({ title: "Transaction failed", description: "Exceeding the cross-chain limit." });
+        updateTargetAssetSupply();
         setBusy(false);
-      } else if (address && sender?.address === address) {
-        await evmTransfer(bridgeInstance, address, recipient.address, transferAmount.amount, callback);
-      } else if (activeSenderAccount) {
-        await substrateTransfer(
-          bridgeInstance,
-          activeSenderAccount,
-          recipient.address,
-          transferAmount.amount,
-          callback,
-        );
+      } else if (sender_) {
+        await transfer(bridgeInstance, sender_, recipient.address, transferAmount.amount, callback);
       }
     }
   }, [
-    sender,
-    address,
     activeSenderAccount,
-    needSwitchNetwork,
+    address,
     bridgeInstance,
+    needSwitchNetwork,
     recipient,
-    transferAmount,
-    sourceChain,
+    sender?.address,
     setTransferAmount,
+    sourceChain.id,
     switchNetwork,
-    evmTransfer,
-    substrateTransfer,
-    refetchSourceBalance,
-    refetchTargetBalance,
-    refetchTargetAssetDetails,
+    transfer,
+    transferAmount.amount,
+    transferAmount.input,
+    updateFeeBalanceOnSourceChain,
+    updateSourceAssetBalance,
+    updateTargetAssetBalance,
+    updateTargetAssetSupply,
+    updateSourceNativeBalance,
+    updateTargetNativeBalance,
   ]);
 
   useEffect(() => {
@@ -218,22 +269,24 @@ export default function Transfer() {
   }, [sourceChain, targetChain, sourceAsset, _setTargetAsset]);
 
   const disabledSend =
-    !(
-      sender?.address &&
-      sender.valid &&
-      recipient?.address &&
-      recipient.valid &&
-      transferAmount.input &&
-      transferAmount.valid
-    ) && !needSwitchNetwork;
+    !sender?.address ||
+    !sender.valid ||
+    !recipient?.address ||
+    !recipient?.valid ||
+    !transferAmount.input ||
+    !transferAmount.valid ||
+    needSwitchNetwork ||
+    !!feeAlert ||
+    !!existentialAlertOnSourceChain ||
+    !!existentialAlertOnTargetChain;
   const senderOptions =
-    activeSenderWallet === WalletID.RAINBOW && address
+    activeSenderWallet === WalletID.EVM && address
       ? [{ address }]
       : activeSenderWallet === WalletID.TALISMAN
       ? talismanAccounts
       : [];
   const recipientOptions =
-    activeRecipientWallet === WalletID.RAINBOW && address
+    activeRecipientWallet === WalletID.EVM && address
       ? [{ address }]
       : activeRecipientWallet === WalletID.TALISMAN
       ? talismanAccounts
@@ -282,9 +335,9 @@ export default function Transfer() {
           value={transferAmount}
           asset={sourceAsset}
           cross={bridgeInstance?.getCrossInfo()}
-          assetLimit={assetLimit}
-          assetSupply={targetAssetDetails?.supply}
-          balance={sourceBalance?.asset.value}
+          assetLimit={assetLimitOnTargetChain?.amount}
+          assetSupply={targetAssetSupply?.amount}
+          balance={sourceAssetBalance?.amount}
           assetOptions={sourceAssetOptions}
           onChange={setTransferAmount}
           onAssetChange={_setSourceAsset}
@@ -303,23 +356,17 @@ export default function Transfer() {
         <BalanceInput
           disabled
           asset={targetAsset}
-          balance={targetBalance?.asset.value}
+          balance={targetAssetBalance?.amount}
           placeholder="Available balance 0"
         />
       </TransferSection>
 
       {/* Send */}
-      <Button
-        kind="primary"
-        className="mt-4 py-middle"
-        onClick={handleSend}
-        disabled={disabledSend || !!alert}
-        busy={busy}
-      >
+      <Button kind="primary" className="mt-4 py-middle" onClick={handleSend} disabled={disabledSend} busy={busy}>
         {needSwitchNetwork ? "Switch network" : "Send"}
       </Button>
 
-      {alert}
+      {feeAlert ?? existentialAlertOnSourceChain ?? existentialAlertOnTargetChain}
     </div>
   );
 }
