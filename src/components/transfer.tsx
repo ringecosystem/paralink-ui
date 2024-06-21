@@ -147,7 +147,7 @@ export default function Transfer() {
             existentialDepositOnTargetChain.currency.decimals,
           )} ${existentialDepositOnTargetChain.currency.symbol} in your Recipient on ${
             targetChainRef.current.name
-          } to keep an account alive.`}</span>
+          } to keep an account open.`}</span>
         </div>
       );
     }
