@@ -1,5 +1,5 @@
 {
-  "name": "AssetHub Bridge - Darwinia",
-  "description": "Assets cross-chain between Darwinia and AssetHub.",
+  "name": "Darwinia Paralink",
+  "description": "A user-friendly UI for XCM token transfers across various parachains.",
   "icons": [{ "src": "icon.svg", "sizes": "any" }]
 }

@@ -10,8 +10,8 @@ import TransferProvider from "@/providers/transfer-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AssetHub Bridge - Darwinia",
-  description: "Assets cross-chain between Darwinia and AssetHub.",
+  title: "Darwinia Paralink",
+  description: "A user-friendly UI for XCM token transfers across various parachains.",
   manifest: "/manifest.json",
 };
 
