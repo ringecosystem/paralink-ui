@@ -1,0 +1,52 @@
+{
+  "tokens": [
+    {
+      "name": "USDT",
+      "icon": "/images/icons/usdt-icon.svg"
+    },
+    {
+      "name": "RING",
+      "icon": "/images/icons/ring-icon.svg"
+    },
+    {
+      "name": "PINK",
+      "icon": "/images/icons/pink-icon.png"
+    }
+  ],
+  "chains": [
+    {
+      "name": "AssetHub",
+      "logo": "/images/icons/assethub-icon.svg"
+    },
+    {
+      "name": "Darwinia",
+      "logo": "/images/icons/darwinia-icon.svg"
+    },
+    {
+      "name": "Hydration",
+      "logo": "/images/icons/hydration-icon.svg"
+    }
+  ],
+  "social": [
+    {
+      "name": "x",
+      "url": "/",
+      "icon": "/images/icons/x-icon.svg"
+    },
+    {
+      "name": "telegram",
+      "url": "/",
+      "icon": "/images/icons/telegram-icon.svg"
+    },
+    {
+      "name": "github",
+      "url": "/",
+      "icon": "/images/icons/github-icon.svg"
+    },
+    {
+      "name": "email",
+      "url": "/",
+      "icon": "/images/icons/email-icon.svg"
+    }
+  ]
+}
