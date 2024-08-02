@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import data from "../data/data.json";
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
@@ -63,6 +64,16 @@ export default function Header() {
               <span className="block h-[19px] w-[19px] bg-[url('/images/icons/wallet-icon.svg')] bg-contain bg-center bg-no-repeat" />
               <p className="text-[14px] leading-[24px]">Connect Wallet</p>
             </div>
+          </div>
+          <div className="mt-auto flex items-center justify-center gap-[10px]">
+            {data.social.map((item: any) => (
+              <Link key={item.name} href={item.url}>
+                <span
+                  className="block h-[24px] w-[24px] bg-contain bg-center bg-no-repeat"
+                  style={{ background: `url(${item.icon})` }}
+                />
+              </Link>
+            ))}
           </div>
         </div>
       </div>
