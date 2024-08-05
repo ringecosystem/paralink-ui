@@ -2,15 +2,18 @@
   "tokens": [
     {
       "name": "USDT",
-      "icon": "/images/icons/usdt-icon.svg"
+      "icon": "/images/icons/usdt-icon.svg",
+      "balance": "449.385"
     },
     {
       "name": "RING",
-      "icon": "/images/icons/ring-icon.svg"
+      "icon": "/images/icons/ring-icon.svg",
+      "balance": "449.371"
     },
     {
       "name": "PINK",
-      "icon": "/images/icons/pink-icon.png"
+      "icon": "/images/icons/pink-icon.png",
+      "balance": "449.371"
     }
   ],
   "chains": [

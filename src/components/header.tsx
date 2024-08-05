@@ -4,9 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import data from "../data/data.json";
+import WalletButton from "./walletButton";
+import AccountButton from "./accountButton";
+import ChainButton from "./chainButton";
 
 export default function Header() {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(true);
 
   const handleOpenMenu = useCallback(() => {
     setShowMenu(true);
@@ -22,14 +26,8 @@ export default function Header() {
         <Image src="/images/paralink-logo.svg" width={90} height={24} alt="Paralink logo" />
       </Link>
       <div className="hidden items-center justify-center gap-[10px] lg:flex">
-        <div className="flex h-[36px] w-fit cursor-pointer items-center justify-center gap-[5px] rounded-[10px] bg-white px-[10px]">
-          <span className="block h-[19px] w-[19px] bg-[url('/images/icons/wallet-icon.svg')] bg-contain bg-center bg-no-repeat" />
-          <p className="text-[14px] leading-[24px]">Connect Wallet</p>
-        </div>
-        <div className="flex h-[36px] w-fit cursor-pointer items-center justify-center gap-[5px] rounded-[10px] bg-white px-[10px]">
-          <span className="block h-[24px] w-[24px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
-          <span className="block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
-        </div>
+        {!isConnected ? <WalletButton /> : <AccountButton />}
+        <ChainButton />
       </div>
       <div className="lg:hidden">
         <div className="flex flex-col items-center justify-center gap-[5px]" onClick={handleOpenMenu}>
