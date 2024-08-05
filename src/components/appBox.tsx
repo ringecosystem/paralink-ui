@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import data from "../data/data.json";
 import Image from "next/image";
 import ChainSelectInput, { chainType } from "./chainSelectInput";
+import SuccessModal from "./successModal";
+import PendingModal from "./pendingModal";
 
 export default function AppBox() {
   const [selectedToken, setSelectedToken] = useState("USDT");
@@ -12,6 +14,16 @@ export default function AppBox() {
   const [senderAddress, setSenderAddress] = useState<string>("14WfAfDX24cU8StvAGgPnBqGZyJ3gFcPFHh39rQouzvTy4Fj");
   const [recipientAddress, setRecipientAddress] = useState<string>("14WfAfDX24cU8StvAGgPnBqGZyJ3gFcPFHh39rQouzvTy4Fj");
   const [amount, setAmount] = useState<string>("0");
+  const [successModal, setSuccessModal] = useState<boolean>(false);
+  const [pendingModal, setPendingModal] = useState<boolean>(false);
+
+  const handleCloseSuccessModal = useCallback(() => {
+    setSuccessModal(false);
+  }, []);
+
+  const handleClosePendingModal = useCallback(() => {
+    setPendingModal(false);
+  }, []);
 
   return (
     <section className="flex h-[509px] w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
@@ -86,6 +98,8 @@ export default function AppBox() {
       <button className="h-[34px] flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white">
         Send
       </button>
+      <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} />
+      <PendingModal visible={pendingModal} onClose={handleClosePendingModal} />
     </section>
   );
 }
