@@ -1,5 +1,3 @@
-import Transfer from "@/old_components/transfer";
-import PageWrap from "@/old_components/page-wrap";
 import AppBox from "@/components/appBox";
 
 export default function Home() {
