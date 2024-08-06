@@ -23,7 +23,7 @@ jobs:
           vercel_token: ${{ secrets.VERCEL_TOKEN }}
           vercel_group: itering
           preview_output: true
-          alias_domain: "crosschain-stg"
+          alias_domain: "paralink-stg"
           project_name: "crosschain-ui"
           script_run: false
           dist_path: .
