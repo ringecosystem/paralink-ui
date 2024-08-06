@@ -1,3 +1,6 @@
+import "@polkadot/api-augment";
+import "@polkadot/types-augment";
+
 import { Asset, AssetID, ChainConfig, Cross } from "@/types";
 import { ApiPromise } from "@polkadot/api";
 import { BN_ZERO, bnToBn, isFunction } from "@polkadot/util";
@@ -149,7 +152,7 @@ export abstract class BaseBridge {
             ],
           },
         },
-      }) as Promise<Option<u128>>);
+      }) as unknown as Promise<Option<u128>>);
       amount = limitOption.isSome ? limitOption.unwrap().toBn() : amount;
     }
     return { currency: { symbol, name, decimals }, amount };
