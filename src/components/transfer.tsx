@@ -275,7 +275,6 @@ export default function Transfer() {
     !recipient?.valid ||
     !transferAmount.input ||
     !transferAmount.valid ||
-    needSwitchNetwork ||
     !!feeAlert ||
     !!existentialAlertOnSourceChain ||
     !!existentialAlertOnTargetChain;
@@ -362,7 +361,13 @@ export default function Transfer() {
       </TransferSection>
 
       {/* Send */}
-      <Button kind="primary" className="mt-4 py-middle" onClick={handleSend} disabled={disabledSend} busy={busy}>
+      <Button
+        kind="primary"
+        className="mt-4 py-middle"
+        onClick={handleSend}
+        disabled={!needSwitchNetwork && disabledSend}
+        busy={busy}
+      >
         {needSwitchNetwork ? "Switch network" : "Send"}
       </Button>
 
