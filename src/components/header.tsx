@@ -10,7 +10,7 @@ import ChainButton from "./chainButton";
 
 export default function Header() {
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(true);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
 
   const handleOpenMenu = useCallback(() => {
     setShowMenu(true);
