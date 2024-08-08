@@ -229,6 +229,8 @@ export default function Transfer() {
       } else if (sender_) {
         await transfer(bridgeInstance, sender_, recipient.address, transferAmount.amount, callback);
       }
+    } else {
+      notification.warn({ title: "Oops!", description: "Failed to construct bridge." });
     }
   }, [
     activeSenderAccount,
