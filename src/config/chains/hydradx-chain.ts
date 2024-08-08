@@ -72,6 +72,7 @@ export const hydradxChain: ChainConfig = {
   /**
    * Substrate
    */
-  endpoint: "wss://rpc.hydradx.cloud",
+  // endpoint: "wss://rpc.hydradx.cloud",
+  endpoint: "wss://hydradx-rpc.dwellir.com",
   parachainId: ParachainID.HYDRADX,
 };
