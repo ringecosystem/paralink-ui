@@ -12,6 +12,7 @@ export function useApi(chain: ChainConfig) {
       setApi(_api);
     };
     const failedListener = () => {
+      console.error(new Error(`API has been disconnected from the endpoint(${chain.endpoint})`));
       setApi(undefined);
     };
 
