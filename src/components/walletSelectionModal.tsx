@@ -1,8 +1,12 @@
+"use client";
+
 import { useTalisman, useTransfer } from "@/hooks";
 import { WalletID } from "@/types";
+import { isValidAddress } from "@/utils";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useAccount } from "wagmi";
 
 export default function WalletSelectionModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { talismanAccounts, connectTalisman } = useTalisman();
@@ -20,17 +24,36 @@ export default function WalletSelectionModal({ visible, onClose }: { visible: bo
     setActiveSenderWallet,
     setActiveRecipientWallet,
   } = useTransfer();
-  const [supported, activeWallet, clearValue, setActiveAccount, setActiveWallet] = [
-    sourceChain.wallets,
-    activeSenderWallet,
-    setSender,
-    setActiveSenderAccount,
-    setActiveSenderWallet,
-  ];
+
+  const { address } = useAccount();
 
   const [supportedWalletEvm, supportedWalletTalisman] = useMemo(() => {
-    return [supported.some((id) => id === WalletID.EVM), supported.some((id) => id === WalletID.TALISMAN)];
-  }, [supported]);
+    return [
+      sourceChain.wallets.some((id) => id === WalletID.EVM),
+      sourceChain.wallets.some((id) => id === WalletID.TALISMAN),
+    ];
+  }, [sourceChain.wallets]);
+
+  console.log("active wallet", activeSenderWallet);
+
+  console.log("active wallet", activeSenderWallet);
+
+  const senderOptions =
+    activeSenderWallet === WalletID.EVM && address
+      ? [{ address }]
+      : activeSenderWallet === WalletID.TALISMAN
+      ? talismanAccounts
+      : [];
+
+  console.log("options", senderOptions);
+
+  useEffect(() => {
+    if (activeSenderWallet) {
+      const address = senderOptions[0].address;
+      const valid = address ? isValidAddress(address, sourceChain.addressType) : true;
+      setSender({ valid, address });
+    }
+  }, [activeSenderWallet]);
   return (
     <>
       {visible && (
@@ -43,7 +66,7 @@ export default function WalletSelectionModal({ visible, onClose }: { visible: bo
                   className="border-radius flex w-full items-center gap-middle bg-[#F2F3F5] p-middle transition-colors duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={!supportedWalletTalisman}
                   onClick={() => {
-                    setActiveWallet(WalletID.TALISMAN);
+                    setActiveSenderWallet(WalletID.TALISMAN);
                     connectTalisman();
                     onClose();
                   }}
@@ -61,7 +84,7 @@ export default function WalletSelectionModal({ visible, onClose }: { visible: bo
                   className="border-radius flex w-full items-center gap-middle bg-[#F2F3F5] p-middle transition-colors duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={!supportedWalletEvm}
                   onClick={() => {
-                    setActiveWallet(WalletID.EVM);
+                    setActiveSenderWallet(WalletID.EVM);
                     openConnectModal?.();
                     onClose();
                   }}

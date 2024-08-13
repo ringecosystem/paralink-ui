@@ -7,10 +7,12 @@ import data from "../data/data.json";
 import WalletButton from "./walletButton";
 import AccountButton from "./accountButton";
 import ChainButton from "./chainButton";
+import { useAccount } from "wagmi";
+import { useTransfer } from "@/hooks";
 
 export default function Header() {
+  const { sender } = useTransfer();
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
 
   const handleOpenMenu = useCallback(() => {
     setShowMenu(true);
@@ -26,7 +28,7 @@ export default function Header() {
         <Image src="/images/paralink-logo.svg" width={90} height={24} alt="Paralink logo" />
       </Link>
       <div className="hidden items-center justify-center gap-[10px] lg:flex">
-        {!isConnected ? <WalletButton /> : <AccountButton />}
+        {!sender ? <WalletButton /> : <AccountButton />}
         <ChainButton />
       </div>
       <div className="lg:hidden">
