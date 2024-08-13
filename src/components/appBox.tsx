@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import data from "../data/data.json";
 import Image from "next/image";
 import ChainSelectInput, { chainType } from "./chainSelectInput";
 import SuccessModal from "./successModal";
 import PendingModal from "./pendingModal";
+import { formatBalance } from "@/utils";
+import { useTransfer } from "@/hooks";
+import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
+import { formatUnits, parseUnits } from "viem";
+import { InputAlert } from "@/old_components/input-alert";
 
 export default function AppBox() {
   const [selectedToken, setSelectedToken] = useState("USDT");
@@ -17,6 +22,15 @@ export default function AppBox() {
   const [successModal, setSuccessModal] = useState<boolean>(false);
   const [pendingModal, setPendingModal] = useState<boolean>(false);
 
+  const {
+    sourceAssetBalance,
+    sourceAsset,
+    setTransferAmount,
+    transferAmount,
+    bridgeInstance,
+    assetLimitOnTargetChain,
+    targetAssetSupply,
+  } = useTransfer();
   const handleCloseSuccessModal = useCallback(() => {
     setSuccessModal(false);
   }, []);
@@ -24,6 +38,39 @@ export default function AppBox() {
   const handleClosePendingModal = useCallback(() => {
     setPendingModal(false);
   }, []);
+
+  const cross = bridgeInstance?.getCrossInfo();
+  const assetLimit = assetLimitOnTargetChain?.amount;
+  const assetSupply = targetAssetSupply?.amount;
+
+  const min = useMemo(() => {
+    if (cross && cross.fee.asset.local.id === sourceAsset.id) {
+      return cross.fee.amount;
+    }
+    return undefined;
+  }, [cross, sourceAsset.id]);
+
+  const insufficient =
+    sourceAssetBalance?.amount && transferAmount?.input && sourceAssetBalance.amount.lt(transferAmount?.amount)
+      ? true
+      : false;
+  const requireMin = min && transferAmount?.input && transferAmount.amount.lt(min) ? true : false;
+  const requireLimit = isExcess(assetLimitOnTargetChain?.amount, targetAssetSupply?.amount, transferAmount?.amount);
+
+  const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      if (e.target.value) {
+        if (!Number.isNaN(Number(e.target.value)) && sourceAsset) {
+          setTransferAmount(
+            parseValue(e.target.value, sourceAsset.decimals, min, sourceAssetBalance?.amount, assetLimit, assetSupply),
+          );
+        }
+      } else {
+        setTransferAmount({ valid: true, input: e.target.value, amount: BN_ZERO });
+      }
+    },
+    [sourceAsset, min, sourceAssetBalance, assetLimit, assetSupply, setTransferAmount],
+  );
 
   return (
     <section className="flex h-[509px] w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
@@ -82,18 +129,58 @@ export default function AppBox() {
           <div className="flex items-center justify-center gap-[10px]">
             <input
               type="text"
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
-              }}
+              value={transferAmount?.input}
+              onChange={handleInputChange}
               className="h-[24px] flex-grow text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
             />
-            <button className="h-[26px] w-fit flex-shrink-0 rounded-[5px] bg-[#FF00831A] px-[15px] text-[12px] font-bold text-[#FF0083]">
+            <button
+              onClick={() => {
+                if (sourceAssetBalance?.amount && assetSupply) {
+                  if (assetLimit && assetSupply.gte(assetLimit)) {
+                    setTransferAmount({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
+                  } else if (assetLimit) {
+                    const remaining = assetLimit.sub(assetSupply);
+                    const amount = remaining.lte(sourceAssetBalance?.amount) ? remaining : sourceAssetBalance?.amount;
+                    const input = formatUnits(BigInt(amount.toString()), sourceAsset.decimals);
+                    setTransferAmount({ valid: !(min && min.gt(amount)), input, amount });
+                  } else {
+                    setTransferAmount({
+                      amount: sourceAssetBalance?.amount,
+                      valid: !(min && min.gt(sourceAssetBalance?.amount)),
+                      input: formatUnits(BigInt(sourceAssetBalance?.amount.toString()), sourceAsset.decimals),
+                    });
+                  }
+                } else {
+                  setTransferAmount({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
+                }
+              }}
+              className="h-[26px] w-fit flex-shrink-0 rounded-[5px] bg-[#FF00831A] px-[15px] text-[12px] font-bold text-[#FF0083]"
+            >
               Max
             </button>
           </div>
         </div>
-        <p className="mt-[5px] text-[12px] leading-[15px] text-[#12161980]">Balance: 994,744.238 USDT</p>
+        {sourceAssetBalance && (
+          <p className="mt-[5px] text-[12px] leading-[15px] text-[#12161980]">
+            Balance: {formatBalance(sourceAssetBalance.amount, sourceAsset.decimals)} {sourceAsset.name}
+          </p>
+        )}
+        {requireLimit ? (
+          <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">
+            {`* Limit: ${formatBalance(assetLimit ?? BN_ZERO, sourceAsset?.decimals ?? 0)}, supply: ${formatBalance(
+              (assetSupply ?? BN_ZERO).add(transferAmount?.amount ?? BN_ZERO),
+              sourceAsset?.decimals ?? 0,
+            )}.`}
+          </p>
+        ) : requireMin ? (
+          <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">
+            {`* At least ${formatBalance(min ?? BN_ZERO, sourceAsset?.decimals ?? 0)} ${
+              sourceAsset.symbol
+            } for tx fee.`}
+          </p>
+        ) : insufficient ? (
+          <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">* Insufficient.</p>
+        ) : null}
       </div>
       <button className="h-[34px] flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white">
         Send
@@ -102,4 +189,21 @@ export default function AppBox() {
       <PendingModal visible={pendingModal} onClose={handleClosePendingModal} />
     </section>
   );
+}
+
+function parseValue(origin: string, decimals: number, min?: BN, max?: BN, limit?: BN, supply?: BN) {
+  let input = "";
+  let amount = BN_ZERO;
+  const [i, d] = origin.split(".").concat("-1");
+  if (i) {
+    input = d === "-1" ? i : d ? `${i}.${d.slice(0, decimals)}` : `${i}.`;
+    amount = bnToBn(parseUnits(input, decimals));
+  }
+  const valid =
+    min && amount.lt(min) ? false : max && amount.gt(max) ? false : isExcess(limit, supply, amount) ? false : true;
+  return { input, amount, valid };
+}
+
+function isExcess(limit?: BN, supply?: BN, amount = BN_ZERO) {
+  return limit && supply && supply.add(amount).gt(limit) ? true : false;
 }
