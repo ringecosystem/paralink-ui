@@ -49,7 +49,7 @@ export default function AppBox() {
       <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
         <div className="flex items-center justify-between">
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
-          <ChainSelectInput selectedChain={senderSelectedChain} setSelectedChain={setSenderSelectedChain} />
+          <ChainSelectInput who="sender" />
         </div>
         <input
           type="text"
@@ -63,7 +63,7 @@ export default function AppBox() {
       <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
         <div className="flex items-center justify-between">
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
-          <ChainSelectInput selectedChain={recipientSelectedChain} setSelectedChain={setRecipientSelectedChain} />
+          <ChainSelectInput who="target" />
         </div>
         <input
           type="text"
