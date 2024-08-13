@@ -10,8 +10,6 @@ export default function ChainButton() {
   const { defaultSourceChainOptions } = parseCross();
   const [sourceChainOptions, _setSourceChainOptions] = useState(defaultSourceChainOptions);
 
-  console.log("source chain", sourceChain);
-
   const sourceChainRef = useRef(sourceChain);
 
   const _setSourceChain = useCallback(
@@ -32,7 +30,7 @@ export default function ChainButton() {
         className="flex h-[36px] w-fit cursor-pointer items-center justify-center gap-[5px] rounded-[10px] bg-white px-[10px] duration-300 hover:shadow-lg"
         onClick={handleToggleSubMenu}
       >
-        <span className="block h-[24px] w-[24px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
+        <Image src={getChainLogoSrc(sourceChain.logo)} width={24} height={24} alt={sourceChain.name} />
         <span className="block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
       </div>
       {subMenu && (
