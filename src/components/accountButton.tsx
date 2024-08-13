@@ -6,13 +6,22 @@ import Image from "next/image";
 import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { useTalisman, useTransfer } from "@/hooks";
-import { isValidAddress, toShortAdrress } from "@/utils";
+import { isValidAddress, parseCross, toShortAdrress, formatBalance, getAssetIconSrc } from "@/utils";
 import { WalletID } from "@/types";
 
 export default function AccountButton() {
   const { talismanAccounts } = useTalisman();
 
   const { address } = useAccount();
+
+  const {
+    defaultSourceChainOptions,
+    defaultTargetChainOptions,
+    defaultSourceAssetOptions,
+    availableSourceAssetOptions,
+    availableTargetChainOptions,
+    availableTargetAssetOptions,
+  } = parseCross();
   const {
     sender,
     sourceChain,
@@ -26,6 +35,10 @@ export default function AccountButton() {
     setActiveRecipientWallet,
   } = useTransfer();
 
+  const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
+  const { sourceAssetBalance } = useTransfer();
+  console.log("sourceAssetOptions", sourceAssetOptions);
+  console.log("source asset balance", sourceAssetBalance);
   const [subMenu, setSubMenu] = useState(false);
   const handleToggleSubMenu = useCallback(() => {
     console.log("hello2");
@@ -52,11 +65,13 @@ export default function AccountButton() {
           </div>
           <DisconnectButton />
           <span className="block h-[1px] w-full bg-[#1216191A]" />
-          {data.tokens.map((token) => (
+          {sourceAssetOptions.map((token) => (
             <div key={token.name} className="flex items-center gap-[10px]">
-              <Image src={token.icon} width={30} height={30} alt={token.name} />
+              <Image src={getAssetIconSrc(token.icon)} width={30} height={30} alt={token.name} />
               <div className="flex flex-col ">
-                <p className="text-[16px] leading-[21px] text-[#121619]">{token.balance}</p>
+                {/* <p className="text-[16px] leading-[21px] text-[#121619]">
+                  {formatBalance(token.amount, asset.decimals)}
+                </p> */}
                 <p className="text-[12px] leading-[16px] text-[#12161980]">{token.name}</p>
               </div>
             </div>

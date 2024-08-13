@@ -9,6 +9,7 @@ import AccountButton from "./accountButton";
 import ChainButton from "./chainButton";
 import { useAccount } from "wagmi";
 import { useTransfer } from "@/hooks";
+import { parseCross } from "@/utils";
 
 export default function Header() {
   const { sender } = useTransfer();
