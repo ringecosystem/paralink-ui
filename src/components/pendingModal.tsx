@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export default function PendingModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export default function PendingModal({ visible }: { visible: boolean }) {
   return (
     <>
       {visible && (

@@ -6,19 +6,18 @@ import Image from "next/image";
 import ChainSelectInput, { chainType } from "./chainSelectInput";
 import SuccessModal from "./successModal";
 import PendingModal from "./pendingModal";
-import { formatBalance, getAssetIconSrc, isValidAddress, parseCross } from "@/utils";
+import { formatBalance, getAssetIconSrc, isExceedingCrossChainLimit, isValidAddress, parseCross } from "@/utils";
 import { useTransfer } from "@/hooks";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import { formatUnits, parseUnits } from "viem";
 import { InputAlert } from "@/old_components/input-alert";
+import { WalletID } from "@/types";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
+import notification from "@/ui/notification";
 
 export default function AppBox() {
   const { defaultSourceAssetOptions } = parseCross();
   const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
-  const [senderSelectedChain, setSenderSelectedChain] = useState<chainType>(data.chains[0]);
-  const [recipientSelectedChain, setRecipientSelectedChain] = useState<chainType>(data.chains[0]);
-  const [senderAddress, setSenderAddress] = useState<string>("14WfAfDX24cU8StvAGgPnBqGZyJ3gFcPFHh39rQouzvTy4Fj");
-  const [recipientAddress, setRecipientAddress] = useState<string>("14WfAfDX24cU8StvAGgPnBqGZyJ3gFcPFHh39rQouzvTy4Fj");
   const [amount, setAmount] = useState<string>("0");
   const [successModal, setSuccessModal] = useState<boolean>(false);
   const [pendingModal, setPendingModal] = useState<boolean>(false);
@@ -36,8 +35,21 @@ export default function AppBox() {
     bridgeInstance,
     assetLimitOnTargetChain,
     targetAssetSupply,
+    existentialDepositOnTargetChain,
     sourceChain,
     targetChain,
+    transfer,
+    activeSenderWallet,
+    updateSourceAssetBalance,
+    updateTargetAssetBalance,
+    updateTargetAssetSupply,
+    updateSourceNativeBalance,
+    updateTargetNativeBalance,
+    targetNativeBalance,
+    updateFeeBalanceOnSourceChain,
+    activeSenderAccount,
+    feeBalanceOnSourceChain,
+    sourceNativeBalance,
   } = useTransfer();
   const handleCloseSuccessModal = useCallback(() => {
     setSuccessModal(false);
@@ -46,6 +58,9 @@ export default function AppBox() {
   const handleClosePendingModal = useCallback(() => {
     setPendingModal(false);
   }, []);
+
+  const sourceChainRef = useRef(sourceChain);
+  const targetChainRef = useRef(targetChain);
 
   const cross = bridgeInstance?.getCrossInfo();
   const assetLimit = assetLimitOnTargetChain?.amount;
@@ -101,6 +116,146 @@ export default function AppBox() {
     },
     [recipientAddressType, setRecipient],
   );
+
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork();
+  const { address } = useAccount();
+
+  const needSwitchNetwork = useMemo(
+    () => activeSenderWallet === WalletID.EVM && chain && chain.id !== sourceChain.id,
+    [chain, sourceChain, activeSenderWallet],
+  );
+
+  const [busy, setBusy] = useState(false);
+
+  const feeAlert = useMemo(() => {
+    const fee = bridgeInstance?.getCrossInfo()?.fee;
+    if (fee && feeBalanceOnSourceChain && fee.amount.gt(feeBalanceOnSourceChain.amount)) {
+      return (
+        <div className="flex items-start justify-center gap-small">
+          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
+          <span className="text-xs text-alert">{`You need at least ${formatBalance(
+            fee.amount,
+            feeBalanceOnSourceChain.currency.decimals,
+          )} ${feeBalanceOnSourceChain.currency.symbol} in your Sender on ${
+            sourceChainRef.current.name
+          } to cover cross-chain fees.`}</span>
+        </div>
+      );
+    }
+    return null;
+  }, [bridgeInstance, feeBalanceOnSourceChain]);
+
+  const existentialAlertOnSourceChain = useMemo(() => {
+    if (
+      sourceChain.existential &&
+      sourceNativeBalance &&
+      sourceNativeBalance.amount.lt(sourceChain.existential.minBalance)
+    ) {
+      return (
+        <div className="flex items-start justify-center gap-small">
+          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
+          <span className="text-xs text-alert">{`You need at least ${formatBalance(
+            sourceChain.existential.minBalance,
+            sourceChain.nativeCurrency.decimals,
+          )} ${sourceChain.nativeCurrency.symbol} in your Sender on ${
+            sourceChain.name
+          } to keep an account alive.`}</span>
+        </div>
+      );
+    }
+    return null;
+  }, [
+    sourceChain.existential,
+    sourceChain.name,
+    sourceChain.nativeCurrency.decimals,
+    sourceChain.nativeCurrency.symbol,
+    sourceNativeBalance,
+  ]);
+
+  const existentialAlertOnTargetChain = useMemo(() => {
+    if (
+      targetNativeBalance &&
+      existentialDepositOnTargetChain &&
+      targetNativeBalance.amount.lt(existentialDepositOnTargetChain.amount)
+    ) {
+      return (
+        <div className="flex items-start justify-center gap-small">
+          <Image alt="Warning" width={15} height={15} src="/images/warning.svg" />
+          <span className="text-xs text-alert">{`You need at least ${formatBalance(
+            existentialDepositOnTargetChain.amount,
+            existentialDepositOnTargetChain.currency.decimals,
+          )} ${existentialDepositOnTargetChain.currency.symbol} in your Recipient on ${
+            targetChainRef.current.name
+          } to keep an account open.`}</span>
+        </div>
+      );
+    }
+    return null;
+  }, [targetNativeBalance, existentialDepositOnTargetChain]);
+
+  const disabledSend =
+    !sender?.address ||
+    !sender.valid ||
+    !recipient?.address ||
+    !recipient?.valid ||
+    !transferAmount.input ||
+    !transferAmount.valid ||
+    !!feeAlert ||
+    !!existentialAlertOnSourceChain ||
+    !!existentialAlertOnTargetChain;
+
+  const handleSend = useCallback(async () => {
+    if (needSwitchNetwork) {
+      switchNetwork?.(sourceChain.id);
+    } else if (bridgeInstance && recipient) {
+      const callback = {
+        successCb: () => {
+          setBusy(false);
+          setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
+          updateSourceAssetBalance();
+          updateTargetAssetBalance();
+          updateTargetAssetSupply();
+          updateSourceNativeBalance();
+          updateTargetNativeBalance();
+          updateFeeBalanceOnSourceChain();
+        },
+        failedCb: () => {
+          setBusy(false);
+        },
+      };
+      const sender_ = activeSenderAccount ?? (address && sender?.address === address ? address : undefined);
+      setBusy(true);
+      if (await isExceedingCrossChainLimit(bridgeInstance, transferAmount.input)) {
+        notification.error({ title: "Transaction failed", description: "Exceeding the cross-chain limit." });
+        updateTargetAssetSupply();
+        setBusy(false);
+      } else if (sender_) {
+        await transfer(bridgeInstance, sender_, recipient.address, transferAmount.amount, callback);
+      }
+    } else {
+      notification.warn({ title: "Oops!", description: "Failed to construct bridge." });
+    }
+  }, [
+    activeSenderAccount,
+    address,
+    bridgeInstance,
+    needSwitchNetwork,
+    recipient,
+    sender?.address,
+    setTransferAmount,
+    sourceChain.id,
+    switchNetwork,
+    transfer,
+    transferAmount.amount,
+    transferAmount.input,
+    updateFeeBalanceOnSourceChain,
+    updateSourceAssetBalance,
+    updateTargetAssetBalance,
+    updateTargetAssetSupply,
+    updateSourceNativeBalance,
+    updateTargetNativeBalance,
+  ]);
 
   return (
     <section className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
@@ -208,11 +363,16 @@ export default function AppBox() {
           <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">* Insufficient.</p>
         ) : null}
       </div>
-      <button className="h-[34px] flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white">
+
+      <button
+        onClick={handleSend}
+        disabled={!sender || (!needSwitchNetwork && disabledSend)}
+        className="h-[34px] flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white disabled:opacity-50"
+      >
         Send
       </button>
       <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} />
-      <PendingModal visible={pendingModal} onClose={handleClosePendingModal} />
+      <PendingModal visible={busy} />
     </section>
   );
 }
