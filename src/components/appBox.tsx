@@ -6,14 +6,15 @@ import Image from "next/image";
 import ChainSelectInput, { chainType } from "./chainSelectInput";
 import SuccessModal from "./successModal";
 import PendingModal from "./pendingModal";
-import { formatBalance } from "@/utils";
+import { formatBalance, getAssetIconSrc, parseCross } from "@/utils";
 import { useTransfer } from "@/hooks";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import { formatUnits, parseUnits } from "viem";
 import { InputAlert } from "@/old_components/input-alert";
 
 export default function AppBox() {
-  const [selectedToken, setSelectedToken] = useState("USDT");
+  const { defaultSourceAssetOptions } = parseCross();
+  const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
   const [senderSelectedChain, setSenderSelectedChain] = useState<chainType>(data.chains[0]);
   const [recipientSelectedChain, setRecipientSelectedChain] = useState<chainType>(data.chains[0]);
   const [senderAddress, setSenderAddress] = useState<string>("14WfAfDX24cU8StvAGgPnBqGZyJ3gFcPFHh39rQouzvTy4Fj");
@@ -27,6 +28,7 @@ export default function AppBox() {
     sourceAsset,
     setTransferAmount,
     transferAmount,
+    setSourceAsset,
     bridgeInstance,
     assetLimitOnTargetChain,
     targetAssetSupply,
@@ -73,22 +75,22 @@ export default function AppBox() {
   );
 
   return (
-    <section className="flex h-[509px] w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
+    <section className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
       <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[20px]">
         <div>
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Token</p>
         </div>
         <div className="flex items-center gap-[10px]">
-          {data.tokens.map((item: any) => (
+          {sourceAssetOptions.map((item: any) => (
             <div
               className="flex items-center gap-[10px]"
               key={item.name}
               onClick={() => {
-                setSelectedToken(item.name);
+                setSourceAsset(item);
               }}
             >
-              <Image src={item.icon} width={30} height={30} alt="item.name" />
-              {selectedToken === item.name && <p className="text-[18px] font-[700] leading-[23px]">{item.name}</p>}
+              <Image src={getAssetIconSrc(item.icon)} width={30} height={30} alt="item.name" />
+              {sourceAsset.name === item.name && <p className="text-[18px] font-[700] leading-[23px]">{item.name}</p>}
             </div>
           ))}
         </div>
