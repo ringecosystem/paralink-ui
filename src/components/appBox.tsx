@@ -1,12 +1,12 @@
 "use client";
 
-import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useRef, useState } from "react";
 import data from "../data/data.json";
 import Image from "next/image";
 import ChainSelectInput, { chainType } from "./chainSelectInput";
 import SuccessModal from "./successModal";
 import PendingModal from "./pendingModal";
-import { formatBalance, getAssetIconSrc, parseCross } from "@/utils";
+import { formatBalance, getAssetIconSrc, isValidAddress, parseCross } from "@/utils";
 import { useTransfer } from "@/hooks";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import { formatUnits, parseUnits } from "viem";
@@ -24,6 +24,10 @@ export default function AppBox() {
   const [pendingModal, setPendingModal] = useState<boolean>(false);
 
   const {
+    sender,
+    setSender,
+    recipient,
+    setRecipient,
     sourceAssetBalance,
     sourceAsset,
     setTransferAmount,
@@ -32,6 +36,8 @@ export default function AppBox() {
     bridgeInstance,
     assetLimitOnTargetChain,
     targetAssetSupply,
+    sourceChain,
+    targetChain,
   } = useTransfer();
   const handleCloseSuccessModal = useCallback(() => {
     setSuccessModal(false);
@@ -74,6 +80,28 @@ export default function AppBox() {
     [sourceAsset, min, sourceAssetBalance, assetLimit, assetSupply, setTransferAmount],
   );
 
+  const senderAddressType = useMemo(() => sourceChain.addressType, [sourceChain]);
+
+  const handleSenderAddressChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      const address = e.target.value;
+      const valid = address ? isValidAddress(address, senderAddressType) : true;
+      setSender({ valid, address });
+    },
+    [senderAddressType, setSender],
+  );
+
+  const recipientAddressType = useMemo(() => targetChain.addressType, [targetChain]);
+
+  const handleRecipientAddressChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      const address = e.target.value;
+      const valid = address ? isValidAddress(address, recipientAddressType) : true;
+      setRecipient({ valid, address });
+    },
+    [recipientAddressType, setRecipient],
+  );
+
   return (
     <section className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
       <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[20px]">
@@ -102,10 +130,8 @@ export default function AppBox() {
         </div>
         <input
           type="text"
-          value={senderAddress}
-          onChange={(e) => {
-            setSenderAddress(e.target.value);
-          }}
+          value={sender?.address}
+          onChange={handleSenderAddressChange}
           className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
         />
       </div>
@@ -116,10 +142,8 @@ export default function AppBox() {
         </div>
         <input
           type="text"
-          value={recipientAddress}
-          onChange={(e) => {
-            setRecipientAddress(e.target.value);
-          }}
+          value={recipient?.address}
+          onChange={handleRecipientAddressChange}
           className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
         />
       </div>
