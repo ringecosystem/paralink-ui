@@ -12,7 +12,7 @@ export interface chainType {
   logo: string;
 }
 
-export default function ChainSelectInput({ who }: { who: string }) {
+export default function ChainSelectInput({ who, options }: { who: string; options: [any] }) {
   const { sourceChain, setSourceChain, sourceAsset, setTargetChain, setSourceAsset, targetChain } = useTransfer();
   const {
     defaultSourceChainOptions,
@@ -37,11 +37,11 @@ export default function ChainSelectInput({ who }: { who: string }) {
     [setTargetChain],
   );
 
-  useEffect(() => {
-    const options = availableTargetChainOptions[sourceChain.network]?.[sourceAsset.symbol] || [];
-    setTargetChainOptions(options);
-    _setTargetChain(options.at(0));
-  }, [sourceChain, sourceAsset, _setTargetChain]);
+  // useEffect(() => {
+  //   const options = availableTargetChainOptions[sourceChain.network]?.[sourceAsset.symbol] || [];
+  //   setTargetChainOptions(options);
+  //   _setTargetChain(options.at(0));
+  // }, [sourceChain, sourceAsset, _setTargetChain]);
 
   const _setSourceChain = useCallback(
     (chain: ChainConfig | undefined) => {
@@ -51,19 +51,19 @@ export default function ChainSelectInput({ who }: { who: string }) {
     [setSourceChain],
   );
 
-  const _setSourceAsset = useCallback(
-    (asset: Asset | undefined) => {
-      setSourceAsset((prev) => asset ?? prev);
-      sourceAssetRef.current = asset ?? sourceAssetRef.current;
-    },
-    [setSourceAsset],
-  );
+  // const _setSourceAsset = useCallback(
+  //   (asset: Asset | undefined) => {
+  //     setSourceAsset((prev) => asset ?? prev);
+  //     sourceAssetRef.current = asset ?? sourceAssetRef.current;
+  //   },
+  //   [setSourceAsset],
+  // );
 
-  useEffect(() => {
-    const options = availableSourceAssetOptions[sourceChain.network] || [];
-    setSourceAssetOptions(options);
-    _setSourceAsset(options.at(0));
-  }, [sourceChain, _setSourceAsset]);
+  // useEffect(() => {
+  //   const options = availableSourceAssetOptions[sourceChain.network] || [];
+  //   setSourceAssetOptions(options);
+  //   _setSourceAsset(options.at(0));
+  // }, [sourceChain, _setSourceAsset]);
   const [open, setOpen] = useState<boolean>(false);
   return (
     <div
@@ -84,19 +84,16 @@ export default function ChainSelectInput({ who }: { who: string }) {
       </div>
       {open && (
         <div className="absolute left-[-10px] right-[-10px] top-[calc(100%+10px)] z-10 flex h-fit flex-col gap-[10px] rounded-[10px] bg-white p-[10px] shadow-lg">
-          {who === "sender"
-            ? sourceChainOptions.map((item) => (
-                <div key={item.name} className="flex items-center gap-[5px]" onClick={() => _setSourceChain(item)}>
-                  <Image src={getChainLogoSrc(item.logo)} width={20} height={20} alt={item.name} />
-                  <p className="text-[12px] leading-[15px]">{item.name}</p>
-                </div>
-              ))
-            : targetChainOptions.map((item) => (
-                <div key={item.name} className="flex items-center gap-[5px]" onClick={() => _setTargetChain(item)}>
-                  <Image src={getChainLogoSrc(item.logo)} width={20} height={20} alt={item.name} />
-                  <p className="text-[12px] leading-[15px]">{item.name}</p>
-                </div>
-              ))}
+          {options.map((item) => (
+            <div
+              key={item.name}
+              className="flex items-center gap-[5px]"
+              onClick={who === "sender" ? () => _setSourceChain(item) : () => _setTargetChain(item)}
+            >
+              <Image src={getChainLogoSrc(item.logo)} width={20} height={20} alt={item.name} />
+              <p className="text-[12px] leading-[15px]">{item.name}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>

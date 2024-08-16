@@ -14,14 +14,7 @@ export default function AccountButton() {
 
   const { address } = useAccount();
 
-  const {
-    defaultSourceChainOptions,
-    defaultTargetChainOptions,
-    defaultSourceAssetOptions,
-    availableSourceAssetOptions,
-    availableTargetChainOptions,
-    availableTargetAssetOptions,
-  } = parseCross();
+  const { defaultSourceAssetOptions } = parseCross();
   const {
     sender,
     sourceChain,
@@ -37,15 +30,11 @@ export default function AccountButton() {
 
   const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
   const { sourceAssetBalance } = useTransfer();
-  console.log("sourceAssetOptions", sourceAssetOptions);
-  console.log("source asset balance", sourceAssetBalance);
   const [subMenu, setSubMenu] = useState(false);
   const handleToggleSubMenu = useCallback(() => {
-    console.log("hello2");
     setSubMenu((prev) => !prev);
   }, []);
 
-  console.log("sender", sender);
   return (
     <div className="relative">
       <div

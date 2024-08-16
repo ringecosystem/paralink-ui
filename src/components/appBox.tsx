@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEventHandler, useCallback, useMemo, useRef, useState } from "react";
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import data from "../data/data.json";
 import Image from "next/image";
 import ChainSelectInput, { chainType } from "./chainSelectInput";
@@ -14,10 +14,14 @@ import { InputAlert } from "@/old_components/input-alert";
 import { WalletID } from "@/types";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import notification from "@/ui/notification";
+import { supportedTokenList } from "@/config/tokens";
 
 export default function AppBox() {
+  const { defaultSourceChainOptions } = parseCross();
+  const [selectedAsset, setSelectedAsset] = useState(supportedTokenList[0]);
+  const [allowedChain, setAllowedChain] = useState<any>([]);
   const { defaultSourceAssetOptions } = parseCross();
-  const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
+  // const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
   const [amount, setAmount] = useState<string>("0");
   const [successModal, setSuccessModal] = useState<boolean>(false);
   const [pendingModal, setPendingModal] = useState<boolean>(false);
@@ -29,6 +33,8 @@ export default function AppBox() {
     setRecipient,
     sourceAssetBalance,
     sourceAsset,
+    targetAsset,
+    setTargetAsset,
     setTransferAmount,
     transferAmount,
     setSourceAsset,
@@ -37,7 +43,9 @@ export default function AppBox() {
     targetAssetSupply,
     existentialDepositOnTargetChain,
     sourceChain,
+    setSourceChain,
     targetChain,
+    setTargetChain,
     transfer,
     activeSenderWallet,
     updateSourceAssetBalance,
@@ -257,6 +265,52 @@ export default function AppBox() {
     updateTargetNativeBalance,
   ]);
 
+  useEffect(() => {
+    console.log("hellooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
+    console.log(selectedAsset);
+    let sourceChainOptions: any = [];
+    for (const item of selectedAsset.allowedSource) {
+      for (const chain of defaultSourceChainOptions) {
+        if (chain.name === item) {
+          sourceChainOptions.push(chain);
+        }
+      }
+    }
+    console.log("source chain options", sourceChainOptions);
+    setAllowedChain([...sourceChainOptions]);
+    setSourceChain(sourceChainOptions[0]);
+    setTargetChain(sourceChainOptions[1]);
+  }, [selectedAsset]);
+
+  useEffect(() => {
+    console.log("names on change source", targetChain.name, sourceChain.name);
+    console.log(allowedChain);
+    if (allowedChain.length > 0) {
+      if (sourceChain.name === allowedChain[0].name && targetChain.name === allowedChain[0].name) {
+        setTargetChain(allowedChain[1]);
+      } else if (sourceChain.name === allowedChain[1].name && targetChain.name === allowedChain[1].name) {
+        setTargetChain(allowedChain[0]);
+      }
+    }
+    for (const asset of sourceChain.assets) {
+      if (selectedAsset.name === asset.name) setSourceAsset(asset);
+    }
+  }, [sourceChain]);
+
+  useEffect(() => {
+    console.log("names on change target", targetChain.name, sourceChain.name);
+    if (allowedChain.length > 0) {
+      if (targetChain.name === allowedChain[0].name && sourceChain.name == allowedChain[0].name) {
+        setSourceChain(allowedChain[1]);
+      } else if (targetChain.name === allowedChain[1].name && sourceChain.name === allowedChain[1].name) {
+        setSourceChain(allowedChain[0]);
+      }
+    }
+    for (const asset of targetChain.assets) {
+      if (selectedAsset.name === asset.name) setTargetAsset(asset);
+    }
+  }, [targetChain]);
+
   return (
     <section className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
       <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[20px]">
@@ -264,16 +318,16 @@ export default function AppBox() {
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Token</p>
         </div>
         <div className="flex items-center gap-[10px]">
-          {sourceAssetOptions.map((item: any) => (
+          {supportedTokenList.map((item: any) => (
             <div
               className="flex items-center gap-[10px]"
               key={item.name}
               onClick={() => {
-                setSourceAsset(item);
+                setSelectedAsset(item);
               }}
             >
               <Image src={getAssetIconSrc(item.icon)} width={30} height={30} alt="item.name" />
-              {sourceAsset.name === item.name && <p className="text-[18px] font-[700] leading-[23px]">{item.name}</p>}
+              {selectedAsset.name === item.name && <p className="text-[18px] font-[700] leading-[23px]">{item.name}</p>}
             </div>
           ))}
         </div>
@@ -281,7 +335,7 @@ export default function AppBox() {
       <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
         <div className="flex items-center justify-between">
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
-          <ChainSelectInput who="sender" />
+          <ChainSelectInput options={allowedChain} who="sender" />
         </div>
         <input
           type="text"
@@ -293,7 +347,7 @@ export default function AppBox() {
       <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
         <div className="flex items-center justify-between">
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
-          <ChainSelectInput who="target" />
+          <ChainSelectInput options={allowedChain} who="target" />
         </div>
         <input
           type="text"
