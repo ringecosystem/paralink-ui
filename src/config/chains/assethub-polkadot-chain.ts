@@ -95,6 +95,36 @@ export const assethubPolkadotChain: ChainConfig = {
         },
       ],
     },
+    {
+      icon: "dot.svg",
+      id: 23,
+      name: "DOT",
+      symbol: "DOT",
+      decimals: 10,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_POLKADOT,
+        palletInstance: 50,
+        id: 23,
+      },
+      cross: [
+        {
+          target: { network: "darwinia", symbol: "DOT" },
+          fee: {
+            amount: bnToBn(20000),
+            asset: {
+              local: { id: 1984 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_POLKADOT,
+                palletInstance: 50,
+                id: 1984,
+              },
+            },
+          },
+          section: "polkadotXcm",
+          method: "limitedReserveTransferAssets",
+        },
+      ],
+    },
   ],
   wallets: [WalletID.TALISMAN],
   addressType: "substrate",

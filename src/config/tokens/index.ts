@@ -14,4 +14,9 @@ export const supportedTokenList = [
     icon: "pink.jpg",
     allowedSource: ["Darwinia", "Polkadot AssetHub"],
   },
+  {
+    name: "DOT",
+    icon: "dot.svg",
+    allowedSource: ["Darwinia", "Polkadot AssetHub"],
+  },
 ];

@@ -33,22 +33,22 @@
   "social": [
     {
       "name": "x",
-      "url": "/",
+      "url": "https://twitter.com/DarwiniaNetwork",
       "icon": "/images/icons/x-icon.svg"
     },
     {
       "name": "telegram",
-      "url": "/",
+      "url": "https://t.me/DarwiniaNetwork",
       "icon": "/images/icons/telegram-icon.svg"
     },
     {
       "name": "github",
-      "url": "/",
+      "url": "https://github.com/darwinia-network",
       "icon": "/images/icons/github-icon.svg"
     },
     {
       "name": "email",
-      "url": "/",
+      "url": "mailto:hello@darwinia.network",
       "icon": "/images/icons/email-icon.svg"
     }
   ]

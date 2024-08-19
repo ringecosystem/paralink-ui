@@ -10,6 +10,7 @@ import ChainButton from "./chainButton";
 import { useAccount } from "wagmi";
 import { useTransfer } from "@/hooks";
 import { parseCross } from "@/utils";
+import { animated, useTrail } from "@react-spring/web";
 
 export default function Header() {
   const { sender } = useTransfer();
@@ -23,14 +24,23 @@ export default function Header() {
     setShowMenu(false);
   }, []);
 
+  const trails = useTrail(3, {
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+  });
+
   return (
     <section className="flex h-[50px] w-full items-center justify-between px-[10px] lg:h-[56px] lg:px-[30px]">
-      <Link href="/">
-        <Image src="/images/paralink-logo.svg" width={90} height={24} alt="Paralink logo" />
-      </Link>
+      <animated.div style={trails[0]}>
+        <Link href="/">
+          <Image src="/images/paralink-logo.svg" width={90} height={24} alt="Paralink logo" />
+        </Link>
+      </animated.div>
       <div className="hidden items-center justify-center gap-[10px] lg:flex">
-        {!sender ? <WalletButton /> : <AccountButton />}
-        <ChainButton />
+        <animated.div style={trails[1]}>{!sender ? <WalletButton /> : <AccountButton />}</animated.div>
+        <animated.div style={trails[2]}>
+          <ChainButton />
+        </animated.div>
       </div>
       <div className="lg:hidden">
         <div className="flex flex-col items-center justify-center gap-[5px]" onClick={handleOpenMenu}>

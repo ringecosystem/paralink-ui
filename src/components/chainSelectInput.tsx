@@ -65,6 +65,9 @@ export default function ChainSelectInput({ who, options }: { who: string; option
   //   _setSourceAsset(options.at(0));
   // }, [sourceChain, _setSourceAsset]);
   const [open, setOpen] = useState<boolean>(false);
+
+  const name = "Polkadot AssetHub";
+  console.log(name.replace("assetHub", ""));
   return (
     <div
       className="relative cursor-pointer"
@@ -79,23 +82,36 @@ export default function ChainSelectInput({ who, options }: { who: string; option
           height={20}
           alt={who === "sender" ? sourceChain.name : targetChain.name}
         />
-        <p className="text-[12px] leading-[15px]">{who === "sender" ? sourceChain.name : targetChain.name}</p>
+        <p className="text-[12px] leading-[15px]">
+          {who === "sender"
+            ? sourceChain.name.includes("Polkadot")
+              ? sourceChain.name.replace(" AssetHub", "")
+              : sourceChain.name
+            : targetChain.name.includes("Polkadot")
+            ? targetChain.name.replace(" AssetHub", "")
+            : targetChain.name}
+        </p>
         <span className="block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
       </div>
-      {open && (
-        <div className="absolute left-[-10px] right-[-10px] top-[calc(100%+10px)] z-10 flex h-fit flex-col gap-[10px] rounded-[10px] bg-white p-[10px] shadow-lg">
+      <div
+        className="absolute left-0 right-0 top-[calc(100%+10px)] z-[300]  overflow-hidden rounded-[10px] shadow-xl duration-500"
+        style={{ maxHeight: open ? "10vh" : "0" }}
+      >
+        <div className="relative flex h-fit w-fit  flex-col gap-[10px] rounded-[10px] bg-white p-[10px]">
           {options.map((item) => (
             <div
               key={item.name}
-              className="flex items-center gap-[5px]"
+              className="flex w-fit items-center gap-[5px]"
               onClick={who === "sender" ? () => _setSourceChain(item) : () => _setTargetChain(item)}
             >
               <Image src={getChainLogoSrc(item.logo)} width={20} height={20} alt={item.name} />
-              <p className="text-[12px] leading-[15px]">{item.name}</p>
+              <p className="whitespace-nowrap text-[12px] leading-[15px]">
+                {item.name.includes("Polkadot") ? item.name.replace(" AssetHub", "") : item.name}
+              </p>
             </div>
           ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }

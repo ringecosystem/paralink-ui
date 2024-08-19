@@ -15,6 +15,7 @@ import { WalletID } from "@/types";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import notification from "@/ui/notification";
 import { supportedTokenList } from "@/config/tokens";
+import { useTrail, animated, useSpring } from "@react-spring/web";
 
 export default function AppBox() {
   const { defaultSourceChainOptions } = parseCross();
@@ -266,8 +267,6 @@ export default function AppBox() {
   ]);
 
   useEffect(() => {
-    console.log("hellooooooooooooooooooooooooooooooooooooooooooooooooooooooo");
-    console.log(selectedAsset);
     let sourceChainOptions: any = [];
     for (const item of selectedAsset.allowedSource) {
       for (const chain of defaultSourceChainOptions) {
@@ -276,7 +275,6 @@ export default function AppBox() {
         }
       }
     }
-    console.log("source chain options", sourceChainOptions);
     setAllowedChain([...sourceChainOptions]);
     setSourceChain(sourceChainOptions[0]);
     setTargetChain(sourceChainOptions[1]);
@@ -311,28 +309,57 @@ export default function AppBox() {
     }
   }, [targetChain]);
 
+  const trails = useTrail(5, {
+    from: { transform: "translateX(-100%)", opacity: 0 },
+    to: { opacity: 1, transform: "translateX(0)" },
+  });
+
+  const style = useSpring({
+    from: { opacity: 0, transform: "translateY(-100%)" },
+    to: { opacity: 1, transform: "translateY(0)" },
+  });
+
   return (
-    <section className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]">
-      <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[20px]">
+    <animated.section
+      style={style}
+      className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]"
+    >
+      <animated.div
+        style={trails[0]}
+        className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[20px]"
+      >
         <div>
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Token</p>
         </div>
         <div className="flex items-center gap-[10px]">
           {supportedTokenList.map((item: any) => (
             <div
-              className="flex items-center gap-[10px]"
+              className="flex items-center gap-[10px] duration-500"
               key={item.name}
+              style={{
+                maxWidth: selectedAsset.name === item.name ? "5vw" : "30px",
+                transitionDelay: selectedAsset.name === item.name ? "0.3s" : "0s",
+              }}
               onClick={() => {
                 setSelectedAsset(item);
               }}
             >
-              <Image src={getAssetIconSrc(item.icon)} width={30} height={30} alt="item.name" />
-              {selectedAsset.name === item.name && <p className="text-[18px] font-[700] leading-[23px]">{item.name}</p>}
+              <Image
+                src={getAssetIconSrc(item.icon)}
+                width={30}
+                height={30}
+                alt="item.name"
+                style={{ borderRadius: "50%" }}
+              />
+              <p className="overflow-hidden text-[18px] font-[700] leading-[23px]">{item.name}</p>
             </div>
           ))}
         </div>
-      </div>
-      <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
+      </animated.div>
+      <animated.div
+        style={trails[1]}
+        className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+      >
         <div className="flex items-center justify-between">
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
           <ChainSelectInput options={allowedChain} who="sender" />
@@ -343,8 +370,11 @@ export default function AppBox() {
           onChange={handleSenderAddressChange}
           className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
         />
-      </div>
-      <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
+      </animated.div>
+      <animated.div
+        style={trails[2]}
+        className="z-[-1] flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+      >
         <div className="flex items-center justify-between">
           <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
           <ChainSelectInput options={allowedChain} who="target" />
@@ -355,8 +385,8 @@ export default function AppBox() {
           onChange={handleRecipientAddressChange}
           className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
         />
-      </div>
-      <div>
+      </animated.div>
+      <animated.div style={trails[3]}>
         <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
           <div>
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Amount</p>
@@ -389,7 +419,7 @@ export default function AppBox() {
                   setTransferAmount({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
                 }
               }}
-              className="h-[26px] w-fit flex-shrink-0 rounded-[5px] bg-[#FF00831A] px-[15px] text-[12px] font-bold text-[#FF0083]"
+              className="duration-300s h-[26px] w-fit flex-shrink-0 rounded-[5px] bg-[#FF00831A] px-[15px] text-[12px] font-bold text-[#FF0083] hover:shadow-lg"
             >
               Max
             </button>
@@ -416,18 +446,20 @@ export default function AppBox() {
         ) : insufficient ? (
           <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">* Insufficient.</p>
         ) : null}
-      </div>
+      </animated.div>
+      <animated.div className="flex w-full" style={trails[4]}>
+        <button
+          onClick={handleSend}
+          disabled={!sender || (!needSwitchNetwork && disabledSend)}
+          className="h-[34px] w-full flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white disabled:opacity-50"
+        >
+          Send
+        </button>
+      </animated.div>
 
-      <button
-        onClick={handleSend}
-        disabled={!sender || (!needSwitchNetwork && disabledSend)}
-        className="h-[34px] flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white disabled:opacity-50"
-      >
-        Send
-      </button>
       <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} />
       <PendingModal visible={busy} />
-    </section>
+    </animated.section>
   );
 }
 
