@@ -59,7 +59,7 @@ export default function WalletSelectionModal({ visible, onClose }: { visible: bo
       {visible && (
         <div className="fixed left-0 top-0 z-50 h-[100vh] w-[100vw]">
           <div className="flex h-full w-full items-center justify-center bg-[rgba(0,0,0,0.3)]" onClick={onClose}>
-            <div className="flex h-[300px] w-[500px] flex-col items-center justify-between gap-middle rounded-[20px] bg-white p-[20px]">
+            <div className="flex h-[300px] w-[80vw] flex-col items-center justify-between gap-middle rounded-[20px] bg-white p-[20px] lg:w-[500px]">
               <h2 className="text-[20px] font-bold">Select a wallet Type</h2>
               <div className="flex w-full flex-col gap-middle">
                 <button

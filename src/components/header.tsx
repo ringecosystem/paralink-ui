@@ -11,8 +11,15 @@ import { useAccount } from "wagmi";
 import { useTransfer } from "@/hooks";
 import { parseCross } from "@/utils";
 import { animated, useTrail } from "@react-spring/web";
+import WalletSelectionModal from "./walletSelectionModal";
 
 export default function Header() {
+  const [connectModal, setConnectModal] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setConnectModal(false);
+  }, []);
+
   const { sender } = useTransfer();
   const [showMenu, setShowMenu] = useState<boolean>(false);
 
@@ -37,7 +44,9 @@ export default function Header() {
         </Link>
       </animated.div>
       <div className="hidden items-center justify-center gap-[10px] lg:flex">
-        <animated.div style={trails[1]}>{!sender ? <WalletButton /> : <AccountButton />}</animated.div>
+        <animated.div style={trails[1]}>
+          {!sender ? <WalletButton openModal={() => setConnectModal(true)} /> : <AccountButton />}
+        </animated.div>
         <animated.div style={trails[2]}>
           <ChainButton />
         </animated.div>
@@ -71,10 +80,16 @@ export default function Header() {
               <p className="text-[14px] leading-[24px]">Asset Hub</p>
               <span className="ml-auto block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
             </div>
-            <div className="flex h-[36px] w-[190px] cursor-pointer items-center gap-[5px] rounded-[10px] bg-white px-[10px]">
-              <span className="block h-[19px] w-[19px] bg-[url('/images/icons/wallet-icon.svg')] bg-contain bg-center bg-no-repeat" />
-              <p className="text-[14px] leading-[24px]">Connect Wallet</p>
-            </div>
+            {!sender ? (
+              <WalletButton
+                openModal={() => {
+                  handleCloseMenu();
+                  setConnectModal(true);
+                }}
+              />
+            ) : (
+              <AccountButton />
+            )}
           </div>
           <div className="mt-auto flex items-center justify-center gap-[10px]">
             {data.social.map((item: any) => (
@@ -88,6 +103,7 @@ export default function Header() {
           </div>
         </div>
       </div>
+      <WalletSelectionModal visible={connectModal} onClose={handleClose} />
     </section>
   );
 }
