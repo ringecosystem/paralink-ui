@@ -75,11 +75,7 @@ export default function Header() {
             </div>
           </div>
           <div className="flex flex-col items-center gap-[20px] pt-[20px]">
-            <div className="flex h-[36px] w-[190px] cursor-pointer items-center gap-[5px] rounded-[10px] bg-white px-[10px]">
-              <span className="block h-[24px] w-[24px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
-              <p className="text-[14px] leading-[24px]">Asset Hub</p>
-              <span className="ml-auto block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
-            </div>
+            <ChainButton />
             {!sender ? (
               <WalletButton
                 openModal={() => {
