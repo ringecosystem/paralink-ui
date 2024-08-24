@@ -128,8 +128,6 @@ export default function AppBox() {
   const { switchNetwork } = useSwitchNetwork();
   const { address } = useAccount();
 
-  console.log("lists: -------------------", sender, activeSenderWallet, activeSenderAccount, address);
-
   const needSwitchNetwork = useMemo(
     () => activeSenderWallet === WalletID.EVM && chain && chain.id !== sourceChain.id,
     [chain, sourceChain, activeSenderWallet],
@@ -275,7 +273,6 @@ export default function AppBox() {
   }, [selectedAsset]);
 
   useEffect(() => {
-    console.log("names on change source", targetChain.name, sourceChain.name);
     console.log(allowedChain);
     if (allowedChain.length > 0) {
       if (sourceChain.name === allowedChain[0].name && targetChain.name === allowedChain[0].name) {
@@ -290,7 +287,6 @@ export default function AppBox() {
   }, [sourceChain]);
 
   useEffect(() => {
-    console.log("names on change target", targetChain.name, sourceChain.name);
     if (allowedChain.length > 0) {
       if (targetChain.name === allowedChain[0].name && sourceChain.name == allowedChain[0].name) {
         setSourceChain(allowedChain[1]);

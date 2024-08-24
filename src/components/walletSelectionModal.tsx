@@ -34,18 +34,12 @@ export default function WalletSelectionModal({ visible, onClose }: { visible: bo
     ];
   }, [sourceChain.wallets]);
 
-  console.log("active wallet", activeSenderWallet);
-
-  console.log("active wallet", activeSenderWallet);
-
   const senderOptions =
     activeSenderWallet === WalletID.EVM && address
       ? [{ address }]
       : activeSenderWallet === WalletID.TALISMAN
       ? talismanAccounts
       : [];
-
-  console.log("options", senderOptions);
 
   // useEffect(() => {
   //   if (activeSenderWallet) {

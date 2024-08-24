@@ -2,7 +2,7 @@ import DisconnectButton from "./disconnetButton";
 import data from "../data/data.json";
 import Image from "next/image";
 import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { useTalisman, useTransfer } from "@/hooks";
 import { isValidAddress, parseCross, toShortAdrress, formatBalance, getAssetIconSrc } from "@/utils";
 import { WalletID } from "@/types";
@@ -11,6 +11,8 @@ export default function AccountButton() {
   const { talismanAccounts } = useTalisman();
 
   const { address } = useAccount();
+  const { chain } = useNetwork();
+  const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
 
   const { defaultSourceAssetOptions } = parseCross();
   const {
@@ -33,6 +35,16 @@ export default function AccountButton() {
   const handleToggleSubMenu = useCallback(() => {
     setSubMenu((prev) => !prev);
   }, []);
+
+  console.log("source chain", sourceChain.id);
+  console.log("connected chain", chain?.id);
+
+  useEffect(() => {
+    if (chain && sourceChain && switchNetwork && chain.id !== sourceChain.id) {
+      console.log("change");
+      switchNetwork(sourceChain.id);
+    }
+  }, [sourceChain, chain, switchNetwork]);
 
   return (
     <div className="relative">

@@ -67,7 +67,6 @@ export default function ChainSelectInput({ who, options }: { who: string; option
   const [open, setOpen] = useState<boolean>(false);
 
   const name = "Polkadot AssetHub";
-  console.log(name.replace("assetHub", ""));
   return (
     <div
       className="relative cursor-pointer"
