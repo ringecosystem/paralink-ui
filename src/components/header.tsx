@@ -43,8 +43,6 @@ export default function Header() {
       ? talismanAccounts
       : [];
 
-  console.log(sender);
-
   useEffect(() => {
     if ((activeAddress || talismanAccounts.length > 0) && activeSenderWallet) {
       setConnected(true);

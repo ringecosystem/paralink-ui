@@ -55,7 +55,7 @@ export default function AccountButton() {
 
   const connectedAddress =
     activeSenderWallet === WalletID.TALISMAN
-      ? talismanAccounts[0].address
+      ? talismanAccounts[0]?.address
       : activeSenderWallet === WalletID.EVM
       ? address
       : undefined;

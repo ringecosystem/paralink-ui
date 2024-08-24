@@ -17,7 +17,7 @@ import { supportedTokenList } from "@/config/tokens";
 import { useTrail, animated, useSpring } from "@react-spring/web";
 
 export default function AppBox() {
-  const { defaultSourceChainOptions } = parseCross();
+  const { defaultSourceChainOptions, defaultSourceAssetOptions } = parseCross();
   const [selectedAsset, setSelectedAsset] = useState(supportedTokenList[0]);
   const [allowedChain, setAllowedChain] = useState<any>([]);
   // const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
@@ -259,6 +259,7 @@ export default function AppBox() {
   ]);
 
   useEffect(() => {
+    console.log("defaultSourceAssetOptions", sourceChain.assets);
     let sourceChainOptions: any = [];
     for (const item of selectedAsset.allowedSource) {
       for (const chain of defaultSourceChainOptions) {
@@ -267,8 +268,15 @@ export default function AppBox() {
         }
       }
     }
+    let selectedSourceAsset;
+    for (const item of sourceChainOptions[0].assets) {
+      if (selectedAsset.icon === item.icon) {
+        selectedSourceAsset = item;
+      }
+    }
     setAllowedChain([...sourceChainOptions]);
     setSourceChain(sourceChainOptions[0]);
+    setSourceAsset(selectedSourceAsset);
     setTargetChain(sourceChainOptions[1]);
   }, [selectedAsset]);
 
