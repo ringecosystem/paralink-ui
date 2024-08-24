@@ -9,15 +9,16 @@ import AccountButton from "./accountButton";
 import ChainButton from "./chainButton";
 import { useAccount, useChainId } from "wagmi";
 import { useTalisman, useTransfer } from "@/hooks";
-import { parseCross } from "@/utils";
+import { isValidAddress, parseCross } from "@/utils";
 import WalletSelectionModal from "./walletSelectionModal";
+import { WalletID } from "@/types";
 
 export default function Header() {
   const [connectModal, setConnectModal] = useState(false);
   const [connected, setConnected] = useState(false);
   const { address: activeAddress } = useAccount();
   const { talismanAccounts, connectTalisman } = useTalisman();
-  const { activeSenderWallet } = useTransfer();
+  const { activeSenderWallet, setSender, sourceChain, sender } = useTransfer();
 
   console.log(talismanAccounts);
 
@@ -25,7 +26,6 @@ export default function Header() {
     setConnectModal(false);
   }, []);
 
-  const { sender } = useTransfer();
   const [showMenu, setShowMenu] = useState<boolean>(false);
 
   const handleOpenMenu = useCallback(() => {
@@ -36,13 +36,26 @@ export default function Header() {
     setShowMenu(false);
   }, []);
 
-  console.log(activeSenderWallet);
+  const senderOptions =
+    activeSenderWallet === WalletID.EVM && activeAddress
+      ? [{ address: activeAddress }]
+      : activeSenderWallet === WalletID.TALISMAN
+      ? talismanAccounts
+      : [];
+
+  console.log(sender);
 
   useEffect(() => {
     if ((activeAddress || talismanAccounts.length > 0) && activeSenderWallet) {
       setConnected(true);
+      if (senderOptions.length > 0) {
+        const address = senderOptions[0].address;
+        const valid = address ? isValidAddress(address, sourceChain.addressType) : true;
+        setSender({ valid, address });
+      }
     } else {
       setConnected(false);
+      setSender(undefined);
     }
   }, [activeAddress, talismanAccounts.length, activeSenderWallet]);
 

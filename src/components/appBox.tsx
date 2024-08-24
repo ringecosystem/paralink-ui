@@ -328,8 +328,8 @@ export default function AppBox() {
                 className="flex items-center gap-[10px] duration-500"
                 key={item.name}
                 style={{
-                  maxWidth: selectedAsset.name === item.name ? "5vw" : "30px",
-                  transitionDelay: selectedAsset.name === item.name ? "0.3s" : "0s",
+                  maxWidth: selectedAsset.name === item.name ? "100px" : "30px",
+                  transitionDelay: selectedAsset.name === item.name ? "0.4s" : "0s",
                 }}
                 onClick={() => {
                   setSelectedAsset(item);
@@ -357,8 +357,9 @@ export default function AppBox() {
           </div>
           <input
             type="text"
-            value={sender?.address}
+            value={sender ? sender.address : ""}
             onChange={handleSenderAddressChange}
+            placeholder="Please connect to you wallet"
             className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
           />
         </animated.div>
@@ -374,6 +375,7 @@ export default function AppBox() {
             type="text"
             value={recipient?.address}
             onChange={handleRecipientAddressChange}
+            placeholder="Please Enter the Recipient Address"
             className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
           />
         </animated.div>
@@ -387,6 +389,7 @@ export default function AppBox() {
                 type="text"
                 value={transferAmount?.input}
                 onChange={handleInputChange}
+                placeholder="Please Enter the Amount"
                 className="h-[24px] flex-grow text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
               />
               <button
