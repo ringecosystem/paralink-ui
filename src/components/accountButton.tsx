@@ -1,5 +1,3 @@
-"use client";
-
 import DisconnectButton from "./disconnetButton";
 import data from "../data/data.json";
 import Image from "next/image";
@@ -22,6 +20,8 @@ export default function AccountButton() {
     activeSenderWallet,
     activeRecipientWallet,
     setSender,
+    activeSenderAccount,
+    sourceAssetBalance,
     setActiveSenderAccount,
     setActiveRecipientAccount,
     setActiveSenderWallet,
@@ -29,7 +29,6 @@ export default function AccountButton() {
   } = useTransfer();
 
   const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
-  const { sourceAssetBalance } = useTransfer();
   const [subMenu, setSubMenu] = useState(false);
   const handleToggleSubMenu = useCallback(() => {
     setSubMenu((prev) => !prev);
@@ -42,14 +41,14 @@ export default function AccountButton() {
         className="relative flex h-[36px] w-fit cursor-pointer items-center justify-center gap-[5px] rounded-[10px] bg-white px-[10px] duration-300 hover:shadow-lg"
       >
         <span className="block h-[24px] w-[24px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
-        <p className="text-[14px] leading-[24px]">{sender && toShortAdrress(sender.address)}</p>
+        <p className="text-[14px] leading-[24px]">{address && toShortAdrress(address.toString())}</p>
         <span className="block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
       </div>
       {subMenu && (
         <div className="absolute right-[-21px] top-[calc(100%+20px)] flex w-[290px] flex-col gap-[20px] rounded-[10px] bg-white p-[20px]">
           <div className="flex items-center gap-[10px]">
             <span className="block h-[30px] w-[30px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
-            <p className="text-[16px] font-bold leading-[24px]">{sender && toShortAdrress(sender.address)}</p>
+            <p className="text-[16px] font-bold leading-[24px]">{address && toShortAdrress(address.toString())}</p>
             <span className="block h-[18px] w-[18px] bg-[url('/images/icons/copy-icon.svg')] bg-contain bg-center bg-no-repeat" />
           </div>
           <DisconnectButton />

@@ -7,7 +7,7 @@ import data from "../data/data.json";
 import WalletButton from "./walletButton";
 import AccountButton from "./accountButton";
 import ChainButton from "./chainButton";
-import { useAccount } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { useTransfer } from "@/hooks";
 import { parseCross } from "@/utils";
 import { animated, useTrail } from "@react-spring/web";
@@ -15,6 +15,9 @@ import WalletSelectionModal from "./walletSelectionModal";
 
 export default function Header() {
   const [connectModal, setConnectModal] = useState(false);
+  const { address: activeAddress } = useAccount();
+  const chainId = useChainId();
+  console.log("chainId", chainId);
 
   const handleClose = useCallback(() => {
     setConnectModal(false);
@@ -45,7 +48,7 @@ export default function Header() {
       </animated.div>
       <div className="hidden items-center justify-center gap-[10px] lg:flex">
         <animated.div style={trails[1]}>
-          {!sender ? <WalletButton openModal={() => setConnectModal(true)} /> : <AccountButton />}
+          {!activeAddress ? <WalletButton openModal={() => setConnectModal(true)} /> : <AccountButton />}
         </animated.div>
         <animated.div style={trails[2]}>
           <ChainButton />

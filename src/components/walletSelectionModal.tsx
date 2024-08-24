@@ -47,13 +47,13 @@ export default function WalletSelectionModal({ visible, onClose }: { visible: bo
 
   console.log("options", senderOptions);
 
-  useEffect(() => {
-    if (activeSenderWallet) {
-      const address = senderOptions[0].address;
-      const valid = address ? isValidAddress(address, sourceChain.addressType) : true;
-      setSender({ valid, address });
-    }
-  }, [activeSenderWallet]);
+  // useEffect(() => {
+  //   if (activeSenderWallet) {
+  //     const address = senderOptions[0].address;
+  //     const valid = address ? isValidAddress(address, sourceChain.addressType) : true;
+  //     setSender({ valid, address });
+  //   }
+  // }, [activeSenderWallet]);
   return (
     <>
       {visible && (

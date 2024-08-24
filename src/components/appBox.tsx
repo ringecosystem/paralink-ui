@@ -10,7 +10,6 @@ import { formatBalance, getAssetIconSrc, isExceedingCrossChainLimit, isValidAddr
 import { useTransfer } from "@/hooks";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import { formatUnits, parseUnits } from "viem";
-import { InputAlert } from "@/old_components/input-alert";
 import { WalletID } from "@/types";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import notification from "@/ui/notification";
@@ -21,11 +20,8 @@ export default function AppBox() {
   const { defaultSourceChainOptions } = parseCross();
   const [selectedAsset, setSelectedAsset] = useState(supportedTokenList[0]);
   const [allowedChain, setAllowedChain] = useState<any>([]);
-  const { defaultSourceAssetOptions } = parseCross();
   // const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
-  const [amount, setAmount] = useState<string>("0");
   const [successModal, setSuccessModal] = useState<boolean>(false);
-  const [pendingModal, setPendingModal] = useState<boolean>(false);
 
   const {
     sender,
@@ -34,7 +30,6 @@ export default function AppBox() {
     setRecipient,
     sourceAssetBalance,
     sourceAsset,
-    targetAsset,
     setTargetAsset,
     setTransferAmount,
     transferAmount,
@@ -62,10 +57,13 @@ export default function AppBox() {
   } = useTransfer();
   const handleCloseSuccessModal = useCallback(() => {
     setSuccessModal(false);
-  }, []);
-
-  const handleClosePendingModal = useCallback(() => {
-    setPendingModal(false);
+    setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
+    updateSourceAssetBalance();
+    updateTargetAssetBalance();
+    updateTargetAssetSupply();
+    updateSourceNativeBalance();
+    updateTargetNativeBalance();
+    updateFeeBalanceOnSourceChain();
   }, []);
 
   const sourceChainRef = useRef(sourceChain);
@@ -129,6 +127,8 @@ export default function AppBox() {
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork();
   const { address } = useAccount();
+
+  console.log("lists: -------------------", sender, activeSenderWallet, activeSenderAccount, address);
 
   const needSwitchNetwork = useMemo(
     () => activeSenderWallet === WalletID.EVM && chain && chain.id !== sourceChain.id,
@@ -221,13 +221,7 @@ export default function AppBox() {
       const callback = {
         successCb: () => {
           setBusy(false);
-          setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
-          updateSourceAssetBalance();
-          updateTargetAssetBalance();
-          updateTargetAssetSupply();
-          updateSourceNativeBalance();
-          updateTargetNativeBalance();
-          updateFeeBalanceOnSourceChain();
+          setSuccessModal(true);
         },
         failedCb: () => {
           setBusy(false);
@@ -320,146 +314,148 @@ export default function AppBox() {
   });
 
   return (
-    <animated.section
-      style={style}
-      className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]"
-    >
-      <animated.div
-        style={trails[0]}
-        className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[20px]"
+    <>
+      <animated.section
+        style={style}
+        className="flex h-fit w-[400px] flex-col gap-[20px] rounded-[20px] bg-white p-[20px]"
       >
-        <div>
-          <p className="text-[12px] leading-[15.22px] text-[#12161980]">Token</p>
-        </div>
-        <div className="flex items-center gap-[10px]">
-          {supportedTokenList.map((item: any) => (
-            <div
-              className="flex items-center gap-[10px] duration-500"
-              key={item.name}
-              style={{
-                maxWidth: selectedAsset.name === item.name ? "5vw" : "30px",
-                transitionDelay: selectedAsset.name === item.name ? "0.3s" : "0s",
-              }}
-              onClick={() => {
-                setSelectedAsset(item);
-              }}
-            >
-              <Image
-                src={getAssetIconSrc(item.icon)}
-                width={30}
-                height={30}
-                alt="item.name"
-                style={{ borderRadius: "50%" }}
-              />
-              <p className="overflow-hidden text-[18px] font-[700] leading-[23px]">{item.name}</p>
-            </div>
-          ))}
-        </div>
-      </animated.div>
-      <animated.div
-        style={trails[1]}
-        className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
-      >
-        <div className="flex items-center justify-between">
-          <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
-          <ChainSelectInput options={allowedChain} who="sender" />
-        </div>
-        <input
-          type="text"
-          value={sender?.address}
-          onChange={handleSenderAddressChange}
-          className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
-        />
-      </animated.div>
-      <animated.div
-        style={trails[2]}
-        className="z-[-1] flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
-      >
-        <div className="flex items-center justify-between">
-          <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
-          <ChainSelectInput options={allowedChain} who="target" />
-        </div>
-        <input
-          type="text"
-          value={recipient?.address}
-          onChange={handleRecipientAddressChange}
-          className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
-        />
-      </animated.div>
-      <animated.div style={trails[3]}>
-        <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
-          <div>
-            <p className="text-[12px] leading-[15.22px] text-[#12161980]">Amount</p>
-          </div>
-          <div className="flex items-center justify-center gap-[10px]">
-            <input
-              type="text"
-              value={transferAmount?.input}
-              onChange={handleInputChange}
-              className="h-[24px] flex-grow text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
-            />
-            <button
-              onClick={() => {
-                if (sourceAssetBalance?.amount && assetSupply) {
-                  if (assetLimit && assetSupply.gte(assetLimit)) {
-                    setTransferAmount({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
-                  } else if (assetLimit) {
-                    const remaining = assetLimit.sub(assetSupply);
-                    const amount = remaining.lte(sourceAssetBalance?.amount) ? remaining : sourceAssetBalance?.amount;
-                    const input = formatUnits(BigInt(amount.toString()), sourceAsset.decimals);
-                    setTransferAmount({ valid: !(min && min.gt(amount)), input, amount });
-                  } else {
-                    setTransferAmount({
-                      amount: sourceAssetBalance?.amount,
-                      valid: !(min && min.gt(sourceAssetBalance?.amount)),
-                      input: formatUnits(BigInt(sourceAssetBalance?.amount.toString()), sourceAsset.decimals),
-                    });
-                  }
-                } else {
-                  setTransferAmount({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
-                }
-              }}
-              className="duration-300s h-[26px] w-fit flex-shrink-0 rounded-[5px] bg-[#FF00831A] px-[15px] text-[12px] font-bold text-[#FF0083] hover:shadow-lg"
-            >
-              Max
-            </button>
-          </div>
-        </div>
-        {sourceAssetBalance && (
-          <p className="mt-[5px] text-[12px] leading-[15px] text-[#12161980]">
-            Balance: {formatBalance(sourceAssetBalance.amount, sourceAsset.decimals)} {sourceAsset.name}
-          </p>
-        )}
-        {requireLimit ? (
-          <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">
-            {`* Limit: ${formatBalance(assetLimit ?? BN_ZERO, sourceAsset?.decimals ?? 0)}, supply: ${formatBalance(
-              (assetSupply ?? BN_ZERO).add(transferAmount?.amount ?? BN_ZERO),
-              sourceAsset?.decimals ?? 0,
-            )}.`}
-          </p>
-        ) : requireMin ? (
-          <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">
-            {`* At least ${formatBalance(min ?? BN_ZERO, sourceAsset?.decimals ?? 0)} ${
-              sourceAsset.symbol
-            } for tx fee.`}
-          </p>
-        ) : insufficient ? (
-          <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">* Insufficient.</p>
-        ) : null}
-      </animated.div>
-      <animated.div className="flex w-full" style={trails[4]}>
-        <button
-          onClick={handleSend}
-          disabled={!sender || (!needSwitchNetwork && disabledSend)}
-          className="h-[34px] w-full flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white disabled:opacity-50"
+        <animated.div
+          style={trails[0]}
+          className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[20px]"
         >
-          Send
-        </button>
-      </animated.div>
+          <div>
+            <p className="text-[12px] leading-[15.22px] text-[#12161980]">Token</p>
+          </div>
+          <div className="flex items-center gap-[10px]">
+            {supportedTokenList.map((item: any) => (
+              <div
+                className="flex items-center gap-[10px] duration-500"
+                key={item.name}
+                style={{
+                  maxWidth: selectedAsset.name === item.name ? "5vw" : "30px",
+                  transitionDelay: selectedAsset.name === item.name ? "0.3s" : "0s",
+                }}
+                onClick={() => {
+                  setSelectedAsset(item);
+                }}
+              >
+                <Image
+                  src={getAssetIconSrc(item.icon)}
+                  width={30}
+                  height={30}
+                  alt="item.name"
+                  style={{ borderRadius: "50%" }}
+                />
+                <p className="overflow-hidden text-[18px] font-[700] leading-[23px]">{item.name}</p>
+              </div>
+            ))}
+          </div>
+        </animated.div>
+        <animated.div
+          style={trails[1]}
+          className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
+            <ChainSelectInput options={allowedChain} who="sender" />
+          </div>
+          <input
+            type="text"
+            value={sender?.address}
+            onChange={handleSenderAddressChange}
+            className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
+          />
+        </animated.div>
+        <animated.div
+          style={trails[2]}
+          className="z-[-1] flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
+            <ChainSelectInput options={allowedChain} who="target" />
+          </div>
+          <input
+            type="text"
+            value={recipient?.address}
+            onChange={handleRecipientAddressChange}
+            className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
+          />
+        </animated.div>
+        <animated.div style={trails[3]}>
+          <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
+            <div>
+              <p className="text-[12px] leading-[15.22px] text-[#12161980]">Amount</p>
+            </div>
+            <div className="flex items-center justify-center gap-[10px]">
+              <input
+                type="text"
+                value={transferAmount?.input}
+                onChange={handleInputChange}
+                className="h-[24px] flex-grow text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
+              />
+              <button
+                onClick={() => {
+                  if (sourceAssetBalance?.amount && assetSupply) {
+                    if (assetLimit && assetSupply.gte(assetLimit)) {
+                      setTransferAmount({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
+                    } else if (assetLimit) {
+                      const remaining = assetLimit.sub(assetSupply);
+                      const amount = remaining.lte(sourceAssetBalance?.amount) ? remaining : sourceAssetBalance?.amount;
+                      const input = formatUnits(BigInt(amount.toString()), sourceAsset.decimals);
+                      setTransferAmount({ valid: !(min && min.gt(amount)), input, amount });
+                    } else {
+                      setTransferAmount({
+                        amount: sourceAssetBalance?.amount,
+                        valid: !(min && min.gt(sourceAssetBalance?.amount)),
+                        input: formatUnits(BigInt(sourceAssetBalance?.amount.toString()), sourceAsset.decimals),
+                      });
+                    }
+                  } else {
+                    setTransferAmount({ valid: !(min && min.gt(BN_ZERO)), input: "0", amount: BN_ZERO });
+                  }
+                }}
+                className="duration-300s h-[26px] w-fit flex-shrink-0 rounded-[5px] bg-[#FF00831A] px-[15px] text-[12px] font-bold text-[#FF0083] hover:shadow-lg"
+              >
+                Max
+              </button>
+            </div>
+          </div>
+          {sourceAssetBalance && (
+            <p className="mt-[5px] text-[12px] leading-[15px] text-[#12161980]">
+              Balance: {formatBalance(sourceAssetBalance.amount, sourceAsset.decimals)} {sourceAsset.name}
+            </p>
+          )}
+          {requireLimit ? (
+            <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">
+              {`* Limit: ${formatBalance(assetLimit ?? BN_ZERO, sourceAsset?.decimals ?? 0)}, supply: ${formatBalance(
+                (assetSupply ?? BN_ZERO).add(transferAmount?.amount ?? BN_ZERO),
+                sourceAsset?.decimals ?? 0,
+              )}.`}
+            </p>
+          ) : requireMin ? (
+            <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">
+              {`* At least ${formatBalance(min ?? BN_ZERO, sourceAsset?.decimals ?? 0)} ${
+                sourceAsset.symbol
+              } for tx fee.`}
+            </p>
+          ) : insufficient ? (
+            <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">* Insufficient.</p>
+          ) : null}
+        </animated.div>
+        <animated.div className="flex w-full" style={trails[4]}>
+          <button
+            onClick={handleSend}
+            disabled={!sender || (!needSwitchNetwork && disabledSend)}
+            className="h-[34px] w-full flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white disabled:opacity-50"
+          >
+            Send
+          </button>
+        </animated.div>
+      </animated.section>
 
       <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} />
       <PendingModal visible={busy} />
-    </animated.section>
+    </>
   );
 }
 

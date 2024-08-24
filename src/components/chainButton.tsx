@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from "react";
-import data from "../data/data.json";
 import Image from "next/image";
 import { useTransfer } from "@/hooks";
 import { getChainLogoSrc, parseCross } from "@/utils";
@@ -22,8 +21,9 @@ export default function ChainButton() {
 
   const [subMenu, setSubMenu] = useState<boolean>(false);
   const handleToggleSubMenu = useCallback(() => {
-    setSubMenu((prev) => !prev);
-  }, []);
+    setSubMenu(!subMenu);
+  }, [subMenu]);
+
   return (
     <div className="relative">
       <div
@@ -38,7 +38,7 @@ export default function ChainButton() {
       </div>
       <div
         className="absolute left-[-5px] right-[-5px] top-[calc(100%+20px)] overflow-hidden rounded-[10px] shadow-lg duration-500 lg:left-[unset] lg:right-[-21px]"
-        style={{ maxHeight: subMenu ? "3s0vh" : "0" }}
+        style={{ maxHeight: subMenu ? "30vh" : "0" }}
       >
         <div className=" flex w-[200px] flex-col gap-[20px] bg-white p-[20px]">
           {sourceChainOptions.map((chain) => (

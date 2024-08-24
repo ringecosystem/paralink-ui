@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-[100vh] w-[100vw] overflow-hidden">
+    <html lang="en" className="h-[100vh] w-[100vw]">
       <body
         className={`${inter.className} h-[100vh] w-[100vw] overflow-hidden bg-[#F2F3F5] text-base font-normal text-[#121619]`}
       >
