@@ -36,12 +36,14 @@ export default function AccountButton() {
     setSubMenu((prev) => !prev);
   }, []);
 
-  console.log("source chain", sourceChain.id);
-  console.log("connected chain", chain?.id);
+  const needSwitchNetwork = useMemo(
+    () => activeSenderWallet === WalletID.EVM && chain && chain.id !== sourceChain.id,
+    [chain, sourceChain, activeSenderWallet],
+  );
 
   useEffect(() => {
-    if (chain && sourceChain && switchNetworkAsync && chain.id !== sourceChain.id) {
-      switchNetworkAsync(sourceChain.id)
+    if (needSwitchNetwork) {
+      switchNetworkAsync?.(sourceChain.id)
         .then((res) => {
           console.log(res);
         })
