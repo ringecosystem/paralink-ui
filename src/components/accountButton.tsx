@@ -12,7 +12,7 @@ export default function AccountButton() {
 
   const { address } = useAccount();
   const { chain } = useNetwork();
-  const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
+  const { chains, error, isLoading, pendingChainId, switchNetworkAsync } = useSwitchNetwork();
 
   const { defaultSourceAssetOptions } = parseCross();
   const {
@@ -40,11 +40,25 @@ export default function AccountButton() {
   console.log("connected chain", chain?.id);
 
   useEffect(() => {
-    if (chain && sourceChain && switchNetwork && chain.id !== sourceChain.id) {
-      console.log("change");
-      switchNetwork(sourceChain.id);
+    if (chain && sourceChain && switchNetworkAsync && chain.id !== sourceChain.id) {
+      switchNetworkAsync(sourceChain.id)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
-  }, [sourceChain, chain, switchNetwork]);
+  }, [sourceChain, chain, switchNetworkAsync]);
+
+  const connectedAddress =
+    activeSenderWallet === WalletID.TALISMAN
+      ? talismanAccounts[0].address
+      : activeSenderWallet === WalletID.EVM
+      ? address
+      : undefined;
+
+  const walletIcon = activeSenderWallet === WalletID.EVM ? "evm.png" : "talisman-red.svg";
 
   return (
     <div className="relative">
@@ -52,15 +66,18 @@ export default function AccountButton() {
         onClick={handleToggleSubMenu}
         className="relative flex h-[36px] w-fit cursor-pointer items-center justify-center gap-[5px] rounded-[10px] bg-white px-[10px] duration-300 hover:shadow-lg"
       >
-        <span className="block h-[24px] w-[24px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
-        <p className="text-[14px] leading-[24px]">{address && toShortAdrress(address.toString())}</p>
+        <Image width={16} height={16} alt="Wallet" src={`/images/wallet/${walletIcon}`} className="rounded-full" />
+
+        <p className="text-[14px] leading-[24px]">{connectedAddress && toShortAdrress(connectedAddress.toString())}</p>
         <span className="block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
       </div>
       {subMenu && (
         <div className="absolute right-[-21px] top-[calc(100%+20px)] flex w-[290px] flex-col gap-[20px] rounded-[10px] bg-white p-[20px]">
           <div className="flex items-center gap-[10px]">
             <span className="block h-[30px] w-[30px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
-            <p className="text-[16px] font-bold leading-[24px]">{address && toShortAdrress(address.toString())}</p>
+            <p className="text-[16px] font-bold leading-[24px]">
+              {connectedAddress && toShortAdrress(connectedAddress.toString())}
+            </p>
             <span className="block h-[18px] w-[18px] bg-[url('/images/icons/copy-icon.svg')] bg-contain bg-center bg-no-repeat" />
           </div>
           <DisconnectButton />
@@ -69,9 +86,7 @@ export default function AccountButton() {
             <div key={token.name} className="flex items-center gap-[10px]">
               <Image src={getAssetIconSrc(token.icon)} width={30} height={30} alt={token.name} />
               <div className="flex flex-col ">
-                {/* <p className="text-[16px] leading-[21px] text-[#121619]">
-                  {formatBalance(token.amount, asset.decimals)}
-                </p> */}
+                <p className="text-[16px] leading-[21px] text-[#121619]"></p>
                 <p className="text-[12px] leading-[16px] text-[#12161980]">{token.name}</p>
               </div>
             </div>

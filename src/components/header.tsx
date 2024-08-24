@@ -8,7 +8,7 @@ import WalletButton from "./walletButton";
 import AccountButton from "./accountButton";
 import ChainButton from "./chainButton";
 import { useAccount, useChainId } from "wagmi";
-import { useTransfer } from "@/hooks";
+import { useTalisman, useTransfer } from "@/hooks";
 import { parseCross } from "@/utils";
 import WalletSelectionModal from "./walletSelectionModal";
 
@@ -16,6 +16,10 @@ export default function Header() {
   const [connectModal, setConnectModal] = useState(false);
   const [connected, setConnected] = useState(false);
   const { address: activeAddress } = useAccount();
+  const { talismanAccounts, connectTalisman } = useTalisman();
+  const { activeSenderWallet } = useTransfer();
+
+  console.log(talismanAccounts);
 
   const handleClose = useCallback(() => {
     setConnectModal(false);
@@ -32,13 +36,15 @@ export default function Header() {
     setShowMenu(false);
   }, []);
 
+  console.log(activeSenderWallet);
+
   useEffect(() => {
-    if (activeAddress) {
+    if ((activeAddress || talismanAccounts.length > 0) && activeSenderWallet) {
       setConnected(true);
     } else {
       setConnected(false);
     }
-  }, [activeAddress]);
+  }, [activeAddress, talismanAccounts.length, activeSenderWallet]);
 
   return (
     <section className="flex h-[50px] w-full items-center justify-between px-[10px] lg:h-[56px] lg:px-[30px]">
