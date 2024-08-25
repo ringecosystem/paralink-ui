@@ -19,11 +19,13 @@ export default function Header() {
   const { address: activeAddress } = useAccount();
   const { talismanAccounts, connectTalisman } = useTalisman();
   const { activeSenderWallet, setSender, sourceChain, sender } = useTransfer();
+  const [switchWallet, setSwitchWallet] = useState<boolean>(false);
 
   console.log(talismanAccounts);
 
   const handleClose = useCallback(() => {
     setConnectModal(false);
+    setSwitchWallet(false);
   }, []);
 
   const [showMenu, setShowMenu] = useState<boolean>(false);
@@ -71,7 +73,7 @@ export default function Header() {
           </div>
         ) : (
           <div>
-            <AccountButton />
+            <AccountButton setSwitchWallet={setSwitchWallet} />
           </div>
         )}
         <div>
@@ -111,7 +113,7 @@ export default function Header() {
                 }}
               />
             ) : (
-              <AccountButton />
+              <AccountButton setSwitchWallet={setSwitchWallet} />
             )}
           </div>
           <div className="mt-auto flex items-center justify-center gap-[10px]">
@@ -126,7 +128,7 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <WalletSelectionModal visible={connectModal} onClose={handleClose} />
+      <WalletSelectionModal visible={connectModal || switchWallet} onClose={handleClose} switchWallet={switchWallet} />
     </section>
   );
 }

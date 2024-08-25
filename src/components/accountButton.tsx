@@ -2,13 +2,14 @@ import DisconnectButton from "./disconnetButton";
 import data from "../data/data.json";
 import Image from "next/image";
 import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react";
-import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
+import { useAccount, useDisconnect, useNetwork, useSwitchNetwork } from "wagmi";
 import { useTalisman, useTransfer } from "@/hooks";
 import { isValidAddress, parseCross, toShortAdrress, formatBalance, getAssetIconSrc } from "@/utils";
 import { WalletID } from "@/types";
 
-export default function AccountButton() {
+export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x: boolean) => void }) {
   const { talismanAccounts } = useTalisman();
+  const { disconnect } = useDisconnect();
 
   const { address } = useAccount();
   const { chain } = useNetwork();
@@ -41,18 +42,6 @@ export default function AccountButton() {
     [chain, sourceChain, activeSenderWallet],
   );
 
-  useEffect(() => {
-    if (needSwitchNetwork) {
-      switchNetworkAsync?.(sourceChain.id)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-  }, [sourceChain, chain, switchNetworkAsync]);
-
   const connectedAddress =
     activeSenderWallet === WalletID.TALISMAN
       ? talismanAccounts[0]?.address
@@ -61,6 +50,28 @@ export default function AccountButton() {
       : undefined;
 
   const walletIcon = activeSenderWallet === WalletID.EVM ? "evm.png" : "talisman-red.svg";
+
+  const handleDisconnect = useCallback(() => {
+    setSender(undefined);
+    setActiveSenderWallet(undefined);
+    setActiveSenderAccount(undefined);
+    disconnect();
+  }, [setSender, setActiveSenderWallet, setActiveSenderAccount]);
+
+  useEffect(() => {
+    console.log("hello", needSwitchNetwork);
+    if (needSwitchNetwork) {
+      switchNetworkAsync?.(sourceChain.id)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log("switch chain", err);
+          handleDisconnect();
+          setSwitchWallet(true);
+        });
+    }
+  }, [sourceChain, chain, switchNetworkAsync]);
 
   return (
     <div className="relative">
@@ -82,7 +93,7 @@ export default function AccountButton() {
             </p>
             <span className="block h-[18px] w-[18px] bg-[url('/images/icons/copy-icon.svg')] bg-contain bg-center bg-no-repeat" />
           </div>
-          <DisconnectButton />
+          <DisconnectButton handleDisconnect={handleDisconnect} />
           <span className="block h-[1px] w-full bg-[#1216191A]" />
           {sourceAssetOptions.map((token) => (
             <div key={token.name} className="flex items-center gap-[10px]">
