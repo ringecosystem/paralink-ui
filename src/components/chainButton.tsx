@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTransfer } from "@/hooks";
 import { getChainLogoSrc, parseCross } from "@/utils";
@@ -24,11 +24,21 @@ export default function ChainButton() {
     setSubMenu(!subMenu);
   }, [subMenu]);
 
+  useEffect(() => {
+    window.addEventListener("click", () => {
+      console.log("hi");
+      setSubMenu(false);
+    });
+  }, []);
+
   return (
     <div className="relative">
       <div
         className="flex h-[36px] w-[190px] cursor-pointer items-center gap-[5px] rounded-[10px] bg-white px-[10px] duration-300 hover:shadow-lg lg:w-fit lg:justify-center"
-        onClick={handleToggleSubMenu}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleToggleSubMenu();
+        }}
       >
         <Image src={getChainLogoSrc(sourceChain.logo)} width={24} height={24} alt={sourceChain.name} />
         <p className="lg:hidden">

@@ -153,7 +153,7 @@ export default function AppBox() {
     return null;
   }, [bridgeInstance, feeBalanceOnSourceChain]);
 
-  console.log("fee alert", feeAlert);
+  // console.log("fee alert", feeAlert);
 
   const existentialAlertOnSourceChain = useMemo(() => {
     if (
@@ -214,18 +214,18 @@ export default function AppBox() {
     !existentialAlertOnSourceChain ||
     !existentialAlertOnTargetChain;
 
-  console.log(
-    "check this now",
-    sender?.address,
-    sender?.valid,
-    recipient?.address,
-    recipient?.valid,
-    transferAmount.input,
-    transferAmount.valid,
-    feeAlert,
-    existentialAlertOnSourceChain,
-    existentialAlertOnTargetChain,
-  );
+  // console.log(
+  //   "check this now",
+  //   sender?.address,
+  //   sender?.valid,
+  //   recipient?.address,
+  //   recipient?.valid,
+  //   transferAmount.input,
+  //   transferAmount.valid,
+  //   feeAlert,
+  //   existentialAlertOnSourceChain,
+  //   existentialAlertOnTargetChain,
+  // );
 
   const handleSend = useCallback(async () => {
     if (needSwitchNetwork) {
@@ -332,7 +332,7 @@ export default function AppBox() {
     to: { opacity: 1, transform: "translateY(0)" },
   });
 
-  console.log("check this.................", sender, needSwitchNetwork, disabledSend);
+  // console.log("check this.................", sender, needSwitchNetwork, disabledSend);
 
   return (
     <>
@@ -384,7 +384,7 @@ export default function AppBox() {
             type="text"
             value={sender ? sender.address : ""}
             onChange={handleSenderAddressChange}
-            placeholder="Please connect to you wallet"
+            placeholder="Please connect to your wallet"
             className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
           />
         </animated.div>
@@ -400,7 +400,7 @@ export default function AppBox() {
             type="text"
             value={recipient?.address}
             onChange={handleRecipientAddressChange}
-            placeholder="Please Enter the Recipient Address"
+            placeholder="Please enter the recipient address"
             className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
           />
         </animated.div>
@@ -414,7 +414,7 @@ export default function AppBox() {
                 type="text"
                 value={transferAmount?.input}
                 onChange={handleInputChange}
-                placeholder="Please Enter the Amount"
+                placeholder="Please enter the amount"
                 className="h-[24px] flex-grow text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
               />
               <button

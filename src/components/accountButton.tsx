@@ -33,10 +33,18 @@ export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x
 
   const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
   const [subMenu, setSubMenu] = useState(false);
+  const [copied, setCopied] = useState(false);
   const handleToggleSubMenu = useCallback(() => {
     setSubMenu((prev) => !prev);
   }, []);
 
+  useEffect(() => {
+    if (copied) {
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    }
+  }, [copied]);
   const needSwitchNetwork = useMemo(
     () => activeSenderWallet === WalletID.EVM && chain && chain.id !== sourceChain.id,
     [chain, sourceChain, activeSenderWallet],
@@ -59,7 +67,6 @@ export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x
   }, [setSender, setActiveSenderWallet, setActiveSenderAccount]);
 
   useEffect(() => {
-    console.log("hello", needSwitchNetwork);
     if (needSwitchNetwork) {
       switchNetworkAsync?.(sourceChain.id)
         .then((res) => {
@@ -73,10 +80,19 @@ export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x
     }
   }, [sourceChain, chain, switchNetworkAsync]);
 
+  useEffect(() => {
+    window.addEventListener("click", () => {
+      setSubMenu(false);
+    });
+  }, []);
+
   return (
     <div className="relative">
       <div
-        onClick={handleToggleSubMenu}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleToggleSubMenu();
+        }}
         className="relative flex h-[36px] w-fit cursor-pointer items-center justify-center gap-[5px] rounded-[10px] bg-white px-[10px] duration-300 hover:shadow-lg"
       >
         <Image width={16} height={16} alt="Wallet" src={`/images/wallet/${walletIcon}`} className="rounded-full" />
@@ -91,7 +107,24 @@ export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x
             <p className="text-[16px] font-bold leading-[24px]">
               {connectedAddress && toShortAdrress(connectedAddress.toString())}
             </p>
-            <span className="block h-[18px] w-[18px] bg-[url('/images/icons/copy-icon.svg')] bg-contain bg-center bg-no-repeat" />
+            {connectedAddress && (
+              <>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(connectedAddress.toString());
+                    setCopied(true);
+                  }}
+                  className="block h-[18px] w-[18px] flex-shrink-0 bg-[url('/images/icons/copy-icon.svg')] bg-contain bg-center bg-no-repeat"
+                />
+                <span
+                  style={{ opacity: copied ? 1 : 0 }}
+                  className="block rounded-sm bg-slate-500 p-[5px] text-[12px] text-white duration-300"
+                >
+                  Copied!
+                </span>
+              </>
+            )}
           </div>
           <DisconnectButton handleDisconnect={handleDisconnect} />
           <span className="block h-[1px] w-full bg-[#1216191A]" />
