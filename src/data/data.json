@@ -51,5 +51,19 @@
       "url": "mailto:hello@darwinia.network",
       "icon": "/images/icons/email-icon.svg"
     }
+  ],
+  "otherChains": [
+    {
+      "name": "Astar",
+      "logo": "astar.svg"
+    },
+    {
+      "name": "Bifrost",
+      "logo": "bifrost.svg"
+    },
+    {
+      "name": "Centrufuge",
+      "logo": "centrufuge.svg"
+    }
   ]
 }

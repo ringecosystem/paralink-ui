@@ -3,11 +3,15 @@ import Image from "next/image";
 import { useTransfer } from "@/hooks";
 import { getChainLogoSrc, parseCross } from "@/utils";
 import { Asset, ChainConfig, WalletID } from "@/types";
+import data from "../data/data.json";
 
 export default function ChainButton() {
   const { sourceChain, setSourceChain } = useTransfer();
   const { defaultSourceChainOptions } = parseCross();
-  const [sourceChainOptions, _setSourceChainOptions] = useState(defaultSourceChainOptions);
+  const [sourceChainOptions, _setSourceChainOptions] = useState<any[]>([
+    ...defaultSourceChainOptions,
+    ...data.otherChains,
+  ]);
 
   const sourceChainRef = useRef(sourceChain);
 
@@ -48,16 +52,19 @@ export default function ChainButton() {
       </div>
       <div
         className="absolute left-[-5px] right-[-5px] top-[calc(100%+20px)] overflow-hidden rounded-[10px] shadow-lg duration-500 lg:left-[unset] lg:right-[-21px]"
-        style={{ maxHeight: subMenu ? "30vh" : "0" }}
+        style={{ maxHeight: subMenu ? "40vh" : "0" }}
       >
         <div className=" flex w-[200px] flex-col gap-[20px] bg-white p-[20px]">
           {sourceChainOptions.map((chain) => (
             <div
               key={chain.name}
-              className="flex cursor-pointer items-center justify-start gap-[10px]"
+              className="flex items-center justify-start gap-[10px]"
+              style={{ opacity: chain.id ? 1 : 0.6, cursor: chain.id ? "pointer" : "default" }}
               onClick={() => {
-                _setSourceChain(chain);
-                setSubMenu(false);
+                if (chain.id !== undefined) {
+                  _setSourceChain(chain);
+                  setSubMenu(false);
+                }
               }}
             >
               <Image src={getChainLogoSrc(chain.logo)} width={24} height={24} alt={chain.name} />
