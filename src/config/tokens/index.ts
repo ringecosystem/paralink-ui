@@ -7,7 +7,7 @@ export const supportedTokenList = [
   {
     name: "RING",
     icon: "ring.png",
-    allowedSource: ["Hydration", "Darwinia"],
+    allowedSource: ["Darwinia", "Hydration"],
   },
   {
     name: "PINK",
