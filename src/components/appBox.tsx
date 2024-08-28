@@ -153,6 +153,8 @@ export default function AppBox() {
     return null;
   }, [bridgeInstance, feeBalanceOnSourceChain]);
 
+  console.log("fee alert", feeAlert);
+
   const existentialAlertOnSourceChain = useMemo(() => {
     if (
       sourceChain.existential &&
@@ -208,9 +210,22 @@ export default function AppBox() {
     !recipient?.valid ||
     !transferAmount.input ||
     !transferAmount.valid ||
-    !!feeAlert ||
-    !!existentialAlertOnSourceChain ||
-    !!existentialAlertOnTargetChain;
+    !feeAlert ||
+    !existentialAlertOnSourceChain ||
+    !existentialAlertOnTargetChain;
+
+  console.log(
+    "check this now",
+    sender?.address,
+    sender?.valid,
+    recipient?.address,
+    recipient?.valid,
+    transferAmount.input,
+    transferAmount.valid,
+    feeAlert,
+    existentialAlertOnSourceChain,
+    existentialAlertOnTargetChain,
+  );
 
   const handleSend = useCallback(async () => {
     if (needSwitchNetwork) {
@@ -316,6 +331,8 @@ export default function AppBox() {
     from: { opacity: 0, transform: "translateY(-100%)" },
     to: { opacity: 1, transform: "translateY(0)" },
   });
+
+  console.log("check this.................", sender, needSwitchNetwork, disabledSend);
 
   return (
     <>
@@ -449,10 +466,13 @@ export default function AppBox() {
             <p className="mt-[5px] text-[12px] leading-[15px] text-[#FF0083]">* Insufficient.</p>
           ) : null}
         </animated.div>
+        {feeAlert}
+        {existentialAlertOnSourceChain}
+        {existentialAlertOnTargetChain}
         <animated.div className="flex w-full" style={trails[4]}>
           <button
             onClick={handleSend}
-            disabled={!sender || (!needSwitchNetwork && disabledSend)}
+            disabled={!sender || needSwitchNetwork || disabledSend}
             className="h-[34px] w-full flex-shrink-0 rounded-[10px] bg-[#FF0083] text-[14px] leading-[24px] text-white disabled:opacity-50"
           >
             Send
