@@ -15,8 +15,11 @@ import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import notification from "@/ui/notification";
 import { supportedTokenList } from "@/config/tokens";
 import { useTrail, animated, useSpring } from "@react-spring/web";
+import WalletSelectionModal from "./walletSelectionModal";
 
 export default function AppBox() {
+  const [connectModal, setConnectModal] = useState(false);
+
   const { defaultSourceChainOptions, defaultSourceAssetOptions } = parseCross();
   const [selectedAsset, setSelectedAsset] = useState(supportedTokenList[0]);
   const [allowedChain, setAllowedChain] = useState<any>([]);
@@ -374,25 +377,37 @@ export default function AppBox() {
         </animated.div>
         <animated.div
           style={trails[1]}
-          className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+          className="flex h-[84px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex h-[30px] items-center justify-between">
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
             <ChainSelectInput options={allowedChain} who="sender" />
           </div>
-          <input
-            type="text"
-            value={sender ? sender.address : ""}
-            onChange={handleSenderAddressChange}
-            placeholder="Please connect to your wallet"
-            className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
-          />
+          {sender ? (
+            <input
+              type="text"
+              disabled
+              value={sender ? sender.address : ""}
+              onChange={handleSenderAddressChange}
+              placeholder="Enter address"
+              className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
+            />
+          ) : (
+            <button
+              onClick={() => {
+                setConnectModal(true);
+              }}
+              className="mt-auto h-[24px] w-fit text-[14px] font-bold text-[#FF0083]"
+            >
+              Connect Wallet
+            </button>
+          )}
         </animated.div>
         <animated.div
           style={trails[2]}
-          className="z-[-1] flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+          className="z-[-1] flex h-[84px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex h-[30px] items-center justify-between">
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
             <ChainSelectInput options={allowedChain} who="target" />
           </div>
@@ -400,12 +415,12 @@ export default function AppBox() {
             type="text"
             value={recipient?.address}
             onChange={handleRecipientAddressChange}
-            placeholder="Please enter the recipient address"
+            placeholder="Enter address"
             className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
           />
         </animated.div>
         <animated.div style={trails[3]}>
-          <div className="flex h-[95px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
+          <div className="flex h-[71px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
             <div>
               <p className="text-[12px] leading-[15.22px] text-[#12161980]">Amount</p>
             </div>
@@ -414,7 +429,7 @@ export default function AppBox() {
                 type="text"
                 value={transferAmount?.input}
                 onChange={handleInputChange}
-                placeholder="Please enter the amount"
+                placeholder="0"
                 className="h-[24px] flex-grow text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
               />
               <button
@@ -482,6 +497,12 @@ export default function AppBox() {
 
       <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} />
       <PendingModal visible={busy} />
+      <WalletSelectionModal
+        visible={connectModal}
+        onClose={() => {
+          setConnectModal(false);
+        }}
+      />
     </>
   );
 }
