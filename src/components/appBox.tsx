@@ -213,9 +213,9 @@ export default function AppBox() {
     !recipient?.valid ||
     !transferAmount.input ||
     !transferAmount.valid ||
-    !feeAlert ||
-    !existentialAlertOnSourceChain ||
-    !existentialAlertOnTargetChain;
+    !!feeAlert ||
+    !!existentialAlertOnSourceChain ||
+    !!existentialAlertOnTargetChain;
 
   // console.log(
   //   "check this now",
