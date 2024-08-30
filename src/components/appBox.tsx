@@ -377,7 +377,7 @@ export default function AppBox() {
         </animated.div>
         <animated.div
           style={trails[1]}
-          className="flex h-[84px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+          className="z-20 flex h-[84px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
         >
           <div className="flex h-[30px] items-center justify-between">
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
@@ -405,7 +405,7 @@ export default function AppBox() {
         </animated.div>
         <animated.div
           style={trails[2]}
-          className="z-[-1] flex h-[84px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
+          className="z-10 flex h-[84px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]"
         >
           <div className="flex h-[30px] items-center justify-between">
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
@@ -420,7 +420,7 @@ export default function AppBox() {
           />
         </animated.div>
         <animated.div style={trails[3]}>
-          <div className="flex h-[71px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
+          <div className="z-0 flex h-[71px] flex-col gap-[10px] rounded-[10px] bg-[#F2F3F5] p-[10px]">
             <div>
               <p className="text-[12px] leading-[15.22px] text-[#12161980]">Amount</p>
             </div>

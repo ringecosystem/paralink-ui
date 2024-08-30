@@ -58,6 +58,17 @@ const config: Config = {
             height: "16px",
           },
         },
+        bouncing: {
+          "0%": {
+            transform: "scale(1)",
+          },
+          "50%": {
+            transform: "scale(1.2)",
+          },
+          "100%": {
+            transform: "scale(1)",
+          },
+        },
       },
       animation: {
         "notification-enter": "rightenter 400ms ease-out",
@@ -65,6 +76,7 @@ const config: Config = {
         "notification-fadeout": "notificationfadeout 200ms ease-out forwards",
         "count-loading-small": "countloadingsmall 1200ms cubic-bezier(0, 0.5, 0.5, 1) infinite",
         "count-loading-large": "countloadinglarge 1200ms cubic-bezier(0, 0.5, 0.5, 1) infinite",
+        "pending-bounce": "bouncing 1.5s ease-in-out infinite",
       },
     },
   },
