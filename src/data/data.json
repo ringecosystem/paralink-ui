@@ -65,5 +65,47 @@
       "name": "Centrufuge",
       "logo": "centrufuge.svg"
     }
-  ]
+  ],
+  "wallets": {
+    "evm": [
+      {
+        "name": "MetaMask",
+        "logo": "metamask.png"
+      },
+      {
+        "name": "Coinbase Wallet",
+        "logo": "coinbase.svg"
+      },
+      {
+        "name": "WalletConnect",
+        "logo": "wallet-connect.svg"
+      },
+      {
+        "name": "NovaWallet",
+        "logo": "nova.svg"
+      },
+      {
+        "name": "Talisman",
+        "logo": "talisman-red.svg"
+      },
+      {
+        "name": "Ronin Wallet",
+        "logo": "ronin.svg"
+      }
+    ],
+    "substrate": [
+      {
+        "name": "Polkadot",
+        "logo": "polkadot.png"
+      },
+      {
+        "name": "SubWallet",
+        "logo": "sub-wallet.png"
+      },
+      {
+        "name": "Talisman",
+        "logo": "talisman-red.svg"
+      }
+    ]
+  }
 }
