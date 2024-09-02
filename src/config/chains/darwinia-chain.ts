@@ -125,6 +125,36 @@ export const darwiniaChain: ChainConfig = {
         },
       ],
     },
+    {
+      icon: "dot.svg",
+      id: 1028,
+      name: "DOT",
+      symbol: "DOT",
+      decimals: 10,
+      origin: {
+        parachainId: ParachainID.ASSETHUB_POLKADOT,
+        palletInstance: 50,
+        id: 23,
+      },
+      cross: [
+        {
+          target: { network: "assethub-polkadot", symbol: "PINK" },
+          fee: {
+            amount: bnToBn(700000),
+            asset: {
+              local: { id: 1027 },
+              origin: {
+                parachainId: ParachainID.ASSETHUB_POLKADOT,
+                palletInstance: 50,
+                id: 1984,
+              },
+            },
+          },
+          section: "xTokens",
+          method: "transferMultiassets",
+        },
+      ],
+    },
   ],
   wallets: [WalletID.EVM, WalletID.TALISMAN],
   addressType: "evm",

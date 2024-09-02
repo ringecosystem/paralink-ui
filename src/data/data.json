@@ -1,0 +1,111 @@
+{
+  "tokens": [
+    {
+      "name": "USDT",
+      "icon": "/images/icons/usdt-icon.svg",
+      "balance": "449.385"
+    },
+    {
+      "name": "RING",
+      "icon": "/images/icons/ring-icon.svg",
+      "balance": "449.371"
+    },
+    {
+      "name": "PINK",
+      "icon": "/images/icons/pink-icon.png",
+      "balance": "449.371"
+    }
+  ],
+  "chains": [
+    {
+      "name": "AssetHub",
+      "logo": "/images/icons/assethub-icon.svg"
+    },
+    {
+      "name": "Darwinia",
+      "logo": "/images/icons/darwinia-icon.svg"
+    },
+    {
+      "name": "Hydration",
+      "logo": "/images/icons/hydration-icon.svg"
+    }
+  ],
+  "social": [
+    {
+      "name": "x",
+      "url": "https://twitter.com/DarwiniaNetwork",
+      "icon": "/images/icons/x-icon.svg"
+    },
+    {
+      "name": "telegram",
+      "url": "https://t.me/DarwiniaNetwork",
+      "icon": "/images/icons/telegram-icon.svg"
+    },
+    {
+      "name": "github",
+      "url": "https://github.com/darwinia-network",
+      "icon": "/images/icons/github-icon.svg"
+    },
+    {
+      "name": "email",
+      "url": "mailto:hello@darwinia.network",
+      "icon": "/images/icons/email-icon.svg"
+    }
+  ],
+  "otherChains": [
+    {
+      "name": "Astar",
+      "logo": "astar.svg"
+    },
+    {
+      "name": "Bifrost",
+      "logo": "bifrost.svg"
+    },
+    {
+      "name": "Centrufuge",
+      "logo": "centrufuge.svg"
+    }
+  ],
+  "wallets": {
+    "evm": [
+      {
+        "name": "MetaMask",
+        "logo": "metamask.png"
+      },
+      {
+        "name": "Coinbase Wallet",
+        "logo": "coinbase.svg"
+      },
+      {
+        "name": "WalletConnect",
+        "logo": "wallet-connect.svg"
+      },
+      {
+        "name": "NovaWallet",
+        "logo": "nova.svg"
+      },
+      {
+        "name": "Talisman",
+        "logo": "talisman-red.svg"
+      },
+      {
+        "name": "Ronin Wallet",
+        "logo": "ronin.svg"
+      }
+    ],
+    "substrate": [
+      {
+        "name": "Polkadot",
+        "logo": "polkadot.png"
+      },
+      {
+        "name": "SubWallet",
+        "logo": "sub-wallet.png"
+      },
+      {
+        "name": "Talisman",
+        "logo": "talisman-red.svg"
+      }
+    ]
+  }
+}

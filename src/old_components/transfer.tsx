@@ -253,11 +253,11 @@ export default function Transfer() {
     updateTargetNativeBalance,
   ]);
 
-  useEffect(() => {
-    const options = availableSourceAssetOptions[sourceChain.network] || [];
-    setSourceAssetOptions(options);
-    _setSourceAsset(options.at(0));
-  }, [sourceChain, _setSourceAsset]);
+  // useEffect(() => {
+  //   const options = availableSourceAssetOptions[sourceChain.network] || [];
+  //   setSourceAssetOptions(options);
+  //   _setSourceAsset(options.at(0));
+  // }, [sourceChain, _setSourceAsset]);
 
   useEffect(() => {
     const options = availableTargetChainOptions[sourceChain.network]?.[sourceAsset.symbol] || [];
