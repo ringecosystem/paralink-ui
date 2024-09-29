@@ -9,3 +9,4 @@ export * from "./use-account-name";
 export * from "./use-existential-deposit";
 export * from "./use-fee-balance";
 export * from "./use-native-balance";
+export * from "./use-evm";

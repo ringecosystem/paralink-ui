@@ -73,7 +73,7 @@ interface TransferCtx {
 const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTargetAsset } = parseCross();
 
 const transferCb = {
-  successCb: () => {},
+  successCb: (receipt: any) => {},
   failedCb: () => {},
 };
 
@@ -153,7 +153,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         const receipt = await _bridge.transferWithPrecompile(_recipient, _amount);
         notifyTransaction(receipt, _bridge.getSourceChain());
         if (receipt?.status === "success") {
-          options.successCb();
+          options.successCb(receipt);
         } else {
           options.failedCb();
         }

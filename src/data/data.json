@@ -70,14 +70,17 @@
     "evm": [
       {
         "name": "MetaMask",
+        "connectorId": "metaMask",
         "logo": "metamask.png"
       },
       {
         "name": "Coinbase Wallet",
+        "connectorId": "coinbaseWallet",
         "logo": "coinbase.svg"
       },
       {
         "name": "WalletConnect",
+        "connectorId": "walletConnect",
         "logo": "wallet-connect.svg"
       },
       {

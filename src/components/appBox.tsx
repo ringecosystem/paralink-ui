@@ -235,7 +235,8 @@ export default function AppBox() {
       switchNetwork?.(sourceChain.id);
     } else if (bridgeInstance && recipient) {
       const callback = {
-        successCb: () => {
+        successCb: (receipt: any) => {
+          console.log("receipt", receipt);
           setBusy(false);
           setSuccessModal(true);
         },
