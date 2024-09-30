@@ -60,7 +60,7 @@ interface TransferCtx {
     _sender: string | WalletAccount,
     _recipient: string,
     _amount: BN,
-    options?: { successCb: () => void; failedCb: () => void },
+    options?: { successCb: (receipt: any) => void; failedCb: () => void },
   ) => Promise<void>;
   updateSourceAssetBalance: () => void;
   updateTargetAssetBalance: () => void;
@@ -197,7 +197,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
       _sender: string | WalletAccount,
       _recipient: string,
       _amount: BN,
-      options?: { successCb: () => void; failedCb: () => void },
+      options?: { successCb: (receipt: any) => void; failedCb: () => void },
     ) => {
       if (typeof _sender === "string") {
         return evmTransfer(_bridge, _sender, _recipient, _amount, options);
