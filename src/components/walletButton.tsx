@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import WalletSelectionModal from "./walletSelectionModal";
-import { useEVM, useTalisman, useTransfer } from "@/hooks";
+import { useTalisman, useTransfer } from "@/hooks";
 import { getChainLogoSrc, parseCross } from "@/utils";
 import { ChainConfig, WalletID } from "@/types";
 import Image from "next/image";
