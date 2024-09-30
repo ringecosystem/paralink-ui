@@ -18,6 +18,8 @@ export default function WalletButton({ openModal }: { openModal: () => void }) {
   const { connectors, connect } = useConnect();
   const sourceChainRef = useRef(sourceChain);
 
+  console.log(connectors);
+
   const _setSourceChain = useCallback(
     (chain: ChainConfig | undefined) => {
       setSourceChain((prev) => chain ?? prev);
@@ -44,7 +46,8 @@ export default function WalletButton({ openModal }: { openModal: () => void }) {
       console.log("connect to an EVM wallet");
       console.log(`connect to ${walletName}`);
       const targetConnector: any = connectors.filter((x) => x.id === walletName);
-      connect({ connector: targetConnector[0] });
+      console.log(targetConnector);
+      connect({ connector: targetConnector[targetConnector.length - 1] });
       setActiveSenderWallet(WalletID.EVM);
     } else {
       console.log("connect to a substrate wallet");
@@ -133,9 +136,14 @@ export default function WalletButton({ openModal }: { openModal: () => void }) {
             {data.wallets[tab === "evm" ? "evm" : "substrate"].map((item: any) => (
               <div
                 onClick={() => {
-                  item.connectorId ? handleConnectWallet(tab, item.connectorId) : console.log("no option");
+                  tab === "evm"
+                    ? item.connectorId
+                      ? handleConnectWallet(tab, item.connectorId)
+                      : console.log("no option")
+                    : handleConnectWallet(tab, item.name);
                 }}
                 key={item.name}
+                style={{ opacity: tab === "evm" ? (item.connectorId ? 1 : 0.5) : item.active ? 1 : 0.5 }}
                 className="flex h-[40px] w-[45%] cursor-pointer items-center justify-start gap-[10px] rounded-[10px] border-[1px] border-solid border-gray-400 p-[5px_10px]"
               >
                 <Image

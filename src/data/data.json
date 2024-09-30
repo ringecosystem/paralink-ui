@@ -99,14 +99,17 @@
     "substrate": [
       {
         "name": "Polkadot",
+        "active": false,
         "logo": "polkadot.png"
       },
       {
         "name": "SubWallet",
+        "active": false,
         "logo": "sub-wallet.png"
       },
       {
         "name": "Talisman",
+        "active": true,
         "logo": "talisman-red.svg"
       }
     ]
