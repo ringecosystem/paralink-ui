@@ -25,6 +25,7 @@ export default function AppBox() {
   const [allowedChain, setAllowedChain] = useState<any>([]);
   // const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
   const [successModal, setSuccessModal] = useState<boolean>(false);
+  const [receipt, setReceipt] = useState<boolean | null>(false);
 
   const {
     sender,
@@ -60,6 +61,7 @@ export default function AppBox() {
   } = useTransfer();
   const handleCloseSuccessModal = useCallback(() => {
     setSuccessModal(false);
+    setReceipt(null);
     setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
     updateSourceAssetBalance();
     updateTargetAssetBalance();
@@ -237,6 +239,7 @@ export default function AppBox() {
       const callback = {
         successCb: (receipt: any) => {
           console.log("receipt", receipt);
+          setReceipt(receipt);
           setBusy(false);
           setSuccessModal(true);
         },
@@ -496,7 +499,7 @@ export default function AppBox() {
         </animated.div>
       </animated.section>
 
-      <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} />
+      <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} receipt={receipt} />
       <PendingModal visible={busy} />
       <WalletSelectionModal
         visible={connectModal}
