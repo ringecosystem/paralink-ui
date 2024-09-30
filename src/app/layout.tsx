@@ -6,7 +6,6 @@ import TalismanProvider from "@/providers/talisman-provider";
 import TransferProvider from "@/providers/transfer-provider";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import EVMWalletProviders from "@/providers/evm-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,15 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.className} h-[100vh] w-[100vw] overflow-hidden bg-[#F2F3F5] text-base font-normal text-[#121619]`}
       >
         <RainbowProvider>
-          <EVMWalletProviders>
-            <TalismanProvider>
-              <TransferProvider>
-                <Header />
-                {children}
-                <Footer />
-              </TransferProvider>
-            </TalismanProvider>
-          </EVMWalletProviders>
+          <TalismanProvider>
+            <TransferProvider>
+              <Header />
+              {children}
+              <Footer />
+            </TransferProvider>
+          </TalismanProvider>
         </RainbowProvider>
       </body>
     </html>
