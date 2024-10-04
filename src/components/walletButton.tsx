@@ -6,6 +6,7 @@ import { ChainConfig, WalletID } from "@/types";
 import Image from "next/image";
 import data from "../data/data.json";
 import { useConnect } from "wagmi";
+import { getWallets } from "@talisman-connect/wallets";
 
 export default function WalletButton({ openModal }: { openModal: () => void }) {
   const [subMenu, setSubMenu] = useState<boolean>(false);
@@ -52,10 +53,16 @@ export default function WalletButton({ openModal }: { openModal: () => void }) {
     } else {
       console.log("connect to a substrate wallet");
       console.log(`connect to ${walletName}`);
+      const wallets = getWallets();
+      console.log("substrate wallets", wallets);
+
       if (walletName === "Talisman") {
         console.log("Talisman");
         setActiveSenderWallet(WalletID.TALISMAN);
         connectTalisman();
+      } else if (walletName === "Polkadot") {
+        setActiveSenderWallet(WalletID.TALISMAN);
+        wallets[1].enable("Paralink");
       }
     }
   };

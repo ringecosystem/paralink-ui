@@ -12,6 +12,7 @@ import { useTalisman, useTransfer } from "@/hooks";
 import { isValidAddress, parseCross } from "@/utils";
 import WalletSelectionModal from "./walletSelectionModal";
 import { WalletID } from "@/types";
+import { getWallets } from "@talisman-connect/wallets";
 
 export default function Header() {
   const [connectModal, setConnectModal] = useState(false);
@@ -20,8 +21,6 @@ export default function Header() {
   const { talismanAccounts, connectTalisman } = useTalisman();
   const { activeSenderWallet, setSender, sourceChain, sender } = useTransfer();
   const [switchWallet, setSwitchWallet] = useState<boolean>(false);
-
-  console.log(talismanAccounts);
 
   const handleClose = useCallback(() => {
     setConnectModal(false);

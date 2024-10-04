@@ -98,19 +98,19 @@
     ],
     "substrate": [
       {
+        "name": "Talisman",
+        "active": true,
+        "logo": "talisman-red.svg"
+      },
+      {
         "name": "Polkadot",
-        "active": false,
+        "active": true,
         "logo": "polkadot.png"
       },
       {
         "name": "SubWallet",
         "active": false,
         "logo": "sub-wallet.png"
-      },
-      {
-        "name": "Talisman",
-        "active": true,
-        "logo": "talisman-red.svg"
       }
     ]
   }
