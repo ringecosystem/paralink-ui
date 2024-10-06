@@ -40,8 +40,6 @@ export default function WalletButton({ openModal }: { openModal: () => void }) {
     });
   }, []);
 
-  console.log(subMenu);
-
   const handleConnectWallet = (walletType: string, walletName: string) => {
     if (walletType === "evm") {
       console.log("connect to an EVM wallet");
