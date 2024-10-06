@@ -127,7 +127,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <WalletSelectionModal visible={connectModal || switchWallet} onClose={handleClose} switchWallet={switchWallet} />
     </section>
   );
 }
