@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <section className="flex h-[35px] w-full items-center justify-center px-[30px] lg:h-[56px] lg:justify-between">
       <p className="overflow-hidden text-[12px] leading-[15px] text-[#12161980]">
-        @ 2024 Paralink powerd by Darwinia Network
+        @ 2024 Paralink powerd by RingDAO
       </p>
       <div className="hidden items-center justify-center gap-[10px] lg:flex">
         {data.social.map((item: any) => (
