@@ -70,14 +70,17 @@
     "evm": [
       {
         "name": "MetaMask",
+        "connectorId": "metaMask",
         "logo": "metamask.png"
       },
       {
         "name": "Coinbase Wallet",
+        "connectorId": "coinbaseWallet",
         "logo": "coinbase.svg"
       },
       {
         "name": "WalletConnect",
+        "connectorId": "walletConnect",
         "logo": "wallet-connect.svg"
       },
       {
@@ -95,16 +98,19 @@
     ],
     "substrate": [
       {
+        "name": "Talisman",
+        "active": true,
+        "logo": "talisman-red.svg"
+      },
+      {
         "name": "Polkadot",
+        "active": true,
         "logo": "polkadot.png"
       },
       {
         "name": "SubWallet",
+        "active": false,
         "logo": "sub-wallet.png"
-      },
-      {
-        "name": "Talisman",
-        "logo": "talisman-red.svg"
       }
     ]
   }

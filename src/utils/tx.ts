@@ -3,7 +3,7 @@ import { notifyError, notifyExtrinsic } from ".";
 import { ChainConfig } from "@/types";
 
 const transferCb = {
-  successCb: () => {},
+  successCb: (receipt: any) => {},
   failedCb: () => {},
 };
 
@@ -32,7 +32,7 @@ export const signAndSendExtrinsic = async (
               options.failedCb();
             } else if (method === "ExtrinsicSuccess") {
               notifyExtrinsic(result.txHash.toHex(), chain, true);
-              options.successCb();
+              options.successCb(result);
             }
           });
       } else if (result.isError) {

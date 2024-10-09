@@ -1,19 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import WalletSelectionModal from "./walletSelectionModal";
-import { useTransfer } from "@/hooks";
+import { useTalisman, useTransfer } from "@/hooks";
 import { getChainLogoSrc, parseCross } from "@/utils";
-import { ChainConfig } from "@/types";
+import { ChainConfig, WalletID } from "@/types";
 import Image from "next/image";
 import data from "../data/data.json";
+import { useConnect } from "wagmi";
+import { getWallets } from "@talisman-connect/wallets";
 
 export default function WalletButton({ openModal }: { openModal: () => void }) {
   const [subMenu, setSubMenu] = useState<boolean>(false);
   const [tab, setTab] = useState<string>("evm");
-  const { sourceChain, setSourceChain } = useTransfer();
+  const { sourceChain, setSourceChain, setActiveSenderWallet } = useTransfer();
   const { defaultSourceChainOptions } = parseCross();
   const [sourceChainOptions, _setSourceChainOptions] = useState<any[]>([...defaultSourceChainOptions]);
+  const { connectTalisman } = useTalisman();
 
+  const { connectors, connect } = useConnect();
   const sourceChainRef = useRef(sourceChain);
+
+  console.log(connectors);
 
   const _setSourceChain = useCallback(
     (chain: ChainConfig | undefined) => {
@@ -34,7 +40,31 @@ export default function WalletButton({ openModal }: { openModal: () => void }) {
     });
   }, []);
 
-  console.log(subMenu);
+  const handleConnectWallet = (walletType: string, walletName: string) => {
+    if (walletType === "evm") {
+      console.log("connect to an EVM wallet");
+      console.log(`connect to ${walletName}`);
+      const targetConnector: any = connectors.filter((x) => x.id === walletName);
+      console.log(targetConnector);
+      connect({ connector: targetConnector[targetConnector.length - 1] });
+      setActiveSenderWallet(WalletID.EVM);
+    } else {
+      console.log("connect to a substrate wallet");
+      console.log(`connect to ${walletName}`);
+      const wallets = getWallets();
+      console.log("substrate wallets", wallets);
+
+      if (walletName === "Talisman") {
+        console.log("Talisman");
+        setActiveSenderWallet(WalletID.TALISMAN);
+        connectTalisman();
+      } else if (walletName === "Polkadot") {
+        setActiveSenderWallet(WalletID.TALISMAN);
+        wallets[1].enable("Paralink");
+      }
+    }
+  };
+
   return (
     <div className="relative">
       <div
@@ -110,8 +140,16 @@ export default function WalletButton({ openModal }: { openModal: () => void }) {
           <div className="flex w-full flex-wrap gap-[20px] p-[20px] pt-[40px]">
             {data.wallets[tab === "evm" ? "evm" : "substrate"].map((item: any) => (
               <div
+                onClick={() => {
+                  tab === "evm"
+                    ? item.connectorId
+                      ? handleConnectWallet(tab, item.connectorId)
+                      : console.log("no option")
+                    : handleConnectWallet(tab, item.name);
+                }}
                 key={item.name}
-                className="flex h-[40px] w-[45%] items-center justify-start gap-[10px] rounded-[10px] border-[1px] border-solid border-gray-400 p-[5px_10px]"
+                style={{ opacity: tab === "evm" ? (item.connectorId ? 1 : 0.5) : item.active ? 1 : 0.5 }}
+                className="flex h-[40px] w-[45%] cursor-pointer items-center justify-start gap-[10px] rounded-[10px] border-[1px] border-solid border-gray-400 p-[5px_10px]"
               >
                 <Image
                   src={`/images/wallet/${item.logo}`}
