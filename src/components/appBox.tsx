@@ -87,9 +87,6 @@ export default function AppBox() {
     updateTargetNativeBalance,
   ]);
 
-  const sourceChainRef = useRef(sourceChain);
-  const targetChainRef = useRef(targetChain);
-
   const cross = bridgeInstance?.getCrossInfo();
   const assetLimit = assetLimitOnTargetChain?.amount;
   const assetSupply = targetAssetSupply?.amount;
@@ -166,13 +163,13 @@ export default function AppBox() {
             fee.amount,
             feeBalanceOnSourceChain.currency.decimals,
           )} ${feeBalanceOnSourceChain.currency.symbol} in your Sender on ${
-            sourceChainRef.current.name
+            sourceChain.name
           } to cover cross-chain fees.`}</span>
         </div>
       );
     }
     return null;
-  }, [bridgeInstance, feeBalanceOnSourceChain]);
+  }, [bridgeInstance, feeBalanceOnSourceChain, sourceChain]);
 
   const existentialAlertOnSourceChain = useMemo(() => {
     if (
@@ -214,13 +211,13 @@ export default function AppBox() {
             existentialDepositOnTargetChain.amount,
             existentialDepositOnTargetChain.currency.decimals,
           )} ${existentialDepositOnTargetChain.currency.symbol} in your Recipient on ${
-            targetChainRef.current.name
+            targetChain.name
           } to keep an account open.`}</span>
         </div>
       );
     }
     return null;
-  }, [targetNativeBalance, existentialDepositOnTargetChain]);
+  }, [targetNativeBalance, existentialDepositOnTargetChain, targetChain]);
 
   const disabledSend =
     !sender?.address ||
