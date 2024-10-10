@@ -1,117 +1,152 @@
-"use client";
-
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTalisman, useTransfer } from "@/hooks";
-import { WalletID } from "@/types";
-import { isValidAddress } from "@/utils";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { getChainLogoSrc, parseCross } from "@/utils";
+import { ChainConfig, WalletID } from "@/types";
 import Image from "next/image";
-import { useEffect, useMemo } from "react";
-import { useAccount } from "wagmi";
+import data from "../data/data.json";
+import { useConnect } from "wagmi";
+import { getWallets } from "@talisman-connect/wallets";
 
-export default function WalletSelectionModal({
-  visible,
-  onClose,
-  switchWallet,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  switchWallet?: boolean;
-}) {
-  const { talismanAccounts, connectTalisman } = useTalisman();
-  const { openConnectModal } = useConnectModal();
+export default function WalletSelectionModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const [tab, setTab] = useState<string>("evm");
+  const { sourceChain, setSourceChain, setActiveSenderWallet } = useTransfer();
+  const { defaultSourceChainOptions } = parseCross();
+  const [sourceChainOptions, _setSourceChainOptions] = useState<any[]>([...defaultSourceChainOptions]);
+  const { connectTalisman } = useTalisman();
 
-  const {
-    sender,
-    sourceChain,
-    targetChain,
-    activeSenderWallet,
-    activeRecipientWallet,
-    setSender,
-    setActiveSenderAccount,
-    setActiveRecipientAccount,
-    setActiveSenderWallet,
-    setActiveRecipientWallet,
-  } = useTransfer();
+  const { connectors, connect } = useConnect();
+  const sourceChainRef = useRef(sourceChain);
 
-  const { address } = useAccount();
+  console.log(connectors);
 
-  const [supportedWalletEvm, supportedWalletTalisman] = useMemo(() => {
-    return [
-      sourceChain.wallets.some((id) => id === WalletID.EVM),
-      sourceChain.wallets.some((id) => id === WalletID.TALISMAN),
-    ];
-  }, [sourceChain.wallets]);
+  const _setSourceChain = useCallback(
+    (chain: ChainConfig | undefined) => {
+      setSourceChain((prev) => chain ?? prev);
+      sourceChainRef.current = chain ?? sourceChainRef.current;
+    },
+    [setSourceChain],
+  );
 
-  const senderOptions =
-    activeSenderWallet === WalletID.EVM && address
-      ? [{ address }]
-      : activeSenderWallet === WalletID.TALISMAN
-      ? talismanAccounts
-      : [];
+  const handleConnectWallet = (walletType: string, walletName: string) => {
+    if (walletType === "evm") {
+      console.log("connect to an EVM wallet");
+      console.log(`connect to ${walletName}`);
+      const targetConnector: any = connectors.filter((x) => x.id === walletName);
+      console.log(targetConnector);
+      connect({ connector: targetConnector[targetConnector.length - 1] });
+      setActiveSenderWallet(WalletID.EVM);
+    } else {
+      console.log("connect to a substrate wallet");
+      console.log(`connect to ${walletName}`);
+      const wallets = getWallets();
+      console.log("substrate wallets", wallets);
 
-  // useEffect(() => {
-  //   if (activeSenderWallet) {
-  //     const address = senderOptions[0].address;
-  //     const valid = address ? isValidAddress(address, sourceChain.addressType) : true;
-  //     setSender({ valid, address });
-  //   }
-  // }, [activeSenderWallet]);
+      if (walletName === "Talisman") {
+        console.log("Talisman");
+        setActiveSenderWallet(WalletID.TALISMAN);
+        connectTalisman();
+      } else if (walletName === "Polkadot") {
+        setActiveSenderWallet(WalletID.TALISMAN);
+        wallets[1].enable("Paralink");
+      }
+    }
+    onClose();
+  };
+
   return (
     <>
       {visible && (
-        <div className="fixed left-0 top-0 z-50 h-[100vh] w-[100vw]">
-          <div className="flex h-full w-full items-center justify-center bg-[rgba(0,0,0,0.3)]" onClick={onClose}>
-            <div className="flex h-[300px] w-[80vw] flex-col items-center justify-between gap-middle rounded-[20px] bg-white p-[20px] lg:w-[500px]">
-              <h2 className="text-[20px] font-bold">
-                {switchWallet
-                  ? "The selected source chain is not supported by current wallet, please change you wallet"
-                  : "Select a wallet Type"}
-              </h2>
-              <div className="flex w-full flex-col gap-middle">
-                <button
-                  className="border-radius flex w-full items-center gap-middle bg-[#F2F3F5] p-middle transition-colors duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={!supportedWalletTalisman}
+        <div
+          onClick={onClose}
+          className="z-100 fixed left-0 top-0 flex h-[100vh] w-[100vw] items-center justify-center bg-[rgba(0,0,0,0.12)]"
+        >
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="z-50 flex h-fit w-[500px] flex-col gap-[40px] overflow-hidden rounded-[10px] bg-white duration-700"
+          >
+            <div className=" flex w-full flex-wrap gap-[20px] bg-white p-[20px]">
+              {sourceChainOptions.map((chain) => (
+                <div
+                  key={chain.name}
+                  className="flex h-[40px] w-[45%] items-center justify-start gap-[10px] rounded-[10px] border-[1px] border-solid border-gray-400 p-[5px_10px]"
+                  style={{ opacity: chain.id ? 1 : 0.6, cursor: chain.id ? "pointer" : "default" }}
                   onClick={() => {
-                    setActiveSenderWallet(WalletID.TALISMAN);
-                    connectTalisman();
-                    onClose();
+                    if (chain.id !== undefined) {
+                      _setSourceChain(chain);
+                    }
                   }}
                 >
-                  <Image
-                    width={20}
-                    height={20}
-                    alt="Wallet icon"
-                    src={`/images/wallet/talisman-red.svg`}
-                    className="rounded-full"
-                  />
-                  <span>Talisman</span>
-                </button>
-                <button
-                  className="border-radius flex w-full items-center gap-middle bg-[#F2F3F5] p-middle transition-colors duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={!supportedWalletEvm}
+                  <Image src={getChainLogoSrc(chain.logo)} width={24} height={24} alt={chain.name} />
+                  <p className="flex-shrink-0 whitespace-nowrap text-[14px] leading-[24px] text-[#121619]">
+                    {chain.name.includes("Polkadot") ? chain.name.replace(" AssetHub", "") : chain.name}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="relative flex flex-col items-center">
+              <div className="border-b-solid flex w-full items-center justify-center border-b-[1px] border-b-[#ff0083]">
+                <div
                   onClick={() => {
-                    setActiveSenderWallet(WalletID.EVM);
-                    openConnectModal?.();
-                    onClose();
+                    setTab("evm");
+                  }}
+                  className="-mb-[1px] w-[150px] cursor-pointer rounded-[10px_10px_0_0] p-[10px] text-center"
+                  style={{
+                    borderTop: tab === "evm" ? "1px solid #FF0083" : "none",
+                    borderRight: tab === "evm" ? "1px solid #FF0083" : "none",
+                    borderLeft: tab === "evm" ? "1px solid #FF0083" : "none",
+                    borderBottom: "none",
+                    backgroundColor: tab === "evm" ? "white" : "transparent",
                   }}
                 >
-                  <Image
-                    width={20}
-                    height={20}
-                    alt="Wallet icon"
-                    src={`/images/wallet/evm.png`}
-                    className="rounded-full"
-                  />
-                  <span>EVM wallets</span>
-                </button>
+                  EVM wallet
+                </div>
+                <div
+                  onClick={() => {
+                    setTab("substrate");
+                  }}
+                  className="-mb-[1px] w-[150px] cursor-pointer rounded-[10px_10px_0_0] p-[10px] text-center"
+                  style={{
+                    borderBottom: "none",
+                    borderTop: tab === "substrate" ? "1px solid #FF0083" : "none",
+                    borderRight: tab === "substrate" ? "1px solid #FF0083" : "none",
+                    borderLeft: tab === "substrate" ? "1px solid #FF0083" : "none",
+                    backgroundColor: tab === "substrate" ? "#fff" : "transparent",
+                  }}
+                >
+                  Substrate wallet
+                </div>
               </div>
-
-              <button
-                onClick={onClose}
-                className="w-full  flex-shrink-0 rounded-[10px] bg-[#FF0083] p-middle text-[14px] leading-[24px] text-white"
-              >
-                Cancel
-              </button>
+              <div className="flex w-full flex-wrap gap-[20px] p-[20px] pt-[40px]">
+                {data.wallets[tab === "evm" ? "evm" : "substrate"].map((item: any) => (
+                  <div
+                    onClick={() => {
+                      tab === "evm"
+                        ? item.connectorId
+                          ? handleConnectWallet(tab, item.connectorId)
+                          : console.log("no option")
+                        : handleConnectWallet(tab, item.name);
+                    }}
+                    key={item.name}
+                    style={{ opacity: tab === "evm" ? (item.connectorId ? 1 : 0.5) : item.active ? 1 : 0.5 }}
+                    className="flex h-[40px] w-[45%] cursor-pointer items-center justify-start gap-[10px] rounded-[10px] border-[1px] border-solid border-gray-400 p-[5px_10px]"
+                  >
+                    <Image
+                      src={`/images/wallet/${item.logo}`}
+                      width={18}
+                      height={18}
+                      alt={item.name}
+                      className="rounded-full"
+                    />
+                    <p>{item.name}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-[5px] p-[20px]">
+              <h4>Accounts</h4>
+              <div className="h-[45px] w-full rounded-[10px] border-[1px] border-solid border-gray-400"></div>
             </div>
           </div>
         </div>

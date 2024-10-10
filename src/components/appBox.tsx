@@ -1,30 +1,36 @@
 "use client";
 
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import data from "../data/data.json";
+import { ChangeEventHandler, useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import ChainSelectInput, { chainType } from "./chainSelectInput";
+import ChainSelectInput from "./chainSelectInput";
 import SuccessModal from "./successModal";
 import PendingModal from "./pendingModal";
-import { formatBalance, getAssetIconSrc, isExceedingCrossChainLimit, isValidAddress, parseCross } from "@/utils";
+import {
+  formatBalance,
+  getAssetIconSrc,
+  getAvailableSourceAsset,
+  getAvailableSourceChain,
+  getAvailableSourceChainOptions,
+  getAvailableTargetAsset,
+  getAvailableTargetChain,
+  getAvailableTargetChainOptions,
+  isExceedingCrossChainLimit,
+  isValidAddress,
+} from "@/utils";
 import { useTransfer } from "@/hooks";
 import { BN, BN_ZERO, bnToBn } from "@polkadot/util";
 import { formatUnits, parseUnits } from "viem";
 import { WalletID } from "@/types";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import notification from "@/ui/notification";
-import { supportedTokenList } from "@/config/tokens";
 import { useTrail, animated, useSpring } from "@react-spring/web";
 import WalletSelectionModal from "./walletSelectionModal";
+import { assetCategories } from "@/config/asset-categories";
 
 export default function AppBox() {
   const [connectModal, setConnectModal] = useState(false);
-
-  const { defaultSourceChainOptions, defaultSourceAssetOptions } = parseCross();
-  const [selectedAsset, setSelectedAsset] = useState(supportedTokenList[0]);
-  const [allowedChain, setAllowedChain] = useState<any>([]);
-  // const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
   const [successModal, setSuccessModal] = useState<boolean>(false);
+  const [receipt, setReceipt] = useState<boolean | null>(false);
 
   const {
     sender,
@@ -57,9 +63,13 @@ export default function AppBox() {
     activeSenderAccount,
     feeBalanceOnSourceChain,
     sourceNativeBalance,
+    assetCategory,
+    setAssetCategory,
   } = useTransfer();
+
   const handleCloseSuccessModal = useCallback(() => {
     setSuccessModal(false);
+    setReceipt(null);
     setTransferAmount({ valid: true, input: "", amount: BN_ZERO });
     updateSourceAssetBalance();
     updateTargetAssetBalance();
@@ -67,10 +77,15 @@ export default function AppBox() {
     updateSourceNativeBalance();
     updateTargetNativeBalance();
     updateFeeBalanceOnSourceChain();
-  }, []);
-
-  const sourceChainRef = useRef(sourceChain);
-  const targetChainRef = useRef(targetChain);
+  }, [
+    setTransferAmount,
+    updateFeeBalanceOnSourceChain,
+    updateSourceAssetBalance,
+    updateSourceNativeBalance,
+    updateTargetAssetBalance,
+    updateTargetAssetSupply,
+    updateTargetNativeBalance,
+  ]);
 
   const cross = bridgeInstance?.getCrossInfo();
   const assetLimit = assetLimitOnTargetChain?.amount;
@@ -148,15 +163,13 @@ export default function AppBox() {
             fee.amount,
             feeBalanceOnSourceChain.currency.decimals,
           )} ${feeBalanceOnSourceChain.currency.symbol} in your Sender on ${
-            sourceChainRef.current.name
+            sourceChain.name
           } to cover cross-chain fees.`}</span>
         </div>
       );
     }
     return null;
-  }, [bridgeInstance, feeBalanceOnSourceChain]);
-
-  // console.log("fee alert", feeAlert);
+  }, [bridgeInstance, feeBalanceOnSourceChain, sourceChain]);
 
   const existentialAlertOnSourceChain = useMemo(() => {
     if (
@@ -198,13 +211,13 @@ export default function AppBox() {
             existentialDepositOnTargetChain.amount,
             existentialDepositOnTargetChain.currency.decimals,
           )} ${existentialDepositOnTargetChain.currency.symbol} in your Recipient on ${
-            targetChainRef.current.name
+            targetChain.name
           } to keep an account open.`}</span>
         </div>
       );
     }
     return null;
-  }, [targetNativeBalance, existentialDepositOnTargetChain]);
+  }, [targetNativeBalance, existentialDepositOnTargetChain, targetChain]);
 
   const disabledSend =
     !sender?.address ||
@@ -217,25 +230,13 @@ export default function AppBox() {
     !!existentialAlertOnSourceChain ||
     !!existentialAlertOnTargetChain;
 
-  // console.log(
-  //   "check this now",
-  //   sender?.address,
-  //   sender?.valid,
-  //   recipient?.address,
-  //   recipient?.valid,
-  //   transferAmount.input,
-  //   transferAmount.valid,
-  //   feeAlert,
-  //   existentialAlertOnSourceChain,
-  //   existentialAlertOnTargetChain,
-  // );
-
   const handleSend = useCallback(async () => {
     if (needSwitchNetwork) {
       switchNetwork?.(sourceChain.id);
     } else if (bridgeInstance && recipient) {
       const callback = {
-        successCb: () => {
+        successCb: (receipt: any) => {
+          setReceipt(receipt);
           setBusy(false);
           setSuccessModal(true);
         },
@@ -262,68 +263,13 @@ export default function AppBox() {
     needSwitchNetwork,
     recipient,
     sender?.address,
-    setTransferAmount,
     sourceChain.id,
     switchNetwork,
     transfer,
     transferAmount.amount,
     transferAmount.input,
-    updateFeeBalanceOnSourceChain,
-    updateSourceAssetBalance,
-    updateTargetAssetBalance,
     updateTargetAssetSupply,
-    updateSourceNativeBalance,
-    updateTargetNativeBalance,
   ]);
-
-  useEffect(() => {
-    console.log("defaultSourceAssetOptions", sourceChain.assets);
-    let sourceChainOptions: any = [];
-    for (const item of selectedAsset.allowedSource) {
-      for (const chain of defaultSourceChainOptions) {
-        if (chain.name === item) {
-          sourceChainOptions.push(chain);
-        }
-      }
-    }
-    let selectedSourceAsset;
-    for (const item of sourceChainOptions[0].assets) {
-      if (selectedAsset.icon === item.icon) {
-        selectedSourceAsset = item;
-      }
-    }
-    setAllowedChain([...sourceChainOptions]);
-    setSourceChain(sourceChainOptions[0]);
-    setSourceAsset(selectedSourceAsset);
-    setTargetChain(sourceChainOptions[1]);
-  }, [selectedAsset]);
-
-  useEffect(() => {
-    console.log(allowedChain);
-    if (allowedChain.length > 0) {
-      if (sourceChain.name === allowedChain[0].name && targetChain.name === allowedChain[0].name) {
-        setTargetChain(allowedChain[1]);
-      } else if (sourceChain.name === allowedChain[1].name && targetChain.name === allowedChain[1].name) {
-        setTargetChain(allowedChain[0]);
-      }
-    }
-    for (const asset of sourceChain.assets) {
-      if (selectedAsset.name === asset.name) setSourceAsset(asset);
-    }
-  }, [sourceChain]);
-
-  useEffect(() => {
-    if (allowedChain.length > 0) {
-      if (targetChain.name === allowedChain[0].name && sourceChain.name == allowedChain[0].name) {
-        setSourceChain(allowedChain[1]);
-      } else if (targetChain.name === allowedChain[1].name && sourceChain.name === allowedChain[1].name) {
-        setSourceChain(allowedChain[0]);
-      }
-    }
-    for (const asset of targetChain.assets) {
-      if (selectedAsset.name === asset.name) setTargetAsset(asset);
-    }
-  }, [targetChain]);
 
   const trails = useTrail(5, {
     from: { transform: "translateX(-100%)", opacity: 0 },
@@ -334,8 +280,6 @@ export default function AppBox() {
     from: { opacity: 0, transform: "translateY(-100%)" },
     to: { opacity: 1, transform: "translateY(0)" },
   });
-
-  // console.log("check this.................", sender, needSwitchNetwork, disabledSend);
 
   return (
     <>
@@ -351,16 +295,24 @@ export default function AppBox() {
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Token</p>
           </div>
           <div className="flex items-center gap-[10px]">
-            {supportedTokenList.map((item: any) => (
+            {assetCategories.map((item) => (
               <div
                 className="flex items-center gap-[10px] duration-500"
                 key={item.name}
                 style={{
-                  maxWidth: selectedAsset.name === item.name ? "100px" : "30px",
-                  transitionDelay: selectedAsset.name === item.name ? "0.4s" : "0s",
+                  maxWidth: assetCategory === item.category ? "100px" : "30px",
+                  transitionDelay: assetCategory === item.category ? "0.4s" : "0s",
                 }}
                 onClick={() => {
-                  setSelectedAsset(item);
+                  setAssetCategory(item.category);
+                  const _sourceChain = getAvailableSourceChain(getAvailableSourceChainOptions(item.category));
+                  const _sourceAsset = getAvailableSourceAsset(_sourceChain, item.category);
+                  const _targetChain = getAvailableTargetChain(getAvailableTargetChainOptions(_sourceAsset));
+                  const _targetAsset = getAvailableTargetAsset(_targetChain, item.category);
+                  setSourceChain(_sourceChain);
+                  setSourceAsset(_sourceAsset);
+                  setTargetChain(_targetChain);
+                  setTargetAsset(_targetAsset);
                 }}
               >
                 <Image
@@ -381,7 +333,19 @@ export default function AppBox() {
         >
           <div className="flex h-[30px] items-center justify-between">
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Sender</p>
-            <ChainSelectInput options={allowedChain} who="sender" />
+            <ChainSelectInput
+              value={sourceChain}
+              options={getAvailableSourceChainOptions(assetCategory)}
+              onSelect={(chain) => {
+                setSourceChain(chain);
+                const _sourceAsset = getAvailableSourceAsset(chain, assetCategory);
+                const _targetChain = getAvailableTargetChain(getAvailableTargetChainOptions(_sourceAsset));
+                const _targetAsset = getAvailableTargetAsset(_targetChain, assetCategory);
+                setSourceAsset(_sourceAsset);
+                setTargetChain(_targetChain);
+                setTargetAsset(_targetAsset);
+              }}
+            />
           </div>
           {sender ? (
             <input
@@ -409,7 +373,15 @@ export default function AppBox() {
         >
           <div className="flex h-[30px] items-center justify-between">
             <p className="text-[12px] leading-[15.22px] text-[#12161980]">Recipient</p>
-            <ChainSelectInput options={allowedChain} who="target" />
+            <ChainSelectInput
+              value={targetChain}
+              options={getAvailableTargetChainOptions(sourceAsset)}
+              onSelect={(chain) => {
+                setTargetChain(chain);
+                const _targetAsset = getAvailableTargetAsset(chain, assetCategory);
+                setTargetAsset(_targetAsset);
+              }}
+            />
           </div>
           <input
             type="text"
@@ -495,7 +467,7 @@ export default function AppBox() {
         </animated.div>
       </animated.section>
 
-      <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} />
+      <SuccessModal visible={successModal} onClose={handleCloseSuccessModal} receipt={receipt} />
       <PendingModal visible={busy} />
       <WalletSelectionModal
         visible={connectModal}

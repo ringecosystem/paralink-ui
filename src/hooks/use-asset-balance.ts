@@ -12,6 +12,7 @@ export function useAssetBalance(
   const [value, setValue] = useState<{ currency: Currency; amount: BN }>();
 
   const update = useCallback(() => {
+    console.log("update", bridge, account, position);
     if (bridge && account?.address && account.valid) {
       return from(
         position === "source"

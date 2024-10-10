@@ -64,6 +64,7 @@ export const assethubPolkadotChain: ChainConfig = {
           method: "limitedReserveTransferAssets",
         },
       ],
+      category: "usdt",
     },
     {
       icon: "pink.jpg",
@@ -94,6 +95,7 @@ export const assethubPolkadotChain: ChainConfig = {
           method: "limitedReserveTransferAssets",
         },
       ],
+      category: "pink",
     },
     {
       icon: "dot.svg",
@@ -124,6 +126,7 @@ export const assethubPolkadotChain: ChainConfig = {
           method: "limitedReserveTransferAssets",
         },
       ],
+      category: "dot",
     },
   ],
   wallets: [WalletID.TALISMAN],

@@ -1,6 +1,7 @@
 import { Cross } from "./cross";
 
 export type AssetSymbol = "DOT" | "ROC" | "USDT" | "PRING" | "ahUSDT" | "PINK" | "ahPINK" | "RING" | "HDX";
+export type AssetCategory = "ring" | "usdt" | "pink" | "dot";
 
 export enum AssetID {
   SYSTEM = -1,
@@ -13,7 +14,7 @@ export interface Asset {
   symbol: AssetSymbol;
   decimals: number;
   cross: Cross[];
-
+  category: AssetCategory;
   // Defines where the asset is issued
   origin: {
     id: number | AssetID.SYSTEM;

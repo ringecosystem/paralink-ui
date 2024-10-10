@@ -2,9 +2,19 @@ import { useTransfer } from "@/hooks";
 import { formatBalance } from "@/utils";
 import Image from "next/image";
 import { useTrail, animated } from "@react-spring/web";
+import { useState } from "react";
 
-export default function SuccessModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export default function SuccessModal({
+  visible,
+  onClose,
+  receipt,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  receipt: any;
+}) {
   const { sourceAsset, transferAmount } = useTransfer();
+  console.log("receipt", receipt);
 
   const trails = useTrail(3, {
     from: { transform: "translateX(-100%)", opacity: 0 },
@@ -32,7 +42,12 @@ export default function SuccessModal({ visible, onClose }: { visible: boolean; o
                 >
                   OK
                 </button>
-                <button className="h-[34px] w-full rounded-[10px] bg-[#FF00831A] text-[14px] font-bold text-[#FF0083]">
+                <button
+                  className="h-[34px] w-full rounded-[10px] bg-[#FF00831A] text-[14px] font-bold text-[#FF0083]"
+                  onClick={() => {
+                    window.open(`https://darwinia.subscan.io/tx/${receipt.transactionHash}`, "_blank");
+                  }}
+                >
                   Detail
                 </button>
               </animated.div>

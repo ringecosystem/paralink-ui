@@ -65,6 +65,7 @@ export const assethubRococoChain: ChainConfig = {
           method: "limitedReserveTransferAssets",
         },
       ],
+      category: "usdt",
     },
   ],
   wallets: [WalletID.TALISMAN],

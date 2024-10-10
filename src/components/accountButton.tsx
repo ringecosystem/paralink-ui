@@ -64,7 +64,7 @@ export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x
     setActiveSenderWallet(undefined);
     setActiveSenderAccount(undefined);
     disconnect();
-  }, [setSender, setActiveSenderWallet, setActiveSenderAccount]);
+  }, [setSender, setActiveSenderWallet, setActiveSenderAccount, disconnect]);
 
   useEffect(() => {
     if (needSwitchNetwork) {
@@ -78,7 +78,15 @@ export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x
           setSwitchWallet(true);
         });
     }
-  }, [sourceChain, chain, switchNetworkAsync]);
+  }, [
+    sourceChain,
+    chain,
+    switchNetworkAsync,
+    handleDisconnect,
+    setSwitchWallet,
+    activeSenderWallet,
+    needSwitchNetwork,
+  ]);
 
   useEffect(() => {
     window.addEventListener("click", () => {
