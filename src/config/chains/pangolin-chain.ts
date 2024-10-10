@@ -65,6 +65,7 @@ export const pangolinChain: ChainConfig = {
           method: "transferMultiassets",
         },
       ],
+      category: "usdt",
     },
   ],
   wallets: [WalletID.EVM, WalletID.TALISMAN],

@@ -64,6 +64,7 @@ export const hydradxChain: ChainConfig = {
           method: "transferMultiasset",
         },
       ],
+      category: "ring",
     },
   ],
   wallets: [WalletID.TALISMAN],

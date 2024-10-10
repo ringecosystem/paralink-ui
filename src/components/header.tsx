@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import data from "../data/data.json";
 import WalletButton from "./walletButton";
 import AccountButton from "./accountButton";
@@ -37,12 +37,15 @@ export default function Header() {
     setShowMenu(false);
   }, []);
 
-  const senderOptions =
-    activeSenderWallet === WalletID.EVM && activeAddress
-      ? [{ address: activeAddress }]
-      : activeSenderWallet === WalletID.TALISMAN
-      ? talismanAccounts
-      : [];
+  const senderOptions = useMemo(
+    () =>
+      activeSenderWallet === WalletID.EVM && activeAddress
+        ? [{ address: activeAddress }]
+        : activeSenderWallet === WalletID.TALISMAN
+        ? talismanAccounts
+        : [],
+    [activeAddress, activeSenderWallet, talismanAccounts],
+  );
 
   useEffect(() => {
     if ((activeAddress || talismanAccounts.length > 0) && activeSenderWallet) {
@@ -56,7 +59,15 @@ export default function Header() {
       setConnected(false);
       setSender(undefined);
     }
-  }, [activeAddress, talismanAccounts.length, activeSenderWallet]);
+  }, [
+    activeAddress,
+    talismanAccounts.length,
+    activeSenderWallet,
+    setConnected,
+    setSender,
+    senderOptions,
+    sourceChain.addressType,
+  ]);
 
   return (
     <section className="flex h-[50px] w-full items-center justify-between px-[10px] lg:h-[56px] lg:px-[30px]">

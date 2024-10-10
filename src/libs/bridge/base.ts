@@ -82,6 +82,7 @@ export abstract class BaseBridge {
    */
   private async getAssetBalance(api: ApiPromise, asset: Asset, account: string) {
     let amount = BN_ZERO;
+    console.log("getAssetBalance", asset, account);
 
     if (asset.id === AssetID.SYSTEM) {
       amount = (await this.getNativeBalance(api, account)).transferrable;

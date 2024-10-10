@@ -2,13 +2,24 @@
 
 import { Dispatch, PropsWithChildren, SetStateAction, createContext, useCallback, useMemo, useState } from "react";
 import { BN, BN_ZERO } from "@polkadot/util";
-import { Asset, ChainConfig, Currency, WalletID } from "@/types";
+import { Asset, AssetCategory, ChainConfig, Currency, WalletID } from "@/types";
 import { usePublicClient, useWalletClient } from "wagmi";
 import { UniversalBridge } from "@/libs";
 
 import { WalletAccount } from "@talismn/connect-wallets";
 import { Signer } from "@polkadot/api/types";
-import { notifyError, notifyTransaction, parseCross, signAndSendExtrinsic } from "@/utils";
+import {
+  getAvailableSourceAsset,
+  getAvailableSourceChain,
+  getAvailableSourceChainOptions,
+  getAvailableTargetAsset,
+  getAvailableTargetChain,
+  getAvailableTargetChainOptions,
+  notifyError,
+  notifyTransaction,
+  parseCross,
+  signAndSendExtrinsic,
+} from "@/utils";
 import {
   useApi,
   useAssetSupply,
@@ -19,6 +30,12 @@ import {
   useNativeBalance,
 } from "@/hooks";
 import { ApiPromise } from "@polkadot/api";
+
+const defaultAssetCategory: AssetCategory = "usdt";
+const defaultSourceChain: ChainConfig = getAvailableSourceChain(getAvailableSourceChainOptions(defaultAssetCategory));
+const defaultSourceAsset: Asset = getAvailableSourceAsset(defaultSourceChain, defaultAssetCategory);
+const defaultTargetChain: ChainConfig = getAvailableTargetChain(getAvailableTargetChainOptions(defaultSourceAsset));
+const defaultTargetAsset: Asset = getAvailableTargetAsset(defaultTargetChain, defaultAssetCategory);
 
 interface TransferCtx {
   assetLimitOnTargetChain: { currency: Currency; amount: BN } | undefined;
@@ -31,6 +48,7 @@ interface TransferCtx {
   targetNativeBalance: { currency: Currency; amount: BN } | undefined;
   feeBalanceOnSourceChain: { currency: Currency; amount: BN } | undefined;
   transferAmount: { valid: boolean; input: string; amount: BN };
+  assetCategory: AssetCategory;
   sourceChain: ChainConfig;
   targetChain: ChainConfig;
   sourceAsset: Asset;
@@ -45,6 +63,7 @@ interface TransferCtx {
   targetApi: ApiPromise | undefined;
 
   setTransferAmount: Dispatch<SetStateAction<{ valid: boolean; input: string; amount: BN }>>;
+  setAssetCategory: Dispatch<SetStateAction<AssetCategory>>;
   setSourceChain: Dispatch<SetStateAction<ChainConfig>>;
   setTargetChain: Dispatch<SetStateAction<ChainConfig>>;
   setSourceAsset: Dispatch<SetStateAction<Asset>>;
@@ -70,8 +89,6 @@ interface TransferCtx {
   updateFeeBalanceOnSourceChain: () => void;
 }
 
-const { defaultSourceChain, defaultTargetChain, defaultSourceAsset, defaultTargetAsset } = parseCross();
-
 const transferCb = {
   successCb: (receipt: any) => {},
   failedCb: () => {},
@@ -81,6 +98,7 @@ export const TransferContext = createContext({} as TransferCtx);
 
 export default function TransferProvider({ children }: PropsWithChildren<unknown>) {
   const [transferAmount, setTransferAmount] = useState({ valid: true, input: "", amount: BN_ZERO });
+  const [assetCategory, setAssetCategory] = useState(defaultAssetCategory);
   const [sourceChain, setSourceChain] = useState(defaultSourceChain);
   const [targetChain, setTargetChain] = useState(defaultTargetChain);
   const [sourceAsset, setSourceAsset] = useState(defaultSourceAsset);
@@ -223,6 +241,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         sourceNativeBalance,
         targetNativeBalance,
         transferAmount,
+        assetCategory,
         sourceChain,
         targetChain,
         sourceAsset,
@@ -235,6 +254,7 @@ export default function TransferProvider({ children }: PropsWithChildren<unknown
         activeRecipientWallet,
 
         setTransferAmount,
+        setAssetCategory,
         setSourceChain,
         setTargetChain,
         setSourceAsset,

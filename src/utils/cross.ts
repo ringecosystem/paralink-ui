@@ -1,5 +1,12 @@
 import { darwiniaChain, hydradxChain } from "@/config/chains";
-import { AvailableSourceAssetOptions, AvailableTargetAssetOptions, AvailableTargetChainOptions } from "@/types";
+import {
+  Asset,
+  AssetCategory,
+  AvailableSourceAssetOptions,
+  AvailableTargetAssetOptions,
+  AvailableTargetChainOptions,
+  ChainConfig,
+} from "@/types";
 import { getChainConfig, getChainsConfig } from ".";
 
 let defaultSourceChain = darwiniaChain;
@@ -71,4 +78,28 @@ export function parseCross() {
     availableTargetChainOptions,
     availableTargetAssetOptions,
   };
+}
+
+export function getAvailableSourceChainOptions(assetCategory: AssetCategory) {
+  return getChainsConfig().filter((chain) => chain.assets.some((asset) => asset.category === assetCategory));
+}
+
+export function getAvailableSourceChain(availableSourceChainOptions: ChainConfig[]) {
+  return availableSourceChainOptions[0];
+}
+
+export function getAvailableSourceAsset(availableSourceChain: ChainConfig, assetCategory: AssetCategory) {
+  return availableSourceChain.assets.find((asset) => asset.category === assetCategory)!;
+}
+
+export function getAvailableTargetChainOptions(availableSourceAsset: Asset) {
+  return availableSourceAsset.cross.map((cross) => getChainConfig(cross.target.network)!);
+}
+
+export function getAvailableTargetChain(availableTargetChainOptions: ChainConfig[]) {
+  return availableTargetChainOptions[0];
+}
+
+export function getAvailableTargetAsset(availableTargetChain: ChainConfig, assetCategory: AssetCategory) {
+  return availableTargetChain.assets.find((asset) => asset.category === assetCategory)!;
 }

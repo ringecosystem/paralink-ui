@@ -64,6 +64,7 @@ export const darwiniaChain: ChainConfig = {
           method: "reserveTransferAssets",
         },
       ],
+      category: "ring",
     },
     {
       icon: "usdt.svg",
@@ -94,6 +95,7 @@ export const darwiniaChain: ChainConfig = {
           method: "transferMultiassets",
         },
       ],
+      category: "usdt",
     },
     {
       icon: "pink.jpg",
@@ -124,6 +126,7 @@ export const darwiniaChain: ChainConfig = {
           method: "transferMultiassets",
         },
       ],
+      category: "pink",
     },
     {
       icon: "dot.svg",
@@ -154,6 +157,7 @@ export const darwiniaChain: ChainConfig = {
           method: "transferMultiassets",
         },
       ],
+      category: "dot",
     },
   ],
   wallets: [WalletID.EVM, WalletID.TALISMAN],

@@ -1,87 +1,31 @@
 "use clients";
 
 import Image from "next/image";
-import data from "../data/data.json";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTransfer } from "@/hooks";
-import { getChainLogoSrc, parseCross } from "@/utils";
-import { Asset, ChainConfig } from "@/types";
+import { useState } from "react";
+import { getChainLogoSrc } from "@/utils";
+import { ChainConfig } from "@/types";
 
-export interface chainType {
-  name: string;
-  logo: string;
-}
-
-export default function ChainSelectInput({ who, options }: { who: string; options: [any] }) {
-  const { sourceChain, setSourceChain, sourceAsset, setTargetChain, setSourceAsset, targetChain } = useTransfer();
-  const {
-    defaultSourceChainOptions,
-    defaultTargetChainOptions,
-    availableTargetChainOptions,
-    availableSourceAssetOptions,
-    defaultSourceAssetOptions,
-  } = parseCross();
-  const [sourceChainOptions, _setSourceChainOptions] = useState(defaultSourceChainOptions);
-  const [sourceAssetOptions, setSourceAssetOptions] = useState(defaultSourceAssetOptions);
-  const [targetChainOptions, setTargetChainOptions] = useState(defaultTargetChainOptions);
-
-  const targetChainRef = useRef(targetChain);
-  const sourceAssetRef = useRef(sourceAsset);
-  const sourceChainRef = useRef(sourceChain);
-
-  const _setTargetChain = useCallback(
-    (chain: ChainConfig | undefined) => {
-      setTargetChain((prev) => chain ?? prev);
-      targetChainRef.current = chain ?? targetChainRef.current;
-    },
-    [setTargetChain],
-  );
-
-  // useEffect(() => {
-  //   const options = availableTargetChainOptions[sourceChain.network]?.[sourceAsset.symbol] || [];
-  //   setTargetChainOptions(options);
-  //   _setTargetChain(options.at(0));
-  // }, [sourceChain, sourceAsset, _setTargetChain]);
-
-  const _setSourceChain = useCallback(
-    (chain: ChainConfig | undefined) => {
-      setSourceChain((prev) => chain ?? prev);
-      sourceChainRef.current = chain ?? sourceChainRef.current;
-    },
-    [setSourceChain],
-  );
-
-  // const _setSourceAsset = useCallback(
-  //   (asset: Asset | undefined) => {
-  //     setSourceAsset((prev) => asset ?? prev);
-  //     sourceAssetRef.current = asset ?? sourceAssetRef.current;
-  //   },
-  //   [setSourceAsset],
-  // );
-
-  // useEffect(() => {
-  //   const options = availableSourceAssetOptions[sourceChain.network] || [];
-  //   setSourceAssetOptions(options);
-  //   _setSourceAsset(options.at(0));
-  // }, [sourceChain, _setSourceAsset]);
+export default function ChainSelectInput({
+  value,
+  options,
+  onSelect,
+}: {
+  value: ChainConfig;
+  options: ChainConfig[];
+  onSelect: (chain: ChainConfig) => void;
+}) {
   const [open, setOpen] = useState<boolean>(false);
 
-  const name = "Polkadot AssetHub";
   return (
     <div
       className="relative cursor-pointer"
       onClick={() => {
-        setOpen(!open);
+        setOpen((prev) => !prev);
       }}
     >
       <div className="flex items-center justify-center gap-[5px]">
-        <Image
-          src={getChainLogoSrc(who === "sender" ? sourceChain.logo : targetChain.logo)}
-          width={20}
-          height={20}
-          alt={who === "sender" ? sourceChain.name : targetChain.name}
-        />
-        <p className="text-[12px] leading-[15px]">{who === "sender" ? sourceChain.name : targetChain.name}</p>
+        <Image src={getChainLogoSrc(value.logo)} width={20} height={20} alt={value.name} />
+        <p className="text-[12px] leading-[15px]">{value.name}</p>
         <span className="block h-[16px] w-[16px] bg-[url('/images/icons/downarrow-icon.svg')] bg-contain bg-center bg-no-repeat" />
       </div>
       <div
@@ -90,12 +34,8 @@ export default function ChainSelectInput({ who, options }: { who: string; option
       >
         <div className="relative flex h-fit w-full  flex-col gap-[10px] rounded-[10px] p-[10px]">
           {options.map((item) => (
-            <div
-              key={item.name}
-              className="flex w-full items-center gap-[5px]"
-              onClick={who === "sender" ? () => _setSourceChain(item) : () => _setTargetChain(item)}
-            >
-              <Image src={getChainLogoSrc(item.logo)} width={20} height={20} alt={item.name} />
+            <div key={item.name} className="flex w-full items-center gap-[5px]" onClick={() => onSelect(item)}>
+              <Image src={getChainLogoSrc(item.logo)} width={16} height={16} alt={item.name} />
               <p className="truncate whitespace-nowrap text-[12px] leading-[15px]">{item.name}</p>
             </div>
           ))}
