@@ -6,6 +6,7 @@ import ChainSelectInput from "./chainSelectInput";
 import SuccessModal from "./successModal";
 import PendingModal from "./pendingModal";
 import {
+  formatAddressByChain,
   formatBalance,
   getAssetIconSrc,
   getAvailableSourceAsset,
@@ -351,7 +352,7 @@ export default function AppBox() {
             <input
               type="text"
               disabled
-              value={sender ? sender.address : ""}
+              value={sender ? formatAddressByChain(sender.address, sourceChain) : ""}
               onChange={handleSenderAddressChange}
               placeholder="Enter address"
               className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"

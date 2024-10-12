@@ -45,4 +45,5 @@ export interface ChainConfig extends Chain {
   existential?: {
     minBalance: BN;
   };
+  ss58Prefix: number;
 }

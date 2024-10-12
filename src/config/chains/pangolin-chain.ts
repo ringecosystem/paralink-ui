@@ -76,4 +76,5 @@ export const pangolinChain: ChainConfig = {
    */
   endpoint: "wss://pangolin-rpc.darwinia.network",
   parachainId: ParachainID.PANGOLIN,
+  ss58Prefix: 0,
 };

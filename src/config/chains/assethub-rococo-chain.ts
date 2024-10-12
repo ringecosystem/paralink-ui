@@ -76,4 +76,5 @@ export const assethubRococoChain: ChainConfig = {
    */
   endpoint: "wss://rococo-asset-hub-rpc.polkadot.io",
   parachainId: ParachainID.ASSETHUB_ROCOCO,
+  ss58Prefix: 42,
 };
