@@ -23,6 +23,6 @@ export function toShortAdrress(address: string) {
   return address.length > 16 ? `${address.slice(0, 5)}...${address.slice(-4)}` : address;
 }
 
-export function formatAddressByChain(address: string, chain: ChainConfig) {
-  return chain.addressType === "substrate" ? encodeAddress(address, chain.ss58Prefix) : address;
+export function formatAddressByChain(address: string | undefined, chain: ChainConfig) {
+  return chain.addressType === "substrate" && address ? encodeAddress(address, chain.ss58Prefix) : address;
 }
