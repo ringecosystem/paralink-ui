@@ -6,6 +6,7 @@ import { useAccount, useDisconnect, useNetwork, useSwitchNetwork } from "wagmi";
 import { useTalisman, useTransfer } from "@/hooks";
 import { isValidAddress, parseCross, toShortAdrress, formatBalance, getAssetIconSrc } from "@/utils";
 import { WalletID } from "@/types";
+import AddressIdenticon from "./addressIdenticon";
 
 export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x: boolean) => void }) {
   const { talismanAccounts } = useTalisman();
@@ -111,7 +112,7 @@ export default function AccountButton({ setSwitchWallet }: { setSwitchWallet: (x
       {subMenu && (
         <div className="absolute right-[-21px] top-[calc(100%+20px)] flex w-[290px] flex-col gap-[20px] rounded-[10px] bg-white p-[20px]">
           <div className="flex items-center gap-[10px]">
-            <span className="block h-[30px] w-[30px] bg-[url('/images/icons/assethub-icon.svg')] bg-contain bg-center bg-no-repeat" />
+            <AddressIdenticon address={connectedAddress?.toString() || ""} size={30} />
             <p className="text-[16px] font-bold leading-[24px]">
               {connectedAddress && toShortAdrress(connectedAddress.toString())}
             </p>
