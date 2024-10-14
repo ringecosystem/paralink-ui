@@ -19,7 +19,7 @@ export default function Header() {
   const [connected, setConnected] = useState(false);
   const { address: activeAddress } = useAccount();
   const { talismanAccounts, connectTalisman } = useTalisman();
-  const { activeSenderWallet, setSender, sourceChain, sender } = useTransfer();
+  const { activeSenderWallet, setSender, sourceChain, sender, setActiveSenderAccount } = useTransfer();
   const [switchWallet, setSwitchWallet] = useState<boolean>(false);
 
   const handleClose = useCallback(() => {
@@ -46,6 +46,14 @@ export default function Header() {
         : [],
     [activeAddress, activeSenderWallet, talismanAccounts],
   );
+
+  useEffect(() => {
+    if (activeSenderWallet === WalletID.TALISMAN) {
+      setActiveSenderAccount(talismanAccounts.at(0));
+    } else {
+      setActiveSenderAccount(undefined);
+    }
+  }, [activeSenderWallet, talismanAccounts, setActiveSenderAccount]);
 
   useEffect(() => {
     if ((activeAddress || talismanAccounts.length > 0) && activeSenderWallet) {
