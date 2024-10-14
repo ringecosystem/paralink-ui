@@ -24,5 +24,7 @@ export function toShortAdrress(address: string) {
 }
 
 export function formatAddressByChain(address: string | undefined, chain: ChainConfig) {
-  return chain.addressType === "substrate" && address ? encodeAddress(address, chain.ss58Prefix) : address;
+  return address && !isAddress(address) && chain.addressType === "substrate"
+    ? encodeAddress(address, chain.ss58Prefix)
+    : address;
 }
