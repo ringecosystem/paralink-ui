@@ -1,11 +1,12 @@
 "use client";
 
-import { ChangeEventHandler, useCallback, useMemo, useRef, useState } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import Image from "next/image";
 import ChainSelectInput from "./chainSelectInput";
 import SuccessModal from "./successModal";
 import PendingModal from "./pendingModal";
 import {
+  formatAddressByChain,
   formatBalance,
   getAssetIconSrc,
   getAvailableSourceAsset,
@@ -34,7 +35,6 @@ export default function AppBox() {
 
   const {
     sender,
-    setSender,
     recipient,
     setRecipient,
     sourceAssetBalance,
@@ -118,17 +118,6 @@ export default function AppBox() {
       }
     },
     [sourceAsset, min, sourceAssetBalance, assetLimit, assetSupply, setTransferAmount],
-  );
-
-  const senderAddressType = useMemo(() => sourceChain.addressType, [sourceChain]);
-
-  const handleSenderAddressChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (e) => {
-      const address = e.target.value;
-      const valid = address ? isValidAddress(address, senderAddressType) : true;
-      setSender({ valid, address });
-    },
-    [senderAddressType, setSender],
   );
 
   const recipientAddressType = useMemo(() => targetChain.addressType, [targetChain]);
@@ -350,10 +339,12 @@ export default function AppBox() {
           {sender ? (
             <input
               type="text"
-              disabled
-              value={sender ? sender.address : ""}
-              onChange={handleSenderAddressChange}
+              value={sender ? formatAddressByChain(sender.address, sourceChain) : ""}
               placeholder="Enter address"
+              onChange={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
               className="h-[24px] text-ellipsis whitespace-nowrap border-none bg-transparent text-[14px] font-[700] leading-[24px] outline-none"
             />
           ) : (

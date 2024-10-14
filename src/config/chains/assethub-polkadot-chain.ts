@@ -138,4 +138,5 @@ export const assethubPolkadotChain: ChainConfig = {
   endpoint: "wss://polkadot-asset-hub-rpc.polkadot.io",
   parachainId: ParachainID.ASSETHUB_POLKADOT,
   existential: { minBalance: bnToBn("500000000") }, // 0.05 DOT
+  ss58Prefix: 0,
 };

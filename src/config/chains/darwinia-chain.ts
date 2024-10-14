@@ -168,4 +168,5 @@ export const darwiniaChain: ChainConfig = {
    */
   endpoint: "wss://rpc.darwinia.network",
   parachainId: ParachainID.DARWINIA,
+  ss58Prefix: 18,
 };
